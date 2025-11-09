@@ -2,6 +2,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext"
 import { useEffect } from "react";
 
+import { Box, Stack, Typography, Button } from '@mui/material';
+
 export const Login = () => {
 
   const {isAuthenticated} = useAuth();
@@ -19,26 +21,45 @@ export const Login = () => {
   
   const handleLogin = (provider: string) => {
     if(provider == 'google'){
-      window.location.href = 'http://localhost:8080/aouth2/authorization/google';
+      window.location.href = '/oauth2/authorization/google';
     }else return;
   }
  
 return (
-  <div className="flex flex-col items-center justify-center h-screen space-y-4">
-    <h1 className="text-xl mb-4">Login Page</h1>
-
-    {/* Google Login Button */}
-    <button
-      className="bg-white border border-gray-300 px-6 py-2 rounded flex items-center gap-2 cursor-pointer"
-      onClick={() => handleLogin("google")}
+   <Box
+      minHeight="100vh"
+      display="flex"
+      alignItems="center"
+      justifyContent="center"
+      px={2}
     >
-      <img
-        src="https://developers.google.com/identity/images/g-logo.png"
-        alt="Google"
-        className="w-5 h-5"
-      />
-      Sign in with Google
-    </button>
-  </div>
+      <Stack spacing={4} alignItems="center">
+        <Typography variant="h5">Login Page</Typography>
+
+        <Button
+          variant="outlined"
+          color="inherit"
+          onClick={() => handleLogin('google')}
+          startIcon={
+            <Box
+              component="img"
+              src="https://developers.google.com/identity/images/g-logo.png"
+              alt="Google"
+              sx={{ width: 20, height: 20 }}
+            />
+          }
+          sx={{
+            bgcolor: 'background.paper',
+            borderColor: 'divider',
+            textTransform: 'none',
+            px: 3,
+            py: 1.25,
+            borderRadius: 2,
+          }}
+        >
+          Sign in with Google
+        </Button>
+      </Stack>
+    </Box>
 );
 };
