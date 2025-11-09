@@ -34,7 +34,7 @@ return (
       px={2}
     >
       <Stack spacing={4} alignItems="center">
-        <Typography variant="h5">Login Page</Typography>
+        <Typography variant="h5">Welcome to Defect Registration System</Typography>
 
         <Button
           variant="outlined"
