@@ -6,13 +6,13 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "preview": "vite preview",
     "lint": "eslint ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
-    "lint-fix": "eslint --fix ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
-    "lint:style": "npx stylelint ./src/**/*.css --cache --cache-location node_modules/.cache/stylelint/",
-    "lint:style-fix": "npx stylelint ./src/**/*.css --fix --cache --cache-location node_modules/.cache/stylelint/",
+    "lint:fix": "eslint --fix ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
+    "lint-style": "npx stylelint ./src/**/*.css --cache --cache-location node_modules/.cache/stylelint/",
+    "lint-style:fix": "npx stylelint ./src/**/*.css --fix --cache --cache-location node_modules/.cache/stylelint/",
     "format": "prettier --check ./src --cache --cache-location node_modules/.cache/prettier/.prettier-cache",
-    "format-fix": "prettier --write ./src --cache --cache-location node_modules/.cache/prettier/.prettier-cache",
-    "preview": "vite preview"
+    "format:fix": "prettier --write ./src --cache --cache-location node_modules/.cache/prettier/.prettier-cache"
   },
   "dependencies": {
     "react": "^19.1.1",
