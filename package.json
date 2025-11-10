@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint ./src --ext ts,tsx",
-    "lint-fix": "eslint --fix ./src --ext ts,tsx",
-    "format": "prettier --check ./src",
-    "format-fix": "prettier --write ./src",
+    "lint": "eslint ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
+    "lint-fix": "eslint --fix ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
+    "format": "prettier --check ./src --cache --cache-location node_modules/.cache/prettier/.prettier-cache",
+    "format-fix": "prettier --write ./src --cache --cache-location node_modules/.cache/prettier/.prettier-cache",
     "preview": "vite preview"
   },
   "dependencies": {
