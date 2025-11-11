@@ -19,9 +19,20 @@ export const Home = () => {
     window.location.href = '/logout';
   }
 
+const picture = user?.picture || "/images/default.png";
+
   return (
     <div className="text-center mt-2">
       {user?.name} : {user?.email}
+      <img
+          src={picture}
+          alt={user?.name || "User"}
+          width={96}
+          height={96}
+          referrerPolicy="no-referrer"
+          onError={(e) => { e.currentTarget.src = "/images/default.png"; }}
+          style={{ borderRadius: "50%", objectFit: "cover" }}
+        />
       <div>
    <Button
       onClick={handleLogout}
