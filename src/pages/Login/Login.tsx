@@ -1,8 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"
 import { useEffect } from "react";
-
 import { Box, Stack, Typography, Button } from '@mui/material';
+import { useAuth } from "../../context/AuthContext";
 
 export const Login = () => {
 

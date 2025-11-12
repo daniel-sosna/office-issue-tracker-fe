@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext"
 import Button from '@mui/material/Button';
 import LogoutIcon from '@mui/icons-material/Logout';
+import { useAuth } from "../../context/AuthContext";
 
 export const Home = () => {
   const {isAuthenticated, loading, user, setUser} = useAuth();
@@ -39,7 +39,7 @@ const picture = user?.picture || "/images/default.png";
       variant="contained"
       color="error"
       startIcon={<LogoutIcon />}
-      sx={{ borderRadius: 2 }} // ~ rounded
+      sx={{ borderRadius: 2 }}
     >
       Logout
     </Button>
