@@ -1,0 +1,21 @@
+image: node:25
+
+pipelines:
+  pull-requests:
+    "**":
+      - step:
+          name: Install Dependencies and Lint
+          caches:
+            - node
+          script:
+            - npm install
+            - npm run lint
+            - npm run lint-style
+            - npm run format
+
+      - step:
+          name: Security Scan
+          script:
+            # Run a security scan for sensitive data.
+            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+            - pipe: atlassian/git-secrets-scan:0.5.1
