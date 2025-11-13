@@ -4,18 +4,37 @@ pipelines:
   pull-requests:
     "**":
       - step:
-          name: Install Dependencies and Lint
+          name: Install Dependencies
           caches:
             - node
           script:
-            - npm install
-            - npm run lint
-            - npm run lint-style
-            - npm run format
+            - npm ci  # Faster and more reliable for CI than `npm install`
 
-      - step:
-          name: Security Scan
-          script:
-            # Run a security scan for sensitive data.
-            # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
-            - pipe: atlassian/git-secrets-scan:0.5.1
+      # Run linters and checks in parallel for faster feedback
+      - parallel:
+        - step:
+            name: ESLint (TypeScript)
+            caches:
+              - node
+            script:
+              - npm run lint
+
+        - step:
+            name: Stylelint (CSS/SCSS)
+            caches:
+              - node
+            script:
+              - npm run lint-styles
+
+        - step:
+            name: Prettier Check (Formatting)
+            caches:
+              - node
+            script:
+              - npm run format
+        - step:
+            name: Security Scan
+            script:
+              # Run a security scan for sensitive data.
+              # See more security tools at https://bitbucket.org/product/features/pipelines/integrations?&category=security
+              - pipe: atlassian/git-secrets-scan:0.5.1
