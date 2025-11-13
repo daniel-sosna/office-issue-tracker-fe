@@ -10,5 +10,6 @@ export default {
   rules: {
     "declaration-empty-line-before": null, // allow empty line before declarations
     "value-keyword-case": null, // allow both lowercase and uppercase keywords
+    "color-hex-length": "long", // enforce long hex colors
   },
 };
