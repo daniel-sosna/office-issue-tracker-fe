@@ -21,8 +21,8 @@ pipelines:
             condition:
               changesets:
                 includePaths:
-                  - "src/**/*.ts"
-                  - "src/**/*.tsx"
+                  - "src/**.ts"
+                  - "src/**.tsx"
 
         - step:
             name: Stylelint (CSS/SCSS)
@@ -33,8 +33,8 @@ pipelines:
             condition:
               changesets:
                 includePaths:
-                  - "src/**/*.css"
-                  - "src/**/*.scss"
+                  - "src/**.css"
+                  - "src/**.scss"
 
         - step:
             name: Prettier Check (Formatting)
@@ -45,7 +45,7 @@ pipelines:
             condition:
               changesets:
                 includePaths:
-                  - "src/**/*"
+                  - "src/**"
 
         - step:
             name: Security Scan
