@@ -18,6 +18,11 @@ pipelines:
               - node
             script:
               - npm run lint
+            condition:
+              changesets:
+                includePaths:
+                  - "src/**/*.ts"
+                  - "src/**/*.tsx"
 
         - step:
             name: Stylelint (CSS/SCSS)
@@ -25,6 +30,11 @@ pipelines:
               - node
             script:
               - npm run lint-styles
+            condition:
+              changesets:
+                includePaths:
+                  - "src/**/*.css"
+                  - "src/**/*.scss"
 
         - step:
             name: Prettier Check (Formatting)
@@ -32,6 +42,11 @@ pipelines:
               - node
             script:
               - npm run format
+            condition:
+              changesets:
+                includePaths:
+                  - "src/**/*"
+
         - step:
             name: Security Scan
             script:
