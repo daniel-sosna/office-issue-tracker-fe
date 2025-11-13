@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../context/AuthContext";
 
 export const Home = () => {
   const {isAuthenticated, loading, user, setUser} = useAuth();
