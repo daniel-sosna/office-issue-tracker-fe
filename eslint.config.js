@@ -18,7 +18,7 @@ export default defineConfig([
       reactHooks.configs['recommended-latest'],
       reactRefresh.configs.vite,
       reactDom.configs.recommended,
-      prettier, // disables conflicting ESLint formatting rules
+      prettier, // disables rules conflicting with Prettier
     ],
     languageOptions: {
       ecmaVersion: 2020,
