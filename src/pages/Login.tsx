@@ -10,7 +10,7 @@ export const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const fromLocation = (location.state)?.from?.pathname || "/";
+  const fromLocation = location.state?.from?.pathname || "/";
 
   useEffect(() => {
     if(isAuthenticated){
