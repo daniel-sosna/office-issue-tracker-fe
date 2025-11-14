@@ -6,12 +6,36 @@ The tooling is automated through **Husky** and **lint-staged**, ensuring issues 
 This document explains:
 
 1. What each linter does
-2. How to use the linters
-3. How to configure IDE support (VSCode & IntelliJ Ultimate)
-4. How pre-commit hooks work
-5. Recommended development workflow
+1. How to use the linters
+1. How to configure IDE support (VSCode & IntelliJ Ultimate)
+1. How pre-commit hooks work
+1. Recommended development workflow
 
-## 1. Linters Overview
+## Table of Contents
+
+- [Table of Contents](#markdown-table-of-contents)
+- [Linters Overview](#markdown-linters-overview)
+  - [ESLint](#markdown-**eslint**)
+  - [Stylelint](#markdown-**stylelint**)
+  - [Prettier](#markdown-**prettier**)
+  - [.editorconfig](#markdown-**.editorconfig**)
+- [CLI Commands](#markdown-cli-commands)
+  - [Linting](#markdown-linting)
+  - [Formatting](#markdown-formatting)
+  - [Notes](#markdown-notes)
+- [IDE Integration](#markdown-ide-integration)
+  - [✔ VSCode Setup](#markdown-✔-vscode-setup)
+  - [✔ IntelliJ IDEA Ultimate Setup](#markdown-✔-intellij-idea-ultimate-setup)
+- [Pre-Commit Hook (Husky + lint-staged)](<#markdown-pre-commit-hook-(husky-+-lint-staged)>)
+  - [How it works?](#markdown-how-it-works?)
+  - [Why we use pre-commit hook?](#markdown-why-we-use-pre-commit-hook?)
+- [Recommended Development Workflow](#markdown-recommended-development-workflow)
+  1. [Write code normally](#markdown-**1.-write-code-normally**)
+  1. [You can manually run linting and formatting locally](#markdown-**2.-you-can-manually-run-linting-and-formatting-locally**)
+  1. [Commit](#markdown-**3.-commit**)
+  1. [Push](#markdown-**4.-push**)
+
+## Linters Overview
 
 ### **ESLint**
 
@@ -39,7 +63,7 @@ Defines editor-agnostic rules such as:
 - Final newline
 - Quote style
 
-## 2. CLI Commands
+## CLI Commands
 
 All commands operate on the `./src` folder.
 
@@ -68,7 +92,7 @@ All commands operate on the `./src` folder.
   rm -rf node_modules/.cache
   ```
 
-## 3. IDE Integration
+## IDE Integration
 
 ### ✔ VSCode Setup
 
@@ -148,11 +172,11 @@ IntelliJ should support everything natively, but to ensure proper integration, f
 
    Check at: `Settings → Editor → Code Style → Enable EditorConfig`
 
-## 4. Pre-Commit Hook (Husky + lint-staged)
+## Pre-Commit Hook (Husky + lint-staged)
 
 The project uses Husky to run tasks **before every commit**.
 
-### How it works:
+### How it works?
 
 1. On `npm install`, Husky gets activated via `"prepare": "husky"` in `package.json`.
 1. Husky reads the `.husky/pre-commit` script.
@@ -180,7 +204,7 @@ The project uses Husky to run tasks **before every commit**.
 - Keeps diffs cleaner.
 - Avoids unnecessary formatting noise in PRs.
 
-## 5. Recommended Development Workflow
+## Recommended Development Workflow
 
 ### **1. Write code normally**
 
