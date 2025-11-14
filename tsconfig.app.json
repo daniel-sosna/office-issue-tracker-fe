@@ -28,7 +28,8 @@
     "paths": {
       "@pages/*": ["pages/*"],
       "@context/*": ["context/*"],
-      "@app": ["App"]
+      "@app": ["App"],
+      "@utils/*": ["utils/*"]
     }
   },
 

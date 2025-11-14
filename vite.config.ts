@@ -8,6 +8,7 @@ export default defineConfig({
       '@pages': '/src/pages',
       '@context': '/src/context',
       '@app': '/src/App',
+      '@utils': '/src/utils'
     },
   },
   server: {

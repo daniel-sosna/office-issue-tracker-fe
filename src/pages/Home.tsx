@@ -1,11 +1,14 @@
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Button from '@mui/material/Button';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from "@context/AuthContext";
 import { Avatar, Stack } from "@mui/material";
+import { csrfFetch } from "@utils/csrfFetch";
+
 
 export const Home = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();
+   const navigate = useNavigate();
 
   if (loading) {
     return <div>Loading...</div>
@@ -15,11 +18,18 @@ export const Home = () => {
     return <Navigate to="/login" replace />
   }
 
-  const handleLogout = () => {
+const handleLogout = async () => {
+  try {
+    await csrfFetch("/logout", {
+      method: "POST",
+    });
+  } catch (_) {
+  } finally {
     setUser(null);
-    window.location.href = '/logout';
+    navigate("/login", { replace: true });
   }
-
+};
+ 
   const picture = user?.picture || "/images/default.png";
 
   return (
