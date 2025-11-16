@@ -1,31 +1,37 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { Box, Stack, Typography, Button } from '@mui/material';
-import { useAuth } from "@context/AuthContext";
+import { Box, Stack, Typography, Button } from "@mui/material";
+import { useAuth } from "@context/use-auth";
 
 export const Login = () => {
-
-  const {isAuthenticated} = useAuth();
+  const { isAuthenticated } = useAuth();
 
   const navigate = useNavigate();
-  const location = useLocation();
 
-  const fromLocation = location.state?.from?.pathname || "/";
+  interface LocationState {
+    form?: {
+      pathname: string;
+    };
+  }
+
+  const location = useLocation() as LocationState;
+
+  const fromLocation = location.form?.pathname ?? "/";
 
   useEffect(() => {
-    if(isAuthenticated){
-      navigate(fromLocation, {replace: true});
+    if (isAuthenticated) {
+      void navigate(fromLocation, { replace: true });
     }
-  },[isAuthenticated, fromLocation, navigate])
-  
+  }, [isAuthenticated, fromLocation, navigate]);
+
   const handleLogin = (provider: string) => {
-    if(provider == 'google'){
-      window.location.href = '/oauth2/authorization/google';
-    }else return;
-  }
- 
-return (
-   <Box
+    if (provider == "google") {
+      window.location.href = "/oauth2/authorization/google";
+    } else return;
+  };
+
+  return (
+    <Box
       minHeight="100vh"
       display="flex"
       alignItems="center"
@@ -33,12 +39,14 @@ return (
       px={2}
     >
       <Stack spacing={4} alignItems="center">
-        <Typography variant="h5">Welcome to Defect Registration System</Typography>
+        <Typography variant="h5">
+          Welcome to Defect Registration System
+        </Typography>
 
         <Button
           variant="outlined"
           color="inherit"
-          onClick={() => handleLogin('google')}
+          onClick={() => handleLogin("google")}
           startIcon={
             <Box
               component="img"
@@ -48,9 +56,9 @@ return (
             />
           }
           sx={{
-            bgcolor: 'background.paper',
-            borderColor: 'divider',
-            textTransform: 'none',
+            bgcolor: "background.paper",
+            borderColor: "divider",
+            textTransform: "none",
             px: 3,
             py: 1.25,
             borderRadius: 2,
@@ -60,5 +68,5 @@ return (
         </Button>
       </Stack>
     </Box>
-);
+  );
 };
