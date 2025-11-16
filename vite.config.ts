@@ -10,6 +10,7 @@ export default defineConfig({
       '@context': path.resolve(__dirname, 'src/context'),
       '@app': path.resolve(__dirname, 'src/App'),
       '@utils': path.resolve(__dirname, 'src/utils'),
+      '@styles': path.resolve(__dirname, "src"),
     },
   },
   server: {

@@ -152,7 +152,7 @@ IntelliJ should support everything natively, but to ensure proper integration, f
 
    Set:
    - **Stylelint package**: `node_modules/stylelint`
-   - **Configuration file**: `stylelint.config.js`
+   - **Configuration file**: `stylelint.config.js`D
    - **Run for files**: `src/**/*.{css,scss}`
    - _(Optional) Check: **Run stylelint --fix on save**_
 
