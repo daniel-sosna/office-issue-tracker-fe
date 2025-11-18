@@ -9,7 +9,11 @@ import {
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CursorRing from "../../components/CursorRing";
-import { IssueStatus, type Issue } from "../../data/issues";
+import {
+  type IssueStatusType,
+  IssueStatus,
+  type Issue,
+} from "../../data/issues";
 
 interface IssueCardProps {
   issue: Issue;
@@ -21,13 +25,13 @@ export default function IssueCard({ issue }: IssueCardProps) {
     issue.status === IssueStatus.Resolved;
 
   const statusStyles: Record<
-    string,
+    IssueStatusType,
     { backgroundColor: string; color: string }
   > = {
-    IssueStatus.Open: { backgroundColor: "#C1E1C1", color: "#2E7D32" },
-    IssueStatus.InProgress: { backgroundColor: "#B3E5FC", color: "#0277BD" },
-    IssueStatus.Resolved: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
-    IssueStatus.Closed: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
+    [IssueStatus.Open]: { backgroundColor: "#C1E1C1", color: "#2E7D32" },
+    [IssueStatus.InProgress]: { backgroundColor: "#B3E5FC", color: "#0277BD" },
+    [IssueStatus.Resolved]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
+    [IssueStatus.Closed]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
   };
 
   const { backgroundColor, color } = statusStyles[issue.status] || {
