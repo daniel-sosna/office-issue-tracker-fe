@@ -23,13 +23,17 @@
     "erasableSyntaxOnly": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true,
-  
-   "baseUrl": "./src",
+
+    "baseUrl": "./src",
     "paths": {
       "@pages/*": ["pages/*"],
       "@context/*": ["context/*"],
       "@app": ["App"],
-      "@utils/*": ["utils/*"]
+      "@utils/*": ["utils/*"],
+      "@components/*": ["components/*"],
+      "@layouts/*": ["layouts/*"],
+      "@styles/*": ["styles/*"],
+      "@assets/*": ["assets/*"]
     }
   },
 
