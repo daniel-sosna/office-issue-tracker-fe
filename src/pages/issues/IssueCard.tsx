@@ -24,10 +24,10 @@ export default function IssueCard({ issue }: IssueCardProps) {
     string,
     { backgroundColor: string; color: string }
   > = {
-    Open: { backgroundColor: "#C1E1C1", color: "#2E7D32" },
-    "In progress": { backgroundColor: "#B3E5FC", color: "#0277BD" },
-    Resolved: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
-    Closed: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
+    IssueStatus.Open: { backgroundColor: "#C1E1C1", color: "#2E7D32" },
+    IssueStatus.InProgress: { backgroundColor: "#B3E5FC", color: "#0277BD" },
+    IssueStatus.Resolved: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
+    IssueStatus.Closed: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
   };
 
   const { backgroundColor, color } = statusStyles[issue.status] || {
