@@ -9,16 +9,7 @@ import {
 import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import CursorRing from "../../components/CursorRing";
-
-export interface Issue {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  date: string;
-  votes: number;
-  comments: number;
-}
+import { IssueStatus, type Issue } from "../../data/issues";
 
 interface IssueCardProps {
   issue: Issue;
@@ -26,7 +17,8 @@ interface IssueCardProps {
 
 export default function IssueCard({ issue }: IssueCardProps) {
   const isClosedOrResolved =
-    issue.status === "Closed" || issue.status === "Resolved";
+    issue.status === IssueStatus.Closed ||
+    issue.status === IssueStatus.Resolved;
 
   const statusStyles: Record<
     string,

@@ -9,21 +9,10 @@ import {
   Pagination,
   InputLabel,
 } from "@mui/material";
-import issues from "../../data/issues";
 import IssueCard from "./IssueCard";
 import backgroundImage from "../../assets/background.png";
 import CursorRing from "../../components/CursorRing";
-
-interface Issue {
-  id: number;
-  title: string;
-  description: string;
-  status: string;
-  votes: number;
-  comments: number;
-  date: string;
-  reportedBy?: string;
-}
+import issues, { type Issue } from "../../data/issues";
 
 const tabLabels = [
   "All issues",

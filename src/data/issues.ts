@@ -7,7 +7,7 @@ export const IssueStatus = {
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
 
-interface Issue {
+export interface Issue {
   id: number;
   title: string;
   description: string;
