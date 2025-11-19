@@ -65,7 +65,7 @@ const Sidebar: React.FC = () => {
               sx={{
                 background:
                   active === item.id
-                    ? "linear-gradient(135deg, #3D54CE, #35CACF)"
+                    ? "linear-gradient(135deg, #318CE7, #BAF8F8)"
                     : "transparent",
 
                 borderRadius: "12px",
