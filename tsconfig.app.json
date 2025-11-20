@@ -33,7 +33,8 @@
       "@components/*": ["components/*"],
       "@layouts/*": ["layouts/*"],
       "@styles/*": ["styles/*"],
-      "@assets/*": ["assets/*"]
+      "@assets/*": ["assets/*"],
+      "@data/*": ["data/*"]
     }
   },
 

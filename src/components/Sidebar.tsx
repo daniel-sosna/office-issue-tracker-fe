@@ -28,6 +28,9 @@ const Sidebar: React.FC = () => {
         flexDirection: "column",
         alignItems: "center",
         py: 3,
+        position: "sticky",
+        top: 0,
+        height: "100vh",
       }}
     >
       <Avatar
