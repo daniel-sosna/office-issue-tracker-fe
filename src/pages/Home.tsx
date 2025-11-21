@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Navigate, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { csrfFetch } from "@utils/csrfFetch";
@@ -6,9 +7,12 @@ import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 
+import IssueModal from "./issues/IssueModal";
+
 export const Home = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -31,6 +35,15 @@ export const Home = () => {
     }
   };
 
+  const handleReportSubmit = (data: {
+    summary: string;
+    description: string;
+    office: string;
+  }) => {
+    console.log("Reported issue:", data);
+    setModalOpen(false);
+  };
+
   const picture = user?.picture ?? "/images/default.png";
 
   return (
@@ -49,7 +62,16 @@ export const Home = () => {
         >
           Logout
         </Button>
+
+        <Button variant="contained" onClick={() => setModalOpen(true)}>
+          Report Issue
+        </Button>
       </div>
+      <IssueModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={handleReportSubmit}
+      />
     </div>
   );
 };
