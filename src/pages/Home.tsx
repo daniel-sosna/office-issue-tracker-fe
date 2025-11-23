@@ -7,7 +7,7 @@ import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 
-import IssueModal from "./issues/IssueModal";
+import IssueModal from "@pages/issues/IssueModal";
 
 export const Home = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();

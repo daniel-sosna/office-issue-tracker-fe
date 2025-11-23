@@ -9,7 +9,7 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
-import EditorToolbar from "../../components/EditorToolbar";
+import EditorToolbar from "@components/EditorToolBar";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import { csrfFetch } from "@utils/csrfFetch";
