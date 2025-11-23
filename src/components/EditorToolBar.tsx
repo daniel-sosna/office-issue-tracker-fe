@@ -1,4 +1,4 @@
-import type { FC } from "react";
+import { useEffect, useState, type FC } from "react";
 import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import FormatBoldIcon from "@mui/icons-material/FormatBold";
@@ -13,7 +13,30 @@ interface EditorToolbarProps {
 }
 
 const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
+  const [, setVersion] = useState(0);
+
+  useEffect(() => {
+    if (!editor) return;
+
+    const updateToolbar = () => setVersion((v) => v + 1);
+
+    editor.on("selectionUpdate", updateToolbar);
+    editor.on("transaction", updateToolbar);
+
+    return () => {
+      editor.off("selectionUpdate", updateToolbar);
+      editor.off("transaction", updateToolbar);
+    };
+  }, [editor]);
+
   if (!editor) return null;
+
+  const btn = (active: boolean) => ({
+    minWidth: 0,
+    padding: "6px",
+    borderRadius: "6px",
+    backgroundColor: active ? "#e0e0e0" : "transparent",
+  });
 
   return (
     <Box
@@ -24,41 +47,33 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         borderBottom: "1px solid #ddd",
         padding: "4px 8px",
         backgroundColor: "#fafafa",
-        "& svg": { color: "black" },
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      {/* Bold */}
       <Button
         variant="text"
         onClick={() => editor.chain().focus().toggleBold().run()}
-        sx={{ minWidth: 0, padding: "6px" }}
-        aria-label="Bold"
+        sx={btn(editor.isActive("bold"))}
       >
-        <FormatBoldIcon fontSize="small" />
+        <FormatBoldIcon sx={{ color: "black" }} fontSize="small" />
       </Button>
 
-      {/* Italic */}
       <Button
         variant="text"
         onClick={() => editor.chain().focus().toggleItalic().run()}
-        sx={{ minWidth: 0, padding: "6px" }}
-        aria-label="Italic"
+        sx={btn(editor.isActive("italic"))}
       >
-        <FormatItalicIcon fontSize="small" />
+        <FormatItalicIcon sx={{ color: "black" }} fontSize="small" />
       </Button>
 
-      {/* Strike */}
       <Button
         variant="text"
         onClick={() => editor.chain().focus().toggleStrike().run()}
-        sx={{ minWidth: 0, padding: "6px" }}
-        aria-label="Strikethrough"
+        sx={btn(editor.isActive("strike"))}
       >
-        <StrikethroughSIcon fontSize="small" />
+        <StrikethroughSIcon sx={{ color: "black" }} fontSize="small" />
       </Button>
 
-      {/* Lists */}
       <Box
         sx={{
           display: "flex",
@@ -70,19 +85,17 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         <Button
           variant="text"
           onClick={() => editor.chain().focus().toggleBulletList().run()}
-          sx={{ minWidth: 0, padding: "6px" }}
-          aria-label="Bullet List"
+          sx={btn(editor.isActive("bulletList"))}
         >
-          <FormatListBulletedIcon fontSize="small" />
+          <FormatListBulletedIcon sx={{ color: "black" }} fontSize="small" />
         </Button>
 
         <Button
           variant="text"
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
-          sx={{ minWidth: 0, padding: "6px" }}
-          aria-label="Numbered List"
+          sx={btn(editor.isActive("orderedList"))}
         >
-          <FormatListNumberedIcon fontSize="small" />
+          <FormatListNumberedIcon sx={{ color: "black" }} fontSize="small" />
         </Button>
       </Box>
     </Box>
