@@ -143,15 +143,27 @@ export default function IssueModal({
       <DialogTitle
         sx={{
           display: "flex",
-          justifyContent: "space-between",
           alignItems: "center",
+          fontSize: "24px",
+          fontWeight: 400,
+          position: "relative",
+          marginTop: "16px",
         }}
       >
         Report Issue
-        <IconButton onClick={onClose} size="small">
-          <CloseIcon />
-        </IconButton>
       </DialogTitle>
+      <IconButton
+        onClick={onClose}
+        size="small"
+        sx={{
+          position: "absolute",
+          top: 4,
+          right: 4,
+          color: "#000048",
+        }}
+      >
+        <CloseIcon />
+      </IconButton>
       <DialogContent>
         <Box display="flex" flexDirection="column" gap={3} mt={1}>
           {errorMessage && (
@@ -161,7 +173,7 @@ export default function IssueModal({
           )}
 
           <Box>
-            <Box mb={0.5} fontWeight={500}>
+            <Box mb={0.5} sx={{ color: "#666666", fontSize: "14px" }}>
               Short summary <span style={{ color: "red" }}>*</span>
             </Box>
             <TextField
@@ -175,7 +187,7 @@ export default function IssueModal({
           </Box>
 
           <Box>
-            <Box mb={1} fontWeight={500}>
+            <Box mb={1} sx={{ color: "#666666", fontSize: "14px" }}>
               Description <span style={{ color: "red" }}>*</span>
             </Box>
             <Box
@@ -215,7 +227,7 @@ export default function IssueModal({
           </Box>
 
           <Box>
-            <Box mb={0.5} fontWeight={500}>
+            <Box mb={0.5} sx={{ color: "#666666", fontSize: "14px" }}>
               Office <span style={{ color: "red" }}>*</span>
             </Box>
             <TextField
@@ -250,7 +262,11 @@ export default function IssueModal({
         <Button
           variant="outlined"
           onClick={onClose}
-          sx={{ borderRadius: "999px", paddingX: 3 }}
+          sx={{
+            borderRadius: "999px",
+            paddingX: 3,
+            color: "#000048",
+          }}
         >
           Cancel
         </Button>
@@ -258,7 +274,11 @@ export default function IssueModal({
           variant="contained"
           onClick={() => void handleSubmit()}
           disabled={!isFormValid}
-          sx={{ borderRadius: "999px", paddingX: 3 }}
+          sx={{
+            borderRadius: "999px",
+            paddingX: 3,
+            backgroundColor: "#000048",
+          }}
         >
           Report Issue
         </Button>
