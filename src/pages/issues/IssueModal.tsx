@@ -247,13 +247,18 @@ export default function IssueModal({
           padding: "16px",
         }}
       >
-        <Button variant="outlined" onClick={onClose}>
+        <Button
+          variant="outlined"
+          onClick={onClose}
+          sx={{ borderRadius: "999px", paddingX: 3 }}
+        >
           Cancel
         </Button>
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
           disabled={!isFormValid}
+          sx={{ borderRadius: "999px", paddingX: 3 }}
         >
           Report Issue
         </Button>
