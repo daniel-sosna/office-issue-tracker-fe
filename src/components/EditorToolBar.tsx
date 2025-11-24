@@ -1,5 +1,4 @@
 import { useEffect, useState, type FC } from "react";
-import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import FormatBoldIcon from "@mui/icons-material/FormatBold";
 import FormatItalicIcon from "@mui/icons-material/FormatItalic";
@@ -7,6 +6,7 @@ import StrikethroughSIcon from "@mui/icons-material/StrikethroughS";
 import FormatListBulletedIcon from "@mui/icons-material/FormatListBulleted";
 import FormatListNumberedIcon from "@mui/icons-material/FormatListNumbered";
 import { Editor } from "@tiptap/react";
+import IconButton from "@mui/material/IconButton";
 
 interface EditorToolbarProps {
   editor: Editor | null;
@@ -51,29 +51,26 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
       }}
       onClick={(e) => e.stopPropagation()}
     >
-      <Button
-        variant="text"
+      <IconButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         sx={btn(editor.isActive("bold"))}
       >
         <FormatBoldIcon sx={{ color: "secondary.main" }} fontSize="small" />
-      </Button>
+      </IconButton>
 
-      <Button
-        variant="text"
+      <IconButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         sx={btn(editor.isActive("italic"))}
       >
         <FormatItalicIcon sx={{ color: "secondary.main" }} fontSize="small" />
-      </Button>
+      </IconButton>
 
-      <Button
-        variant="text"
+      <IconButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         sx={btn(editor.isActive("strike"))}
       >
         <StrikethroughSIcon sx={{ color: "secondary.main" }} fontSize="small" />
-      </Button>
+      </IconButton>
 
       <Box
         sx={{
@@ -84,8 +81,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
           gap: 0.2,
         }}
       >
-        <Button
-          variant="text"
+        <IconButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           sx={btn(editor.isActive("bulletList"))}
         >
@@ -93,10 +89,9 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
             sx={{ color: "secondary.main" }}
             fontSize="small"
           />
-        </Button>
+        </IconButton>
 
-        <Button
-          variant="text"
+        <IconButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           sx={btn(editor.isActive("orderedList"))}
         >
@@ -104,7 +99,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
             sx={{ color: "secondary.main" }}
             fontSize="small"
           />
-        </Button>
+        </IconButton>
       </Box>
     </Box>
   );
