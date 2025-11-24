@@ -9,11 +9,12 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 
-import EditorToolbar from "@components/EditorToolBar";
+import EditorToolbar from "@components/EditorToolbar";
 
 import { useEditor, EditorContent } from "@tiptap/react";
-import { csrfFetch } from "@utils/csrfFetch";
 import StarterKit from "@tiptap/starter-kit";
+import { fetchOffices } from "@api/offices";
+import { createIssue } from "@api/issues";
 
 interface IssueFormData {
   summary: string;
@@ -52,17 +53,16 @@ export default function IssueModal({
   useEffect(() => {
     if (!open) return;
 
-    const fetchOffices = async () => {
+    const loadOffices = async () => {
       try {
-        const res = await csrfFetch("http://localhost:8080/offices");
-        if (!res.ok) throw new Error(`HTTP ${res.status}`);
-        const data = (await res.json()) as Office[];
+        const data = await fetchOffices();
         setOffices(data);
       } catch (err) {
         setErrorMessage("Failed to fetch offices: " + String(err));
       }
     };
-    void fetchOffices();
+
+    void loadOffices();
   }, [open]);
 
   useEffect(() => {
@@ -105,27 +105,12 @@ export default function IssueModal({
       return;
     }
 
-    const issueData = {
-      summary,
-      description: editor?.getHTML() ?? "",
-      officeId: selectedOffice.id,
-    };
-
     try {
-      const res = await csrfFetch("http://localhost:8080/issues", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(issueData),
+      await createIssue({
+        summary,
+        description: editor?.getHTML() ?? "",
+        officeId: selectedOffice.id,
       });
-
-      if (!res.ok) {
-        setErrorMessage("Failed to submit the issue");
-        return;
-      }
-
-      await res.json();
 
       onSubmit({
         summary,
