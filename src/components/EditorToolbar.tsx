@@ -54,6 +54,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
       <IconButton
         onClick={() => editor.chain().focus().toggleBold().run()}
         sx={btn(editor.isActive("bold"))}
+        title="Bold"
       >
         <FormatBoldIcon sx={{ color: "secondary.main" }} fontSize="small" />
       </IconButton>
@@ -61,6 +62,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
       <IconButton
         onClick={() => editor.chain().focus().toggleItalic().run()}
         sx={btn(editor.isActive("italic"))}
+        title="Italic"
       >
         <FormatItalicIcon sx={{ color: "secondary.main" }} fontSize="small" />
       </IconButton>
@@ -68,6 +70,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
       <IconButton
         onClick={() => editor.chain().focus().toggleStrike().run()}
         sx={btn(editor.isActive("strike"))}
+        title="Strike"
       >
         <StrikethroughSIcon sx={{ color: "secondary.main" }} fontSize="small" />
       </IconButton>
@@ -84,6 +87,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         <IconButton
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           sx={btn(editor.isActive("bulletList"))}
+          title="Bullet list"
         >
           <FormatListBulletedIcon
             sx={{ color: "secondary.main" }}
@@ -94,6 +98,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         <IconButton
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           sx={btn(editor.isActive("orderedList"))}
+          title="Ordered list"
         >
           <FormatListNumberedIcon
             sx={{ color: "secondary.main" }}
