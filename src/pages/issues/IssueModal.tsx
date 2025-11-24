@@ -159,7 +159,7 @@ export default function IssueModal({
           position: "absolute",
           top: 4,
           right: 4,
-          color: "#000048",
+          color: "secondary.main",
         }}
       >
         <CloseIcon />
@@ -173,7 +173,7 @@ export default function IssueModal({
           )}
 
           <Box>
-            <Box mb={0.5} sx={{ color: "#666666", fontSize: "14px" }}>
+            <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Short summary <span style={{ color: "red" }}>*</span>
             </Box>
             <TextField
@@ -187,7 +187,7 @@ export default function IssueModal({
           </Box>
 
           <Box>
-            <Box mb={1} sx={{ color: "#666666", fontSize: "14px" }}>
+            <Box mb={1} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Description <span style={{ color: "red" }}>*</span>
             </Box>
             <Box
@@ -195,7 +195,8 @@ export default function IssueModal({
                 height: 250,
                 display: "flex",
                 flexDirection: "column",
-                border: "1px solid #ccc",
+                border: 1,
+                borderColor: "divider",
                 borderRadius: 1,
                 overflow: "hidden",
                 transition: "border 0.2s",
@@ -227,7 +228,7 @@ export default function IssueModal({
           </Box>
 
           <Box>
-            <Box mb={0.5} sx={{ color: "#666666", fontSize: "14px" }}>
+            <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Office <span style={{ color: "red" }}>*</span>
             </Box>
             <TextField
@@ -250,7 +251,7 @@ export default function IssueModal({
 
       <Box
         sx={{
-          borderTop: "1px solid #ddd",
+          borderTop: "1px solid divider",
           marginTop: "24px",
           paddingTop: "16px",
           display: "flex",
@@ -265,7 +266,7 @@ export default function IssueModal({
           sx={{
             borderRadius: "999px",
             paddingX: 3,
-            color: "#000048",
+            color: "secondary.main",
           }}
         >
           Cancel
@@ -277,7 +278,7 @@ export default function IssueModal({
           sx={{
             borderRadius: "999px",
             paddingX: 3,
-            backgroundColor: "#000048",
+            backgroundColor: "secondary.main",
           }}
         >
           Report Issue

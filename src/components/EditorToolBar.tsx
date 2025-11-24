@@ -44,9 +44,10 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         display: "flex",
         alignItems: "center",
         gap: 0.2,
-        borderBottom: "1px solid #ddd",
+        borderBottom: 1,
+        borderColor: "divider",
         padding: "4px 8px",
-        backgroundColor: "#fafafa",
+        backgroundColor: "background.default",
       }}
       onClick={(e) => e.stopPropagation()}
     >
@@ -55,7 +56,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         onClick={() => editor.chain().focus().toggleBold().run()}
         sx={btn(editor.isActive("bold"))}
       >
-        <FormatBoldIcon sx={{ color: "black" }} fontSize="small" />
+        <FormatBoldIcon sx={{ color: "secondary.main" }} fontSize="small" />
       </Button>
 
       <Button
@@ -63,7 +64,7 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         onClick={() => editor.chain().focus().toggleItalic().run()}
         sx={btn(editor.isActive("italic"))}
       >
-        <FormatItalicIcon sx={{ color: "black" }} fontSize="small" />
+        <FormatItalicIcon sx={{ color: "secondary.main" }} fontSize="small" />
       </Button>
 
       <Button
@@ -71,13 +72,14 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
         onClick={() => editor.chain().focus().toggleStrike().run()}
         sx={btn(editor.isActive("strike"))}
       >
-        <StrikethroughSIcon sx={{ color: "black" }} fontSize="small" />
+        <StrikethroughSIcon sx={{ color: "secondary.main" }} fontSize="small" />
       </Button>
 
       <Box
         sx={{
           display: "flex",
-          borderLeft: "1px solid #ccc",
+          borderLeft: 1,
+          borderColor: "divider",
           pl: 0.5,
           gap: 0.2,
         }}
@@ -87,7 +89,10 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
           onClick={() => editor.chain().focus().toggleBulletList().run()}
           sx={btn(editor.isActive("bulletList"))}
         >
-          <FormatListBulletedIcon sx={{ color: "black" }} fontSize="small" />
+          <FormatListBulletedIcon
+            sx={{ color: "secondary.main" }}
+            fontSize="small"
+          />
         </Button>
 
         <Button
@@ -95,7 +100,10 @@ const EditorToolbar: FC<EditorToolbarProps> = ({ editor }) => {
           onClick={() => editor.chain().focus().toggleOrderedList().run()}
           sx={btn(editor.isActive("orderedList"))}
         >
-          <FormatListNumberedIcon sx={{ color: "black" }} fontSize="small" />
+          <FormatListNumberedIcon
+            sx={{ color: "secondary.main" }}
+            fontSize="small"
+          />
         </Button>
       </Box>
     </Box>
