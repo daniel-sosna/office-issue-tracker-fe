@@ -9,8 +9,8 @@ import {
   Pagination,
   InputLabel,
 } from "@mui/material";
-import IssueCard from "@pages/issues/IssueCard";
-import IssueDrawer from "@pages/issues/IssueDrawer";
+import IssueCard from "@pages/issues/components/IssueCard";
+import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import issues, { type Issue } from "@data/issues";
 

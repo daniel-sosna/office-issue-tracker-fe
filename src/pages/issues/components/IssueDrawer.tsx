@@ -1,9 +1,9 @@
 import { useState } from "react";
 import { Box, Typography, Divider, Avatar, Tabs, Tab } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import { StatusChip } from "@components/IssueStatusChip";
+import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import type { Issue } from "@data/issues";
-import RightDrawer from "@pages/issues/RightDrawer";
+import RightDrawer from "@components/RightDrawer";
 
 interface Props {
   issue: Issue | null;
