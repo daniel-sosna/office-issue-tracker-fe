@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import { Drawer, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -6,7 +7,7 @@ import OpenInFullIcon from "@mui/icons-material/OpenInFull";
 interface Props {
   open: boolean;
   onClose: () => void;
-  children?: React.ReactNode;
+  children?: ReactNode;
 }
 
 export default function RightDrawer({ open, onClose, children }: Props) {

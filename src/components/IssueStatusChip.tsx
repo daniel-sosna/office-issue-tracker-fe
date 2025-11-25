@@ -9,8 +9,8 @@ const statusStyles: Record<
   IssueStatusType,
   { backgroundColor: string; color: string }
 > = {
-  [IssueStatus.Open]: { backgroundColor: "#C1E1C1", color: "#2E7D32" },
-  [IssueStatus.InProgress]: { backgroundColor: "#B3E5FC", color: "#0277BD" },
+  [IssueStatus.Open]: { backgroundColor: "#C1E1C1", color: "secondary" },
+  [IssueStatus.InProgress]: { backgroundColor: "#B3E5FC", color: "secondary" },
   [IssueStatus.Resolved]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
   [IssueStatus.Closed]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
 };
