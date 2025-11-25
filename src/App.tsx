@@ -3,7 +3,7 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
-import { Home } from "@pages/Home";
+import { Home as Profile } from "@pages/Home";
 import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
 import { ErrorPage } from "@components/ErrorPage";
@@ -46,7 +46,7 @@ const router = createBrowserRouter([
     path: "/profile",
     element: (
       <RequireAuth>
-        <Home />
+        <Profile />
       </RequireAuth>
     ),
   },
