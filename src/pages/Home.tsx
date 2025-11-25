@@ -35,15 +35,6 @@ export const Home = () => {
     }
   };
 
-  const handleReportSubmit = (data: {
-    summary: string;
-    description: string;
-    office: string;
-  }) => {
-    console.log("Reported issue:", data);
-    setModalOpen(false);
-  };
-
   const picture = user?.picture ?? "/images/default.png";
 
   return (
@@ -70,7 +61,7 @@ export const Home = () => {
       <IssueModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
-        onSubmit={handleReportSubmit}
+        onSubmit={() => setModalOpen(false)}
       />
     </div>
   );
