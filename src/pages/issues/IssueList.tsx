@@ -10,7 +10,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import IssueCard from "@pages/issues/IssueCard";
-import IssueDetailsSidebar from "@pages/issues/IssueDetailsSidebar";
+import IssueDrawer from "@pages/issues/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import issues, { type Issue } from "@data/issues";
 
@@ -141,9 +141,8 @@ const IssuesList: React.FC = () => {
       </Box>
 
       {/* Issue details sidebar */}
-      <IssueDetailsSidebar
+      <IssueDrawer
         issue={selectedIssue}
-        open={Boolean(selectedIssue)}
         onClose={() => setSelectedIssue(null)}
       />
 

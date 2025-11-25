@@ -1,39 +1,51 @@
-import { Drawer, Box, Typography, IconButton, Divider } from "@mui/material";
+import { Drawer, Box, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import OpenInFullIcon from "@mui/icons-material/OpenInFull";
-import type { Issue } from "@data/issues";
 
 interface Props {
   open: boolean;
-  issue: Issue | null;
   onClose: () => void;
+  children?: React.ReactNode;
 }
 
-export default function IssueDetailsSidebar({ open, issue, onClose }: Props) {
+export default function RightDrawer({ open, onClose, children }: Props) {
   return (
     <Drawer
       anchor="right"
       open={open}
       onClose={onClose}
-      PaperProps={{
-        sx: {
-          width: { xs: "100%", sm: 650 },
-          p: 1,
+      slotProps={{
+        paper: {
+          sx: {
+            width: { xs: "100%", sm: 650 },
+            p: 1,
+          },
         },
       }}
     >
       {/* Top buttons */}
       <Box display="flex" alignItems="center" justifyContent="end" gap={2}>
         <Box display="flex" gap={1} alignItems="center">
-          <IconButton size="small" aria-label="expand" title="Expand">
+          <IconButton
+            disabled={true}
+            size="small"
+            aria-label="expand"
+            title="Expand"
+          >
             <OpenInFullIcon fontSize="small" color="secondary" />
           </IconButton>
-          <IconButton size="small" aria-label="more" title="More options">
+          <IconButton
+            disabled={true}
+            size="small"
+            aria-label="more"
+            title="More options"
+          >
             <MoreVertIcon fontSize="small" color="secondary" />
           </IconButton>
           <IconButton
             onClick={onClose}
+            size="small"
             aria-label="close sidebar"
             title="Close"
           >
@@ -42,13 +54,7 @@ export default function IssueDetailsSidebar({ open, issue, onClose }: Props) {
         </Box>
       </Box>
 
-      <Box p={3}>
-        <Typography variant="h4" sx={{ fontWeight: 400 }}>
-          {issue ? issue.title : "Select an issue to see details."}
-        </Typography>
-
-        <Divider sx={{ my: 2 }} />
-      </Box>
+      <Box p={3}>{children}</Box>
     </Drawer>
   );
 }
