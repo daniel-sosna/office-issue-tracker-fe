@@ -5,7 +5,6 @@ import {
   Link as RouterLink,
 } from "react-router-dom";
 import { Box, Stack, Typography, Button } from "@mui/material";
-import MainLayout from "@layouts/MainLayout";
 
 export const ErrorPage: FC = () => {
   const error = useRouteError();
@@ -18,7 +17,7 @@ export const ErrorPage: FC = () => {
     : "Sorry, something went wrong. Try refreshing the page. If the problem persists, please notify the system administrator.";
 
   return (
-    <MainLayout>
+    <>
       <Box sx={{ maxWidth: 640, mt: 4 }}>
         <Stack spacing={2}>
           <Typography variant="h4" component="h1" fontWeight={600}>
@@ -47,6 +46,6 @@ export const ErrorPage: FC = () => {
           </Box>
         </Stack>
       </Box>
-    </MainLayout>
+    </>
   );
 };

@@ -1,14 +1,10 @@
 import { Box } from "@mui/material";
-import type { ReactNode } from "react";
 import PrimaryHeader from "@components/Header";
 import Sidebar from "@components/Sidebar";
 import Footer from "@components/Footer";
+import { Outlet } from "react-router-dom";
 
-interface Props {
-  children: ReactNode;
-}
-
-const MainLayout = ({ children }: Props) => {
+const MainLayout = () => {
   return (
     <Box
       sx={{
@@ -21,7 +17,9 @@ const MainLayout = ({ children }: Props) => {
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
         <PrimaryHeader />
-        <Box sx={{ flex: 1, p: 4 }}>{children}</Box>
+        <Box sx={{ flex: 1, p: 4 }}>
+          <Outlet />
+        </Box>
         <Footer />
       </Box>
     </Box>

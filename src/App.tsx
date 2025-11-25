@@ -8,52 +8,58 @@ import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
 import { ErrorPage } from "@components/ErrorPage";
 import { RequireAuth } from "@components/RequireAuth";
-import { useAuth } from "@context/use-auth";
+import { useAuth } from "@context/Use-auth";
+import { Box, LinearProgress } from "@mui/material";
+import MainLayout from "@layouts/MainLayout";
 
 const NotFoundRoute = () => {
   const { isAuthenticated, loading } = useAuth();
 
   if (loading) {
-    return <div>Loading ... </div>;
+    return (
+      <Box sx={{ width: "100%" }}>
+        <LinearProgress />
+      </Box>
+    );
   }
 
   if (!isAuthenticated) {
     return <Navigate to="/login" replace />;
   }
-
-  throw new Error("Not Found");
+  return <ErrorPage />;
 };
 
 const router = createBrowserRouter([
-  {
-    path: "/",
-    element: <Navigate to="/issues" replace />,
-    errorElement: <ErrorPage />,
-  },
   {
     path: "/login",
     element: <Login />,
   },
   {
-    path: "/issues",
+    path: "/",
     element: (
       <RequireAuth>
-        <IssueHome />
+        <MainLayout />
       </RequireAuth>
     ),
-  },
-  {
-    path: "/profile",
-    element: (
-      <RequireAuth>
-        <Profile />
-      </RequireAuth>
-    ),
-  },
-  {
-    path: "*",
-    element: <NotFoundRoute />,
     errorElement: <ErrorPage />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to="/issues" replace />,
+      },
+      {
+        path: "issues",
+        element: <IssueHome />,
+      },
+      {
+        path: "profile",
+        element: <Profile />,
+      },
+      {
+        path: "*",
+        element: <NotFoundRoute />,
+      },
+    ],
   },
 ]);
 
