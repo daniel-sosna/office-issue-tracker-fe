@@ -10,6 +10,7 @@ import {
   InputLabel,
 } from "@mui/material";
 import IssueCard from "@pages/issues/IssueCard";
+import IssueDetailsSidebar from "@pages/issues/IssueDetailsSidebar";
 import backgroundImage from "@assets/background.png";
 import issues, { type Issue } from "@data/issues";
 
@@ -25,6 +26,7 @@ const tabLabels = [
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
   const issuesPerPage = 10;
   const totalPages = Math.ceil(issues.length / issuesPerPage);
 
@@ -130,9 +132,20 @@ const IssuesList: React.FC = () => {
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
         {paginatedIssues.map((issue) => (
-          <IssueCard key={issue.id} issue={issue} />
+          <IssueCard
+            key={issue.id}
+            issue={issue}
+            onClickCard={() => setSelectedIssue(issue)}
+          />
         ))}
       </Box>
+
+      {/* Issue details sidebar */}
+      <IssueDetailsSidebar
+        issue={selectedIssue}
+        open={Boolean(selectedIssue)}
+        onClose={() => setSelectedIssue(null)}
+      />
 
       {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
