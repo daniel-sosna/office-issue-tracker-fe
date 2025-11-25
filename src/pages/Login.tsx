@@ -1,10 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "@context/Use-auth";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
+import { Box, Button, Stack, Typography } from "@mui/material";
 
 export const Login = () => {
   const { isAuthenticated } = useAuth();

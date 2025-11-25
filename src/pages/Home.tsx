@@ -1,10 +1,10 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { csrfFetch } from "@utils/csrfFetch";
-import { useAuth } from "@context/Use-auth";
 import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
+import { useAuth } from "@context/Use-auth";
 
 export const Home = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();
