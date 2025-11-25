@@ -1,12 +1,34 @@
-import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import {
+  createBrowserRouter,
+  RouterProvider,
+  Navigate,
+} from "react-router-dom";
 import { Home } from "@pages/Home";
 import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
+import { ErrorPage } from "@components/ErrorPage";
+import { RequireAuth } from "@components/RequireAuth";
+import { useAuth } from "@context/use-auth";
+
+const NotFoundRoute = () => {
+  const { isAuthenticated, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading ... </div>;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  throw new Error("Not Found");
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: <Navigate to="/issues" replace />,
+    errorElement: <ErrorPage />,
   },
   {
     path: "/login",
@@ -14,7 +36,24 @@ const router = createBrowserRouter([
   },
   {
     path: "/issues",
-    element: <IssueHome />,
+    element: (
+      <RequireAuth>
+        <IssueHome />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "/profile",
+    element: (
+      <RequireAuth>
+        <Home />
+      </RequireAuth>
+    ),
+  },
+  {
+    path: "*",
+    element: <NotFoundRoute />,
+    errorElement: <ErrorPage />,
   },
 ]);
 
