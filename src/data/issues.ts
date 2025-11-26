@@ -15,7 +15,12 @@ export interface Issue {
   votes: number;
   comments: number;
   date: string;
+}
+
+export interface IssueDetails extends Issue {
+  office: string;
   reportedBy: string;
+  reportedByAvatar: string;
 }
 
 const baseIssues: Issue[] = [
@@ -28,7 +33,6 @@ const baseIssues: Issue[] = [
     votes: 48,
     comments: 12,
     date: "23 Oct 2025, 11:34",
-    reportedBy: "John Doe",
   },
   {
     id: 2,
@@ -38,7 +42,6 @@ const baseIssues: Issue[] = [
     votes: 4,
     comments: 2,
     date: "24 Oct 2025, 09:12",
-    reportedBy: "Jane Smith",
   },
   {
     id: 3,
@@ -49,7 +52,6 @@ const baseIssues: Issue[] = [
     votes: 137,
     comments: 1,
     date: "22 Nov 2025, 15:45",
-    reportedBy: "Michael Brown",
   },
   {
     id: 4,
@@ -60,7 +62,6 @@ const baseIssues: Issue[] = [
     votes: 32,
     comments: 3,
     date: "21 Nov 2025, 14:20",
-    reportedBy: "Sarah Johnson",
   },
   {
     id: 5,
@@ -71,14 +72,12 @@ const baseIssues: Issue[] = [
     votes: 19,
     comments: 0,
     date: "25 Oct 2025, 08:50",
-    reportedBy: "Chris Lee",
   },
 ];
 
 const issues: Issue[] = Array.from({ length: 190 }, (_, i) => ({
   ...baseIssues[i % baseIssues.length],
   id: i + 1,
-  reportedBy: baseIssues[i % baseIssues.length].reportedBy,
 }));
 
 export default issues;

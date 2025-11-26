@@ -2,11 +2,11 @@ import { useState } from "react";
 import { Box, Typography, Divider, Avatar, Tabs, Tab } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { Issue } from "@data/issues";
+import type { IssueDetails } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 
 interface Props {
-  issue: Issue | null;
+  issue: IssueDetails | null;
   onClose: () => void;
 }
 
@@ -52,7 +52,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
             >
               <Avatar
                 alt={issue.reportedBy}
-                src="/src/assets/profile_placeholder.jpeg"
+                src={issue.reportedByAvatar}
                 sx={{ width: 20, height: 20, mr: 1 }}
               />
               <Typography variant="body1" color="text.primary">
@@ -103,7 +103,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           </Box>
           <Box>
             <Typography variant="body2" color="text.primary">
-              "N/A"
+              {issue.office}
             </Typography>
           </Box>
         </Box>

@@ -12,7 +12,7 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import issues, { type Issue } from "@data/issues";
+import issues, { type Issue, type IssueDetails } from "@data/issues";
 
 const tabLabels = [
   "All issues",
@@ -26,9 +26,18 @@ const tabLabels = [
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [selectedIssue, setSelectedIssue] = useState<Issue | null>(null);
+  const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
   const issuesPerPage = 10;
   const totalPages = Math.ceil(issues.length / issuesPerPage);
+
+  const handleCardClick = (issue: Issue) => {
+    setSelectedIssue({
+      ...issue,
+      office: "Vilnius, Lithuania",
+      reportedBy: "John Doe",
+      reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
+    });
+  };
 
   const paginatedIssues: Issue[] = issues.slice(
     (page - 1) * issuesPerPage,
@@ -135,7 +144,7 @@ const IssuesList: React.FC = () => {
           <IssueCard
             key={issue.id}
             issue={issue}
-            onClickCard={() => setSelectedIssue(issue)}
+            onClickCard={() => handleCardClick(issue)}
           />
         ))}
       </Box>
