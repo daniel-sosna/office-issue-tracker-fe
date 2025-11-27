@@ -9,6 +9,12 @@ interface IssueCardProps {
   onClickVote?: () => void;
 }
 
+function stripHtml(html: string) {
+  const div = document.createElement("div");
+  div.innerHTML = html;
+  return div.textContent || div.innerText || "";
+}
+
 export default function IssueCard({
   issue,
   onClickCard,
@@ -57,7 +63,7 @@ export default function IssueCard({
                 overflow: "hidden",
               }}
             >
-              {issue.description}
+              {stripHtml(issue.description)}
             </Typography>
             <Typography
               variant="caption"
