@@ -31,42 +31,34 @@ export const Login = () => {
   };
 
   return (
-    <Box
-      minHeight="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      px={2}
-    >
-      <Stack spacing={4} alignItems="center">
-        <Typography variant="h5">
-          Welcome to Defect Registration System
-        </Typography>
+    <Stack spacing={4} alignItems="center">
+      <Typography variant="h5">
+        Welcome to Defect Registration System
+      </Typography>
 
-        <Button
-          variant="outlined"
-          color="inherit"
-          onClick={() => handleLogin("google")}
-          startIcon={
-            <Box
-              component="img"
-              src="https://developers.google.com/identity/images/g-logo.png"
-              alt="Google"
-              sx={{ width: 20, height: 20 }}
-            />
-          }
-          sx={{
-            bgcolor: "background.paper",
-            borderColor: "divider",
-            textTransform: "none",
-            px: 3,
-            py: 1.25,
-            borderRadius: 2,
-          }}
-        >
-          Sign in with Google
-        </Button>
-      </Stack>
-    </Box>
+      <Button
+        variant="outlined"
+        color="inherit"
+        onClick={() => handleLogin("google")}
+        startIcon={
+          <Box
+            component="img"
+            src="https://developers.google.com/identity/images/g-logo.png"
+            alt="Google"
+            sx={{ width: 20, height: 20 }}
+          />
+        }
+        sx={{
+          bgcolor: "background.paper",
+          borderColor: "divider",
+          textTransform: "none",
+          px: 3,
+          py: 1.25,
+          borderRadius: 2,
+        }}
+      >
+        Sign in with Google
+      </Button>
+    </Stack>
   );
 };
