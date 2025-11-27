@@ -8,8 +8,8 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "lint": "eslint ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
-    "lint:fix": "eslint --fix ./src --ext ts,tsx --cache --cache-location node_modules/.cache/eslint/",
+    "lint": "eslint ./src --ext ts,tsx",
+    "lint:fix": "eslint --fix ./src --ext ts,tsx",
     "lint-styles": "npx stylelint ./src/**/*.{css,scss} --cache --cache-location node_modules/.cache/stylelint/",
     "lint-styles:fix": "npx stylelint ./src/**/*.{css,scss} --fix --cache --cache-location node_modules/.cache/stylelint/",
     "format": "prettier --check ./src --cache --cache-location node_modules/.cache/prettier/.prettier-cache",
@@ -20,7 +20,7 @@
       "prettier --write --cache --cache-location node_modules/.cache/prettier/.prettier-cache"
     ],
     "src/**/*.{ts,tsx}": [
-      "eslint --cache --cache-location node_modules/.cache/eslint/"
+      "eslint"
     ],
     "src/**/*.{css,scss}": [
       "stylelint --fix --cache --cache-location node_modules/.cache/stylelint/"
