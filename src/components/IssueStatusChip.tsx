@@ -1,26 +1,27 @@
 import { Chip } from "@mui/material";
-import { IssueStatus, type IssueStatusType } from "@data/issues";
+import { backendToFrontendStatus } from "@utils/issueStatusMapping";
 
 interface StatusChipProps {
-  status: IssueStatusType;
+  status: string;
 }
 
-const statusStyles: Record<
-  IssueStatusType,
-  { backgroundColor: string; color: string }
-> = {
-  [IssueStatus.Open]: { backgroundColor: "#C1E1C1", color: "#2E7D32" },
-  [IssueStatus.InProgress]: { backgroundColor: "#B3E5FC", color: "#0277BD" },
-  [IssueStatus.Resolved]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
-  [IssueStatus.Closed]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
-};
+const statusStyles: Record<string, { backgroundColor: string; color: string }> =
+  {
+    Open: { backgroundColor: "#CFE7D7", color: "secondary.main" },
+    "In progress": { backgroundColor: "#DAE9FF", color: "secondary.main" },
+    Resolved: { backgroundColor: "#EDEFF1", color: "#999999" },
+    Closed: { backgroundColor: "#EDEFF1", color: "#999999" },
+    Pending: { backgroundColor: "#FFF7DA", color: "secondary.main" },
+    Blocked: { backgroundColor: "#FFDAE3", color: "secondary.main" },
+  };
 
 export function StatusChip({ status }: StatusChipProps) {
-  const { backgroundColor, color } = statusStyles[status];
+  const displayStatus = backendToFrontendStatus[status.toUpperCase()] ?? "Open";
+  const { backgroundColor, color } = statusStyles[displayStatus];
 
   return (
     <Chip
-      label={status}
+      label={displayStatus}
       size="small"
       sx={{
         minWidth: 90,
