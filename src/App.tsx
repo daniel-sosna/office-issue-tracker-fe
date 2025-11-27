@@ -11,6 +11,7 @@ import { RequireAuth } from "@components/RequireAuth";
 import { useAuth } from "@context/Use-auth";
 import { Box, LinearProgress } from "@mui/material";
 import MainLayout from "@layouts/MainLayout";
+import AuthLayout from "@layouts/AuthLayout";
 
 const NotFoundRoute = () => {
   const { isAuthenticated, loading } = useAuth();
@@ -32,7 +33,11 @@ const NotFoundRoute = () => {
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <Login />,
+    element: (
+      <AuthLayout>
+        <Login />
+      </AuthLayout>
+    ),
   },
   {
     path: "/",
