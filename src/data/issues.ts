@@ -3,12 +3,14 @@ export const IssueStatus = {
   InProgress: "In progress",
   Resolved: "Resolved",
   Closed: "Closed",
+  Pending: "Pending",
+  Blocked: "Blocked",
 } as const;
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
 
 export interface Issue {
-  id: number;
+  id: string;
   title: string;
   description: string;
   status: IssueStatusType;
@@ -20,7 +22,7 @@ export interface Issue {
 
 const baseIssues: Issue[] = [
   {
-    id: 1,
+    id: "1",
     title: "Meeting rooms often fully booked",
     description:
       "Sometimes it's hard to find a free meeting room for discussions or client calls.",
@@ -31,7 +33,7 @@ const baseIssues: Issue[] = [
     reportedBy: "John Doe",
   },
   {
-    id: 2,
+    id: "2",
     title: "Slow Wi-Fi on the 2nd floor",
     description: "Internet connection drops occasionally, slowing work.",
     status: IssueStatus.InProgress,
@@ -41,7 +43,7 @@ const baseIssues: Issue[] = [
     reportedBy: "Jane Smith",
   },
   {
-    id: 3,
+    id: "3",
     title: "3rd floor printer not discoverable",
     description:
       "Printer in the third-floor hallway doesn't appear on Wi-Fi or Bluetooth sometimes.",
@@ -52,7 +54,7 @@ const baseIssues: Issue[] = [
     reportedBy: "Michael Brown",
   },
   {
-    id: 4,
+    id: "4",
     title: "Projector and AV setup unreliable",
     description:
       "Occasional failures during presentations; setup can be tricky at times.",
@@ -63,7 +65,7 @@ const baseIssues: Issue[] = [
     reportedBy: "Sarah Johnson",
   },
   {
-    id: 5,
+    id: "5",
     title: "Parking spots limited",
     description:
       "Employees sometimes struggle to find parking near the Gdansk office.",
@@ -77,7 +79,7 @@ const baseIssues: Issue[] = [
 
 const issues: Issue[] = Array.from({ length: 190 }, (_, i) => ({
   ...baseIssues[i % baseIssues.length],
-  id: i + 1,
+  id: (i + 1).toString(),
   reportedBy: baseIssues[i % baseIssues.length].reportedBy,
 }));
 
