@@ -11,7 +11,15 @@ interface Props {
 }
 
 export default function IssueDetailsSidebar({ issue, onClose }: Props) {
-  const [selectedTab, setSelectedTab] = useState(0);
+  const TabIndex = {
+    Details: 0,
+    Comments: 1,
+    Activity: 2,
+  } as const;
+
+  type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
+
+  const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
 
   if (!issue) {
     return (
@@ -111,7 +119,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
 
       <Tabs
         value={selectedTab}
-        onChange={(_, value: number) => setSelectedTab(value)}
+        onChange={(_, value: TabIndex) => setSelectedTab(value)}
         sx={{
           borderBottom: 1,
           borderColor: "divider",
@@ -136,7 +144,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
         />
       </Tabs>
 
-      {selectedTab === 0 && (
+      {selectedTab === TabIndex.Details && (
         <Box>
           <Typography variant="body2" color="text.secondary" mb={1}>
             Description
@@ -147,13 +155,13 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
         </Box>
       )}
 
-      {selectedTab === 1 && (
+      {selectedTab === TabIndex.Comments && (
         <Typography variant="body1" color="text.primary">
           Comments section is under construction.
         </Typography>
       )}
 
-      {selectedTab === 2 && (
+      {selectedTab === TabIndex.Activity && (
         <Typography variant="body1" color="text.primary">
           Activity log is under construction.
         </Typography>

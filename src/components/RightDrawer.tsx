@@ -25,7 +25,6 @@ export default function RightDrawer({ open, onClose, children }: Props) {
         },
       }}
     >
-      {/* Top buttons */}
       <Box display="flex" alignItems="center" justifyContent="end" gap={2}>
         <Box display="flex" gap={1} alignItems="center">
           <IconButton
