@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { AuthContext, type User } from "@context/Auth-context";
+import { AuthContext, type User } from "@context/AuthContext";
 
 interface Props {
   children: ReactNode;

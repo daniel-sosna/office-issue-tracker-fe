@@ -8,7 +8,7 @@ import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
 import { ErrorPage } from "@components/ErrorPage";
 import { RequireAuth } from "@components/RequireAuth";
-import { useAuth } from "@context/Use-auth";
+import { useAuth } from "@context/UseAuth";
 import { Box, LinearProgress } from "@mui/material";
 import MainLayout from "@layouts/MainLayout";
 import AuthLayout from "@layouts/AuthLayout";

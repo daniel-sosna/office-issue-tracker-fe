@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { useAuth } from "@context/Use-auth";
+import { useAuth } from "@context/UseAuth";
 import { Box, Button, Stack, Typography } from "@mui/material";
 
 export const Login = () => {

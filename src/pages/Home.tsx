@@ -4,7 +4,7 @@ import { csrfFetch } from "@utils/csrfFetch";
 import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
-import { useAuth } from "@context/Use-auth";
+import { useAuth } from "@context/UseAuth";
 
 export const Home = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();
