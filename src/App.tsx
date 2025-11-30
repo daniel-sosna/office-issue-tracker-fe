@@ -10,8 +10,7 @@ import { ErrorPage } from "@components/ErrorPage";
 import { RequireAuth } from "@components/RequireAuth";
 import { useAuth } from "@context/UseAuth";
 import { Box, LinearProgress } from "@mui/material";
-import MainLayout from "@layouts/MainLayout";
-import AuthLayout from "@layouts/AuthLayout";
+import { AuthLayout, MainLayout } from "@layouts/MainLayout";
 
 const NotFoundRoute = () => {
   const { isAuthenticated, loading } = useAuth();
