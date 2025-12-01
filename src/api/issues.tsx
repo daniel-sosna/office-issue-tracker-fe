@@ -16,7 +16,6 @@ export interface IssueDTO {
   id: string;
   summary: string;
   description: string;
-  officeId: string;
   status: IssueStatusType;
   date: string;
 }
