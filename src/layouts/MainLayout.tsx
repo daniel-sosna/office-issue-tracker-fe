@@ -9,17 +9,17 @@ type Variant = "authenticated" | "unauthenticated";
 
 interface BaseLayoutProps {
   variant: Variant;
-  header?: React.ReactNode;
   children: React.ReactNode;
   centerContent?: boolean;
 }
 
 const BaseLayout: React.FC<BaseLayoutProps> = ({
   variant,
-  header,
   children,
   centerContent,
 }) => {
+  const showHeader = variant === "authenticated";
+
   return (
     <Box
       sx={{
@@ -31,7 +31,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
       <Sidebar variant={variant} />
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        {header}
+        {showHeader && <PrimaryHeader />}
         <Box
           sx={{
             flex: 1,
@@ -56,7 +56,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
 
 export const MainLayout: React.FC = () => {
   return (
-    <BaseLayout variant="authenticated" header={<PrimaryHeader />}>
+    <BaseLayout variant="authenticated">
       <Outlet />
     </BaseLayout>
   );
