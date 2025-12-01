@@ -5,4 +5,4 @@ export const backendToFrontendStatus: Record<string, string> = {
   CLOSED: "Closed",
   PENDING: "Pending",
   BLOCKED: "Blocked",
-};
+} as const;
