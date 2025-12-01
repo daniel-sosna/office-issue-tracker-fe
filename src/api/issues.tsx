@@ -39,7 +39,7 @@ export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
   const res = await csrfFetch(
-    `http://localhost:8080/issues/${issueId}/details`
+    `${BASE_URL}${ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)}`
   );
 
   if (!res.ok) {
