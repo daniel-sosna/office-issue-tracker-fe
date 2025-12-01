@@ -15,6 +15,18 @@ function stripHtml(html: string) {
   return div.textContent || div.innerText || "";
 }
 
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+
+  const day = date.getDate().toString().padStart(2, "0");
+  const month = date.toLocaleString("en-GB", { month: "long" });
+  const year = date.getFullYear();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${day} ${month} ${year}, ${hours}:${minutes}`;
+}
+
 export default function IssueCard({
   issue,
   onClickCard,
@@ -71,7 +83,7 @@ export default function IssueCard({
               mt={0.5}
               display="block"
             >
-              {issue.date}
+              {formatDate(issue.date)}
             </Typography>
           </Box>
 

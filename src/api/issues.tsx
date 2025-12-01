@@ -18,6 +18,7 @@ export interface IssueDTO {
   description: string;
   officeId: string;
   status: IssueStatusType;
+  date: string;
 }
 
 export interface PaginatedIssuesResponse {

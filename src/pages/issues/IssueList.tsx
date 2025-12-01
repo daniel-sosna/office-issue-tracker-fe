@@ -46,7 +46,7 @@ const IssuesList: React.FC = () => {
           status: issue.status,
           votes: 0,
           comments: 0,
-          date: "",
+          date: issue.date,
           reportedBy: "",
         }));
 
