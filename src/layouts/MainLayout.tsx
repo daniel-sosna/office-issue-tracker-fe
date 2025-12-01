@@ -10,15 +10,11 @@ type Variant = "authenticated" | "unauthenticated";
 interface BaseLayoutProps {
   variant: Variant;
   children: React.ReactNode;
-  centerContent?: boolean;
 }
 
-const BaseLayout: React.FC<BaseLayoutProps> = ({
-  variant,
-  children,
-  centerContent,
-}) => {
+const BaseLayout: React.FC<BaseLayoutProps> = ({ variant, children }) => {
   const showHeader = variant === "authenticated";
+  const isCentered = variant === "unauthenticated";
 
   return (
     <Box
@@ -36,7 +32,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({
           sx={{
             flex: 1,
             p: 4,
-            ...(centerContent
+            ...(isCentered
               ? {
                   display: "flex",
                   flexDirection: "column",
@@ -67,18 +63,5 @@ interface AuthLayoutProps {
 }
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
-  return (
-    <BaseLayout variant="unauthenticated" centerContent>
-      <Box
-        sx={{
-          flex: 1,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-        }}
-      >
-        {children}
-      </Box>
-    </BaseLayout>
-  );
+  return <BaseLayout variant="unauthenticated">{children}</BaseLayout>;
 };
