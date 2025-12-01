@@ -1,18 +1,24 @@
 import { Chip } from "@mui/material";
+import theme from "@styles/theme";
 import { backendToFrontendStatus } from "@utils/issueStatusMapping";
 
 interface StatusChipProps {
   status: string;
 }
 
+const palette = theme.palette.status;
+
 const statusStyles: Record<string, { backgroundColor: string; color: string }> =
   {
-    Open: { backgroundColor: "#CFE7D7", color: "secondary.main" },
-    "In progress": { backgroundColor: "#DAE9FF", color: "secondary.main" },
-    Resolved: { backgroundColor: "#EDEFF1", color: "#999999" },
-    Closed: { backgroundColor: "#EDEFF1", color: "#999999" },
-    Pending: { backgroundColor: "#FFF7DA", color: "secondary.main" },
-    Blocked: { backgroundColor: "#FFDAE3", color: "secondary.main" },
+    Open: { backgroundColor: palette.openBg, color: palette.mainText },
+    "In progress": {
+      backgroundColor: palette.inProgressBg,
+      color: palette.mainText,
+    },
+    Resolved: { backgroundColor: palette.resolvedBg, color: palette.mutedText },
+    Closed: { backgroundColor: palette.closedBg, color: palette.mutedText },
+    Pending: { backgroundColor: palette.pendingBg, color: palette.mainText },
+    Blocked: { backgroundColor: palette.blockedBg, color: palette.mainText },
   };
 
 export function StatusChip({ status }: StatusChipProps) {

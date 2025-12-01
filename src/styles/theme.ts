@@ -9,6 +9,17 @@ const theme = createTheme({
     primary: { main: "#0a0a23" },
     secondary: { main: "#000048" },
     text: { primary: "#000048", secondary: "#5f6368" },
+    status: {
+      openBg: "#CFE7D7",
+      inProgressBg: "#DAE9FF",
+      resolvedBg: "#EDEFF1",
+      closedBg: "#EDEFF1",
+      pendingBg: "#FFF7DA",
+      blockedBg: "#FFDAE3",
+
+      mainText: "secondary.main",
+      mutedText: "#999999",
+    },
   },
   shape: { borderRadius: 12 },
   typography: {
