@@ -31,7 +31,7 @@ const theme = createTheme({
     h5: headerStyle,
     h6: headerStyle,
     subtitle1: headerStyle,
-    body1: { color: "#5f6368", fontWeight: 400 },
+    body1: { color: "#000048", fontWeight: 400 },
     body2: { color: "#5f6368", fontWeight: 400 },
     button: { textTransform: "none" },
   },

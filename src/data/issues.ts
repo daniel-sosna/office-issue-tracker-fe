@@ -20,6 +20,12 @@ export interface Issue {
   reportedBy: string;
 }
 
+export interface IssueDetails extends Issue {
+  office: string;
+  reportedBy: string;
+  reportedByAvatar: string;
+}
+
 const baseIssues: Issue[] = [
   {
     id: "1",

@@ -1,7 +1,7 @@
 import { Card, CardContent, Box, Typography } from "@mui/material";
 import type { Issue } from "@data/issues";
-import { StatusChip } from "@components/IssueStatusChip";
-import { VoteSection } from "@pages/issues/VoteSection";
+import { StatusChip } from "@pages/issues/components/IssueStatusChip";
+import { VoteSection } from "@pages/issues/components/VoteSection";
 
 interface IssueCardProps {
   issue: Issue;

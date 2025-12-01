@@ -9,9 +9,10 @@ import {
   Pagination,
   InputLabel,
 } from "@mui/material";
-import IssueCard from "@pages/issues/IssueCard";
+import IssueCard from "@pages/issues/components/IssueCard";
+import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueStatusType } from "@data/issues";
+import type { Issue, IssueDetails } from "@data/issues";
 import { fetchIssues } from "@api/issues";
 
 const tabLabels = [
@@ -26,9 +27,10 @@ const tabLabels = [
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [issues, setIssues] = useState<Issue[]>([]);
+  const [paginatedIssues, setIssues] = useState<Issue[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
+  const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
   const size = 10;
 
   useEffect(() => {
@@ -41,7 +43,7 @@ const IssuesList: React.FC = () => {
           id: issue.id,
           title: issue.summary,
           description: issue.description,
-          status: issue.status as IssueStatusType,
+          status: issue.status,
           votes: 0,
           comments: 0,
           date: "",
@@ -59,6 +61,15 @@ const IssuesList: React.FC = () => {
 
     void getIssues();
   }, [page]);
+
+  const handleCardClick = (issue: Issue) => {
+    setSelectedIssue({
+      ...issue,
+      office: "Vilnius, Lithuania",
+      reportedBy: "John Doe",
+      reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
+    });
+  };
 
   const relativeZBox = { position: "relative", zIndex: 1 };
   const pillSelectStyle = {
@@ -158,10 +169,20 @@ const IssuesList: React.FC = () => {
 
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
-        {issues.map((issue) => (
-          <IssueCard key={issue.id} issue={issue} />
+        {paginatedIssues.map((issue) => (
+          <IssueCard
+            key={issue.id}
+            issue={issue}
+            onClickCard={() => handleCardClick(issue)}
+          />
         ))}
       </Box>
+
+      {/* Issue details sidebar */}
+      <IssueDrawer
+        issue={selectedIssue}
+        onClose={() => setSelectedIssue(null)}
+      />
 
       {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
