@@ -1,4 +1,6 @@
+import type { IssueStatusType } from "@data/issues";
 import { csrfFetch } from "@utils/csrfFetch";
+import { BASE_URL, ENDPOINTS } from "./urls";
 
 export interface IssueData {
   summary: string;
@@ -11,7 +13,7 @@ export interface IssueDTO {
   summary: string;
   description: string;
   officeId: string;
-  status: string;
+  status: IssueStatusType;
 }
 
 export interface PaginatedIssuesResponse {
@@ -23,7 +25,7 @@ export interface PaginatedIssuesResponse {
 }
 
 export const createIssue = async (issue: IssueData): Promise<void> => {
-  const res = await csrfFetch("http://localhost:8080/issues", {
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -43,7 +45,7 @@ export const fetchIssues = async (
   size = 10
 ): Promise<PaginatedIssuesResponse> => {
   const res = await csrfFetch(
-    `http://localhost:8080/issues?page=${page}&size=${size}`
+    `${BASE_URL}${ENDPOINTS.ISSUES}?page=${page}&size=${size}`
   );
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
