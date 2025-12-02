@@ -9,10 +9,9 @@ type Variant = "authenticated" | "unauthenticated";
 
 interface BaseLayoutProps {
   variant: Variant;
-  children: React.ReactNode;
 }
 
-const BaseLayout: React.FC<BaseLayoutProps> = ({ variant, children }) => {
+const BaseLayout: React.FC<BaseLayoutProps> = ({ variant }) => {
   const showHeader = variant === "authenticated";
 
   return (
@@ -33,7 +32,7 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({ variant, children }) => {
             p: 4,
           }}
         >
-          {children}
+          <Outlet />
         </Box>
         <Footer variant={variant} />
       </Box>
@@ -42,17 +41,9 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({ variant, children }) => {
 };
 
 export const MainLayout: React.FC = () => {
-  return (
-    <BaseLayout variant="authenticated">
-      <Outlet />
-    </BaseLayout>
-  );
+  return <BaseLayout variant="authenticated" />;
 };
 
-interface AuthLayoutProps {
-  children: React.ReactNode;
-}
-
-export const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
-  return <BaseLayout variant="unauthenticated">{children}</BaseLayout>;
+export const AuthLayout: React.FC = () => {
+  return <BaseLayout variant="unauthenticated" />;
 };
