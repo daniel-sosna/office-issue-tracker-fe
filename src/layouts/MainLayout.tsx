@@ -40,10 +40,4 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({ variant }) => {
   );
 };
 
-export const MainLayout: React.FC = () => {
-  return <BaseLayout variant="authenticated" />;
-};
-
-export const AuthLayout: React.FC = () => {
-  return <BaseLayout variant="unauthenticated" />;
-};
+export default BaseLayout;
