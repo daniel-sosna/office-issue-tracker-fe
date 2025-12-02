@@ -7,14 +7,14 @@ import { Profile } from "@pages/Profile";
 import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
 import { ErrorPage } from "@pages/error/ErrorPage";
-import { AuthLayout, MainLayout } from "@layouts/MainLayout";
 import { NotFoundPage } from "@pages/error/NotFoundPage";
 import { RequireAuth } from "@components/RequireAuth";
+import BaseLayout from "@layouts/MainLayout";
 
 const router = createBrowserRouter([
   {
     path: "/login",
-    element: <AuthLayout />,
+    element: <BaseLayout variant="unauthenticated" />,
     errorElement: <ErrorPage />,
     children: [
       {
@@ -28,7 +28,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <MainLayout />,
+        element: <BaseLayout variant="authenticated" />,
         errorElement: <ErrorPage />,
         children: [
           {
