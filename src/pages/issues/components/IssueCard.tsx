@@ -2,29 +2,12 @@ import { Card, CardContent, Box, Typography } from "@mui/material";
 import type { Issue } from "@data/issues";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { VoteSection } from "@pages/issues/components/VoteSection";
+import { formatDate, stripHtml } from "@utils/formatters";
 
 interface IssueCardProps {
   issue: Issue;
   onClickCard?: () => void;
   onClickVote?: () => void;
-}
-
-function stripHtml(html: string) {
-  const div = document.createElement("div");
-  div.innerHTML = html;
-  return div.textContent || div.innerText || "";
-}
-
-function formatDate(dateString: string) {
-  const date = new Date(dateString);
-
-  const day = date.getDate().toString().padStart(2, "0");
-  const month = date.toLocaleString("en-GB", { month: "long" });
-  const year = date.getFullYear();
-  const hours = date.getHours().toString().padStart(2, "0");
-  const minutes = date.getMinutes().toString().padStart(2, "0");
-
-  return `${day} ${month} ${year}, ${hours}:${minutes}`;
 }
 
 export default function IssueCard({
