@@ -9,9 +9,10 @@ import {
   Pagination,
   InputLabel,
 } from "@mui/material";
-import IssueCard from "@pages/issues/IssueCard";
+import IssueCard from "@pages/issues/components/IssueCard";
+import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import issues, { type Issue } from "@data/issues";
+import issues, { type Issue, type IssueDetails } from "@data/issues";
 
 const tabLabels = [
   "All issues",
@@ -25,8 +26,18 @@ const tabLabels = [
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
+  const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
   const issuesPerPage = 10;
   const totalPages = Math.ceil(issues.length / issuesPerPage);
+
+  const handleCardClick = (issue: Issue) => {
+    setSelectedIssue({
+      ...issue,
+      office: "Vilnius, Lithuania",
+      reportedBy: "John Doe",
+      reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
+    });
+  };
 
   const paginatedIssues: Issue[] = issues.slice(
     (page - 1) * issuesPerPage,
@@ -130,9 +141,19 @@ const IssuesList: React.FC = () => {
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
         {paginatedIssues.map((issue) => (
-          <IssueCard key={issue.id} issue={issue} />
+          <IssueCard
+            key={issue.id}
+            issue={issue}
+            onClickCard={() => handleCardClick(issue)}
+          />
         ))}
       </Box>
+
+      {/* Issue details sidebar */}
+      <IssueDrawer
+        issue={selectedIssue}
+        onClose={() => setSelectedIssue(null)}
+      />
 
       {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>

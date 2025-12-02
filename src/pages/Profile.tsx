@@ -6,9 +6,13 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import { useAuth } from "@context/UseAuth";
 
+import IssueModal from "@pages/issues/IssueModal";
+import { useState } from "react";
+
 export const Profile = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();
   const navigate = useNavigate();
+  const [modalOpen, setModalOpen] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -49,7 +53,16 @@ export const Profile = () => {
         >
           Logout
         </Button>
+
+        <Button variant="contained" onClick={() => setModalOpen(true)}>
+          Report Issue
+        </Button>
       </div>
+      <IssueModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={() => setModalOpen(false)}
+      />
     </div>
   );
 };
