@@ -4,7 +4,7 @@ import theme from "@styles/theme";
 import { backendToFrontendStatus } from "@utils/issueStatusMapping";
 
 interface StatusChipProps {
-  status: string;
+  status: IssueStatusType;
 }
 
 const palette = theme.palette.status;
