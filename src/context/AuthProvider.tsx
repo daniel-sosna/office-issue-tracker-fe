@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext, type User } from "@context/AuthContext";
+import { csrfFetch } from "@utils/csrfFetch";
 
 interface Props {
   children: ReactNode;
@@ -36,9 +37,19 @@ export const AuthProvider = ({ children }: Props) => {
 
   const isAuthenticated = !!user;
 
+  const logout = async () => {
+    try {
+      await csrfFetch("/logout", { method: "POST" });
+    } catch (error) {
+      reportError(error);
+    } finally {
+      setUser(null);
+    }
+  };
+
   return (
     <AuthContext.Provider
-      value={{ isAuthenticated, loading, user, setUser, error }}
+      value={{ isAuthenticated, loading, user, setUser, logout, error }}
     >
       {children}
     </AuthContext.Provider>

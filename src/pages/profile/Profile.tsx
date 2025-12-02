@@ -1,6 +1,5 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { csrfFetch } from "@utils/csrfFetch";
 import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
@@ -10,7 +9,7 @@ import IssueModal from "@pages/issues/IssueModal";
 import { useState } from "react";
 
 export const Profile = () => {
-  const { isAuthenticated, loading, user, setUser } = useAuth();
+  const { isAuthenticated, loading, user, logout } = useAuth();
   const navigate = useNavigate();
   const [modalOpen, setModalOpen] = useState(false);
 
@@ -23,16 +22,8 @@ export const Profile = () => {
   }
 
   const handleLogout = async () => {
-    try {
-      await csrfFetch("/logout", {
-        method: "POST",
-      });
-    } catch (error) {
-      reportError(error);
-    } finally {
-      setUser(null);
-      void navigate("/login", { replace: true });
-    }
+    await logout();
+    void navigate("/login", { replace: true });
   };
 
   const picture = user?.picture ?? "/images/default.png";

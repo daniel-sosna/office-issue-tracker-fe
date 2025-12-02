@@ -16,7 +16,7 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import { useAuth } from "@context/UseAuth";
 
 const Header: React.FC = () => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
@@ -27,6 +27,11 @@ const Header: React.FC = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
+  };
+
+  const handleLogout = async () => {
+    await logout();
+    void navigate("/login", { replace: true });
   };
 
   return (
@@ -75,7 +80,7 @@ const Header: React.FC = () => {
             Profile
           </MenuItem>
           <Divider variant="middle" />
-          <MenuItem onClick={() => alert("Logout")}>
+          <MenuItem onClick={() => void handleLogout()}>
             <ListItemIcon>
               <LogoutIcon fontSize="small" />
             </ListItemIcon>
