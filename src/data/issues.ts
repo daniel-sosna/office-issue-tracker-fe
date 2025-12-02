@@ -17,7 +17,6 @@ export interface Issue {
   votes: number;
   comments: number;
   date: string;
-  reportedBy: string;
 }
 
 export interface IssueDetails extends Issue {
