@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   List,
@@ -19,11 +20,17 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ variant = "unauthenticated" }) => {
   const [active, setActive] = useState("home");
   const isAuthenticated = variant === "authenticated";
+  const navigate = useNavigate();
 
   const menuItems = [
-    { id: "home", label: "Home", icon: <HomeIcon /> },
-    { id: "profile", label: "My profile", icon: <PersonIcon /> },
-  ];
+    { id: "home", label: "Home", icon: <HomeIcon />, link: "/issues" },
+    {
+      id: "profile",
+      label: "My profile",
+      icon: <PersonIcon />,
+      link: "/profile",
+    },
+  ] as const;
 
   return (
     <Box
@@ -72,7 +79,10 @@ const Sidebar: React.FC<SidebarProps> = ({ variant = "unauthenticated" }) => {
               }}
             >
               <IconButton
-                onClick={() => setActive(item.id)}
+                onClick={() => {
+                  setActive(item.id);
+                  void navigate(item.link);
+                }}
                 sx={{
                   background:
                     active === item.id
