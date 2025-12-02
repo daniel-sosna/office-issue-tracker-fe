@@ -3,31 +3,13 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
-import { Home as Profile } from "@pages/Home";
+import { Profile } from "@pages/Profile";
 import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
-import { ErrorPage } from "@components/ErrorPage";
+import { ErrorPage } from "@pages/error/ErrorPage";
 import { RequireAuth } from "@components/RequireAuth";
-import { useAuth } from "@context/UseAuth";
-import { Box, LinearProgress } from "@mui/material";
 import { AuthLayout, MainLayout } from "@layouts/MainLayout";
-
-const NotFoundRoute = () => {
-  const { isAuthenticated, loading } = useAuth();
-
-  if (loading) {
-    return (
-      <Box sx={{ width: "100%" }}>
-        <LinearProgress />
-      </Box>
-    );
-  }
-
-  if (!isAuthenticated) {
-    return <Navigate to="/login" replace />;
-  }
-  return <ErrorPage />;
-};
+import { NotFoundPage } from "@pages/error/NotFoundPage";
 
 const router = createBrowserRouter([
   {
@@ -37,6 +19,7 @@ const router = createBrowserRouter([
         <Login />
       </AuthLayout>
     ),
+    errorElement: <ErrorPage />,
   },
   {
     path: "/",
@@ -61,7 +44,7 @@ const router = createBrowserRouter([
       },
       {
         path: "*",
-        element: <NotFoundRoute />,
+        element: <NotFoundPage />,
       },
     ],
   },

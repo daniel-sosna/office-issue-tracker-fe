@@ -14,7 +14,6 @@ interface BaseLayoutProps {
 
 const BaseLayout: React.FC<BaseLayoutProps> = ({ variant, children }) => {
   const showHeader = variant === "authenticated";
-  const isCentered = variant === "unauthenticated";
 
   return (
     <Box
@@ -32,14 +31,6 @@ const BaseLayout: React.FC<BaseLayoutProps> = ({ variant, children }) => {
           sx={{
             flex: 1,
             p: 4,
-            ...(isCentered
-              ? {
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }
-              : {}),
           }}
         >
           {children}

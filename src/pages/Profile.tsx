@@ -6,7 +6,7 @@ import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import { useAuth } from "@context/UseAuth";
 
-export const Home = () => {
+export const Profile = () => {
   const { isAuthenticated, loading, user, setUser } = useAuth();
   const navigate = useNavigate();
 
