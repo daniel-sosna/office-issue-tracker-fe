@@ -12,11 +12,7 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import {
-  type Issue,
-  type IssueDetails,
-  type FetchIssuesParams,
-} from "@data/issues";
+import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
 import { useIssues } from "@hooks/useIssues";
 import { useOffices } from "@hooks/useOffices";
 import { useAuth } from "@context/use-auth";
@@ -54,9 +50,9 @@ const IssuesList: React.FC = () => {
   const { user } = useAuth();
   const currentUserId = user?.name;
 
-  const [page, setPage] = useState(1);
-  const [selectedTab, setSelectedTab] = useState(0);
-  const [selectedSort, setSelectedSort] = useState("latest");
+  const [page, setPage] = useState<number>(1);
+  const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [selectedSort, setSelectedSort] = useState<string>("latest");
   const [selectedOffice, setSelectedOffice] = useState<string | undefined>(
     undefined
   );
@@ -175,6 +171,7 @@ const IssuesList: React.FC = () => {
               ))}
             </Select>
           </FormControl>
+
           <FormControl size="small" disabled>
             <Select
               value="allEmployees"
@@ -216,6 +213,7 @@ const IssuesList: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Issue cards */}
       <Box sx={{ position: "relative", zIndex: 1 }}>
         {isLoading && <p>Loading issues…</p>}
         {!isLoading &&
@@ -228,6 +226,7 @@ const IssuesList: React.FC = () => {
           ))}
       </Box>
 
+      {/* Issue drawer */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
@@ -243,7 +242,7 @@ const IssuesList: React.FC = () => {
         <Pagination
           count={data?.totalPages ?? 1}
           page={page}
-          onChange={(_, value) => setPage(value)}
+          onChange={(_, value: number) => setPage(value)}
           color="primary"
           hidePrevButton={page === 1}
           hideNextButton={page === (data?.totalPages ?? 1)}

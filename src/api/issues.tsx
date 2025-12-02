@@ -1,4 +1,9 @@
-import type { Issue, IssueDetails, IssueStatusType } from "@data/issues";
+import type {
+  Issue,
+  IssueDetails,
+  IssueStatusType,
+  IssuePageResponse,
+} from "@data/issues";
 import { csrfFetch } from "@utils/csrfFetch";
 
 export const API_BASE = "http://localhost:8080/issues";
@@ -23,14 +28,6 @@ export interface FetchIssuesParams {
   reportedBy?: string;
   sort?: string;
   office?: string;
-}
-
-export interface FetchIssuesResponse {
-  content: Issue[];
-  totalPages: number;
-  totalElements: number;
-  page: number;
-  size: number;
 }
 
 function mapIssueStatus(apiStatus: string): IssueStatusType {
@@ -74,7 +71,7 @@ export const createIssue = async (issue: IssueData): Promise<void> => {
 
 export const fetchIssues = async (
   params: FetchIssuesParams
-): Promise<FetchIssuesResponse> => {
+): Promise<IssuePageResponse> => {
   const query = new URLSearchParams();
   query.append("page", String(params.page));
   query.append("size", String(params.size));
@@ -89,7 +86,7 @@ export const fetchIssues = async (
 
   if (!res.ok) throw new Error(`Failed to fetch issues: ${res.statusText}`);
 
-  const response = (await res.json()) as FetchIssuesResponse;
+  const response = (await res.json()) as IssuePageResponse;
 
   return {
     ...response,

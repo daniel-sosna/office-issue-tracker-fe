@@ -7,9 +7,22 @@ import theme from "@styles/theme";
 import "@styles/index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-const queryClient = new QueryClient();
+let queryClient: QueryClient;
 
-createRoot(document.getElementById("root")!).render(
+try {
+  queryClient = new QueryClient();
+} catch (err: unknown) {
+  const error = err instanceof Error ? err : new Error(String(err));
+  console.error("Failed to initialize QueryClient:", error);
+  queryClient = new QueryClient();
+}
+
+const rootElement = document.getElementById("root");
+if (!rootElement) {
+  throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
