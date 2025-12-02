@@ -1,7 +1,11 @@
+import { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import IssueModal from "@pages/issues/IssueModal";
 
 const SecondaryHeader: React.FC = () => {
+  const [modalOpen, setModalOpen] = useState(false);
+
   return (
     <Box
       mb={3}
@@ -21,14 +25,20 @@ const SecondaryHeader: React.FC = () => {
       </Box>
 
       <Button
-        disabled
         variant="contained"
         color="secondary"
         startIcon={<AddIcon />}
         sx={{ borderRadius: "50px" }}
+        onClick={() => setModalOpen(true)}
       >
         Report Issue
       </Button>
+
+      <IssueModal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        onSubmit={() => setModalOpen(false)}
+      />
     </Box>
   );
 };
