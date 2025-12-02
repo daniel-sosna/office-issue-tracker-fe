@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
   List,
@@ -18,8 +18,8 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ variant = "unauthenticated" }) => {
-  const [active, setActive] = useState("home");
   const isAuthenticated = variant === "authenticated";
+  const location = useLocation();
   const navigate = useNavigate();
 
   const menuItems = [
@@ -67,52 +67,54 @@ const Sidebar: React.FC<SidebarProps> = ({ variant = "unauthenticated" }) => {
             gap: 3,
           }}
         >
-          {menuItems.map((item) => (
-            <ListItem
-              key={item.id}
-              disablePadding
-              sx={{
-                flexDirection: "column",
-                alignItems: "center",
-                color: active === item.id ? "#0b0b56" : "#1d2088",
-                transition: "all 0.3s ease",
-              }}
-            >
-              <IconButton
-                onClick={() => {
-                  setActive(item.id);
-                  void navigate(item.link);
-                }}
+          {menuItems.map((item) => {
+            const activeForItem = location.pathname.startsWith(item.link);
+
+            return (
+              <ListItem
+                key={item.id}
+                disablePadding
                 sx={{
-                  background:
-                    active === item.id
+                  flexDirection: "column",
+                  alignItems: "center",
+                  color: activeForItem ? "#0b0b56" : "#1d2088",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <IconButton
+                  onClick={() => {
+                    void navigate(item.link);
+                  }}
+                  sx={{
+                    background: activeForItem
                       ? "linear-gradient(135deg, #318CE7, #BAF8F8)"
                       : "transparent",
-                  borderRadius: "12px",
-                  width: 38,
-                  height: 38,
-                  "&:hover": {
-                    background: "linear-gradient(135deg, #e4e7ff, #f0f4ff)",
-                  },
-                  color: active === item.id ? "#0b0b56" : "#1d2088",
-                }}
-              >
-                {item.icon}
-              </IconButton>
+                    borderRadius: "12px",
+                    width: 38,
+                    height: 38,
+                    "&:hover": {
+                      background: "linear-gradient(135deg, #e4e7ff, #f0f4ff)",
+                    },
+                    color: activeForItem ? "#0b0b56" : "#1d2088",
+                  }}
+                >
+                  {item.icon}
+                </IconButton>
 
-              <Typography
-                variant="body2"
-                sx={{
-                  fontSize: "0.8rem",
-                  mt: 1,
-                  fontWeight: 500,
-                  color: "#0b0b56",
-                }}
-              >
-                {item.label}
-              </Typography>
-            </ListItem>
-          ))}
+                <Typography
+                  variant="body2"
+                  sx={{
+                    fontSize: "0.8rem",
+                    mt: 1,
+                    fontWeight: 500,
+                    color: "#0b0b56",
+                  }}
+                >
+                  {item.label}
+                </Typography>
+              </ListItem>
+            );
+          })}
         </List>
       )}
     </Box>
