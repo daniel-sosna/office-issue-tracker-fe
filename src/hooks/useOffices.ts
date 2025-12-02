@@ -2,9 +2,12 @@ import { useQuery } from "@tanstack/react-query";
 import { fetchOffices, type Office } from "../api/offices";
 
 export const useOffices = () => {
-  return useQuery<Office[], Error>({
+  return useQuery<Office[], unknown>({
     queryKey: ["offices"],
-    queryFn: () => fetchOffices(),
+    queryFn: async () => {
+      const res = await fetchOffices();
+      return res;
+    },
     staleTime: 0,
     refetchOnWindowFocus: false,
   });
