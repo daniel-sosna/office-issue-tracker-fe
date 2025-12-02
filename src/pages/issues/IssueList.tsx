@@ -119,7 +119,7 @@ const IssuesList: React.FC = () => {
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue) => setSelectedTab(newValue)}
+          onChange={(_, newValue: number) => setSelectedTab(newValue)}
           textColor="secondary"
           indicatorColor="secondary"
           sx={{

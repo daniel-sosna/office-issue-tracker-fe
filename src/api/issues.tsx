@@ -25,6 +25,24 @@ export interface FetchIssuesParams {
   office?: string;
 }
 
+export interface FetchIssuesResponse {
+  content: Issue[];
+  totalPages: number;
+  totalElements: number;
+  page: number;
+  size: number;
+}
+
+function mapIssueStatus(apiStatus: string): IssueStatusType {
+  const map: Record<string, IssueStatusType> = {
+    OPEN: "Open",
+    IN_PROGRESS: "In progress",
+    RESOLVED: "Resolved",
+    CLOSED: "Closed",
+  };
+  return map[apiStatus] ?? "Open";
+}
+
 export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
@@ -54,18 +72,9 @@ export const createIssue = async (issue: IssueData): Promise<void> => {
   await res.json();
 };
 
-function mapIssueStatus(apiStatus: string): IssueStatusType {
-  const map: Record<string, IssueStatusType> = {
-    OPEN: "Open",
-    IN_PROGRESS: "In progress",
-    RESOLVED: "Resolved",
-    CLOSED: "Closed",
-  };
-
-  return map[apiStatus] ?? "Open";
-}
-
-export const fetchIssues = async (params: FetchIssuesParams) => {
+export const fetchIssues = async (
+  params: FetchIssuesParams
+): Promise<FetchIssuesResponse> => {
   const query = new URLSearchParams();
   query.append("page", String(params.page));
   query.append("size", String(params.size));
@@ -78,13 +87,13 @@ export const fetchIssues = async (params: FetchIssuesParams) => {
   const url = `${API_BASE}?${query.toString()}`;
   const res = await csrfFetch(url);
 
-  if (!res.ok) throw new Error("Failed to fetch issues");
+  if (!res.ok) throw new Error(`Failed to fetch issues: ${res.statusText}`);
 
-  const response = await res.json();
+  const response = (await res.json()) as FetchIssuesResponse;
 
   return {
     ...response,
-    content: response.content.map((issue: Issue) => ({
+    content: response.content.map((issue) => ({
       ...issue,
       status: mapIssueStatus(issue.status),
     })),
