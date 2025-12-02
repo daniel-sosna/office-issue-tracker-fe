@@ -1,10 +1,7 @@
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
-import { useAuth } from "@context/use-auth";
-import Stack from "@mui/material/Stack";
-import Typography from "@mui/material/Typography";
-import Button from "@mui/material/Button";
-import Box from "@mui/material/Box";
+import { useAuth } from "@context/UseAuth";
+import { Box, Button, Stack, Typography } from "@mui/material";
 
 export const Login = () => {
   const { isAuthenticated } = useAuth();
@@ -28,18 +25,19 @@ export const Login = () => {
   }, [isAuthenticated, fromLocation, navigate]);
 
   const handleLogin = (provider: string) => {
-    if (provider == "google") {
+    if (provider === "google") {
       window.location.href = "/oauth2/authorization/google";
     } else return;
   };
 
   return (
     <Box
-      minHeight="100vh"
-      display="flex"
-      alignItems="center"
-      justifyContent="center"
-      px={2}
+      sx={{
+        height: "100%",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+      }}
     >
       <Stack spacing={4} alignItems="center">
         <Typography variant="h5">

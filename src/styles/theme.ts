@@ -1,4 +1,4 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme } from "@mui/material";
 
 const headerStyle = { color: "#000048", fontWeight: 600 };
 
