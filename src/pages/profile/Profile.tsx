@@ -53,10 +53,6 @@ export const Profile = () => {
         >
           Logout
         </Button>
-
-        <Button variant="contained" onClick={() => setModalOpen(true)}>
-          Report Issue
-        </Button>
       </div>
       <IssueModal
         open={modalOpen}
