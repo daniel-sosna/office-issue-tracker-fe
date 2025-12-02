@@ -49,3 +49,44 @@ export const createIssue = async (issue: IssueData): Promise<void> => {
 
   await res.json();
 };
+
+export const updateIssue = async (
+  issueId: number,
+  data: IssueData
+): Promise<IssueDetails> => {
+  const res = await csrfFetch(`http://localhost:8080/issues/${issueId}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(data),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to update issue (HTTP ${res.status})`);
+  }
+
+  return res.json() as Promise<IssueDetails>;
+};
+
+export const updateIssueStatus = async (
+  issueId: number,
+  status: string
+): Promise<IssueDetails> => {
+  const res = await csrfFetch(
+    `http://localhost:8080/issues/${issueId}/status`,
+    {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    }
+  );
+
+  if (!res.ok) {
+    throw new Error(`Failed to update status (HTTP ${res.status})`);
+  }
+
+  return res.json() as Promise<IssueDetails>;
+};

@@ -1,16 +1,37 @@
-import { useState } from "react";
-import { Box, Typography, Divider, Avatar, Tabs, Tab } from "@mui/material";
+import { useEffect, useState } from "react";
+import {
+  Box,
+  Typography,
+  Divider,
+  Avatar,
+  Tabs,
+  Tab,
+  MenuItem,
+  Select,
+} from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import type { IssueDetails } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
+import { updateIssue, updateIssueStatus } from "@api/issues";
 
 interface Props {
   issue: IssueDetails | null;
   onClose: () => void;
+  canEdit: boolean;
+  canEditStatus: boolean;
+  onIssueUpdated: (updated: IssueDetails) => void;
 }
 
-export default function IssueDetailsSidebar({ issue, onClose }: Props) {
+export default function IssueDetailsSidebar({
+  issue,
+  onClose,
+  canEdit,
+  canEditStatus,
+  onIssueUpdated,
+}: Props) {
   const TabIndex = {
     Details: 0,
     Comments: 1,
@@ -20,6 +41,46 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
+
+  const [form, setForm] = useState({
+    title: issue?.title ?? "",
+    description: issue?.description ?? "",
+    status: issue?.status ?? "",
+    office: issue?.office ?? "",
+  });
+
+  useEffect(() => {
+    if (issue) {
+      setForm({
+        title: issue.title,
+        description: issue.description,
+        status: issue.status,
+        office: issue.office,
+      });
+    }
+  }, [issue]);
+
+  async function handleSave() {
+    if (!issue) return;
+
+    try {
+      const updatedDetails = await updateIssue(issue.id, {
+        summary: form.title,
+        description: form.description,
+        officeId: form.office,
+      });
+
+      let finalIssue = updatedDetails;
+
+      if (canEditStatus && form.status !== issue.status) {
+        finalIssue = await updateIssueStatus(issue.id, form.status);
+      }
+
+      onIssueUpdated(finalIssue);
+    } catch (err) {
+      console.error("Failed to save issue:", err);
+    }
+  }
 
   if (!issue) {
     return (
@@ -33,9 +94,29 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
 
   return (
     <RightDrawer open={true} onClose={onClose}>
-      <Typography variant="h4" sx={{ fontWeight: 400, mt: 3 }}>
-        {issue.title}
-      </Typography>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mt={3}
+        mb={1}
+      >
+        <TextField
+          variant="standard"
+          fullWidth
+          value={form.title}
+          onChange={(e) =>
+            setForm((prev) => ({ ...prev, title: e.target.value }))
+          }
+          InputProps={{
+            readOnly: !canEdit,
+            sx: {
+              fontSize: "22px",
+              fontWeight: 400,
+            },
+          }}
+        />
+      </Box>
 
       <Divider sx={{ my: 4 }} />
       <Box mb={2}>
@@ -82,7 +163,23 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
             <Typography variant="body2">Status</Typography>
           </Box>
           <Box>
-            <StatusChip status={issue.status} />
+            {canEditStatus ? (
+              <Select
+                size="small"
+                value={form.status}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, status: e.target.value }))
+                }
+                sx={{ minWidth: 120 }}
+              >
+                <MenuItem value="OPEN">Open</MenuItem>
+                <MenuItem value="IN_PROGRESS">In progress</MenuItem>
+                <MenuItem value="RESOLVED">Resolved</MenuItem>
+                <MenuItem value="CLOSED">Closed</MenuItem>
+              </Select>
+            ) : (
+              <StatusChip status={issue.status} />
+            )}
           </Box>
 
           <Box>
@@ -110,9 +207,21 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
             <Typography variant="body2">Office</Typography>
           </Box>
           <Box>
-            <Typography variant="body2" color="text.primary">
-              {issue.office}
-            </Typography>
+            {canEdit ? (
+              <Select
+                size="small"
+                value={form.office}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, office: e.target.value }))
+                }
+              >
+                <MenuItem value="Vilnius">Vilnius</MenuItem>
+                <MenuItem value="Kaunas">Kaunas</MenuItem>
+                <MenuItem value="Krakow">Krakow</MenuItem>
+              </Select>
+            ) : (
+              <Typography>{issue.office}</Typography>
+            )}
           </Box>
         </Box>
       </Box>
@@ -149,9 +258,18 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           <Typography variant="body2" color="text.secondary" mb={1}>
             Description
           </Typography>
-          <Typography variant="body1" color="text.primary">
-            {issue.description}
-          </Typography>
+          <TextField
+            multiline
+            fullWidth
+            minRows={4}
+            value={form.description}
+            onChange={(e) =>
+              setForm((prev) => ({ ...prev, description: e.target.value }))
+            }
+            InputProps={{
+              readOnly: !canEdit,
+            }}
+          />
         </Box>
       )}
 
@@ -166,6 +284,35 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           Activity log is under construction.
         </Typography>
       )}
+
+      <Divider sx={{ my: 4, mt: 50 }} />
+
+      <Box display="flex" justifyContent="flex-end" mt={4} gap={2}>
+        <Button
+          variant="outlined"
+          size="small"
+          onClick={() => {
+            setForm({
+              title: issue.title,
+              description: issue.description,
+              status: issue.status,
+              office: issue.office,
+            });
+          }}
+        >
+          Cancel
+        </Button>
+
+        <Button
+          variant="contained"
+          size="medium"
+          color="secondary"
+          // eslint-disable-next-line @typescript-eslint/no-misused-promises
+          onClick={handleSave}
+        >
+          Save
+        </Button>
+      </Box>
     </RightDrawer>
   );
 }
