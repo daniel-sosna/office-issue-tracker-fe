@@ -44,10 +44,9 @@ const IssuesList: React.FC = () => {
           title: issue.summary,
           description: issue.description,
           status: issue.status,
-          votes: 0,
-          comments: 0,
+          votes: issue.votes ?? 0,
+          comments: issue.comments ?? 0,
           date: issue.date,
-          reportedBy: "",
         }));
 
         setIssues(normalized);
