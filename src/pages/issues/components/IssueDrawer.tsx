@@ -4,7 +4,7 @@ import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import type { IssueDetails } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
-import { formatDate } from "@utils/formatters";
+import { formatDate, stripHtml } from "@utils/formatters";
 
 interface Props {
   issue: IssueDetails | null;
@@ -151,7 +151,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
             Description
           </Typography>
           <Typography variant="body1" color="text.primary">
-            {issue.description}
+            {stripHtml(issue.description)}
           </Typography>
         </Box>
       )}
