@@ -81,6 +81,15 @@ export default function IssueDetailsSidebar({
       console.error("Failed to save issue:", err);
     }
   }
+  function handleCancel() {
+    if (!issue) return;
+    setForm({
+      title: issue.title,
+      description: issue.description,
+      status: issue.status,
+      office: issue.office,
+    });
+  }
 
   if (!issue) {
     return (
@@ -288,18 +297,7 @@ export default function IssueDetailsSidebar({
       <Divider sx={{ my: 4, mt: 50 }} />
 
       <Box display="flex" justifyContent="flex-end" mt={4} gap={2}>
-        <Button
-          variant="outlined"
-          size="small"
-          onClick={() => {
-            setForm({
-              title: issue.title,
-              description: issue.description,
-              status: issue.status,
-              office: issue.office,
-            });
-          }}
-        >
+        <Button variant="outlined" size="small" onClick={handleCancel}>
           Cancel
         </Button>
 

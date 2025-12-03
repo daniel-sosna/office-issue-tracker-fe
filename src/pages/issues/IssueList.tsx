@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Box,
   Tabs,
@@ -9,10 +9,14 @@ import {
   Pagination,
   InputLabel,
 } from "@mui/material";
+
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import issues, { type Issue, type IssueDetails } from "@data/issues";
+
+import type { Issue, IssueDetails } from "@data/issues";
+import { fetchIssues, fetchIssueDetails } from "@api/issues";
+import { useAuth } from "@context/UseAuth.tsx";
 
 const tabLabels = [
   "All issues",
@@ -24,22 +28,51 @@ const tabLabels = [
 ];
 
 const IssuesList: React.FC = () => {
+  const { user } = useAuth();
+
+  const [issueList, setIssueList] = useState<Issue[]>([]);
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
-  const issuesPerPage = 10;
-  const totalPages = Math.ceil(issues.length / issuesPerPage);
 
-  const handleCardClick = (issue: Issue) => {
-    setSelectedIssue({
-      ...issue,
-      office: "Vilnius, Lithuania",
-      reportedBy: "John Doe",
-      reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
-    });
+  const issuesPerPage = 10;
+  const totalPages = Math.ceil(issueList.length / issuesPerPage);
+
+  useEffect(() => {
+    async function loadIssues() {
+      try {
+        const fetchedIssues = await fetchIssues();
+        setIssueList(fetchedIssues);
+      } catch (err) {
+        console.error("Failed to fetch issues:", err);
+      }
+    }
+    void loadIssues();
+  }, []);
+
+  const canEdit =
+    selectedIssue !== null &&
+    (selectedIssue.reportedBy === user?.email || user?.role === "ADMIN");
+
+  const canEditStatus = user?.role === "ADMIN";
+
+  const handleCardClick = async (issue: Issue) => {
+    try {
+      const details = await fetchIssueDetails(issue.id.toString());
+      setSelectedIssue(details);
+    } catch (err) {
+      console.error("Failed to fetch issue details:", err);
+    }
   };
 
-  const paginatedIssues: Issue[] = issues.slice(
+  function handleIssueUpdated(updatedIssue: IssueDetails) {
+    setIssueList((prev) =>
+      prev.map((issue) => (issue.id === updatedIssue.id ? updatedIssue : issue))
+    );
+    setSelectedIssue(updatedIssue);
+  }
+
+  const paginatedIssues = issueList.slice(
     (page - 1) * issuesPerPage,
     page * issuesPerPage
   );
@@ -144,15 +177,18 @@ const IssuesList: React.FC = () => {
           <IssueCard
             key={issue.id}
             issue={issue}
-            onClickCard={() => handleCardClick(issue)}
+            onClickCard={() => void handleCardClick(issue)}
           />
         ))}
       </Box>
 
-      {/* Issue details sidebar */}
+      {/* Issue Drawer */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
+        canEdit={canEdit}
+        canEditStatus={canEditStatus}
+        onIssueUpdated={handleIssueUpdated}
       />
 
       {/* Pagination */}

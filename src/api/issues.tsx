@@ -90,3 +90,13 @@ export const updateIssueStatus = async (
 
   return res.json() as Promise<IssueDetails>;
 };
+
+export const fetchIssues = async (): Promise<Issue[]> => {
+  const res = await csrfFetch("http://localhost:8080/issues");
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch issues (HTTP ${res.status})`);
+  }
+
+  return res.json() as Promise<Issue[]>;
+};
