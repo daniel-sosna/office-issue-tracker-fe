@@ -10,8 +10,15 @@ import {
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 
-const Sidebar: React.FC = () => {
+type SidebarVariant = "unauthenticated" | "authenticated";
+
+interface SidebarProps {
+  variant?: SidebarVariant;
+}
+
+const Sidebar: React.FC<SidebarProps> = ({ variant = "unauthenticated" }) => {
   const [active, setActive] = useState("home");
+  const isAuthenticated = variant === "authenticated";
 
   const menuItems = [
     { id: "home", label: "Home", icon: <HomeIcon /> },
@@ -43,60 +50,61 @@ const Sidebar: React.FC = () => {
         }}
       />
 
-      <List
-        sx={{
-          width: "100%",
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "center",
-          gap: 3,
-        }}
-      >
-        {menuItems.map((item) => (
-          <ListItem
-            key={item.id}
-            disablePadding
-            sx={{
-              flexDirection: "column",
-              alignItems: "center",
-              color: active === item.id ? "#0b0b56" : "#1d2088",
-              transition: "all 0.3s ease",
-            }}
-          >
-            <IconButton
-              onClick={() => setActive(item.id)}
+      {isAuthenticated && (
+        <List
+          sx={{
+            width: "100%",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 3,
+          }}
+        >
+          {menuItems.map((item) => (
+            <ListItem
+              key={item.id}
+              disablePadding
               sx={{
-                background:
-                  active === item.id
-                    ? "linear-gradient(135deg, #318CE7, #BAF8F8)"
-                    : "transparent",
-
-                borderRadius: "12px",
-                width: 38,
-                height: 38,
-                "&:hover": {
-                  background: "linear-gradient(135deg, #e4e7ff, #f0f4ff)",
-                },
+                flexDirection: "column",
+                alignItems: "center",
                 color: active === item.id ? "#0b0b56" : "#1d2088",
+                transition: "all 0.3s ease",
               }}
             >
-              {item.icon}
-            </IconButton>
+              <IconButton
+                onClick={() => setActive(item.id)}
+                sx={{
+                  background:
+                    active === item.id
+                      ? "linear-gradient(135deg, #318CE7, #BAF8F8)"
+                      : "transparent",
+                  borderRadius: "12px",
+                  width: 38,
+                  height: 38,
+                  "&:hover": {
+                    background: "linear-gradient(135deg, #e4e7ff, #f0f4ff)",
+                  },
+                  color: active === item.id ? "#0b0b56" : "#1d2088",
+                }}
+              >
+                {item.icon}
+              </IconButton>
 
-            <Typography
-              variant="body2"
-              sx={{
-                fontSize: "0.8rem",
-                mt: 1,
-                fontWeight: 500,
-                color: "#0b0b56",
-              }}
-            >
-              {item.label}
-            </Typography>
-          </ListItem>
-        ))}
-      </List>
+              <Typography
+                variant="body2"
+                sx={{
+                  fontSize: "0.8rem",
+                  mt: 1,
+                  fontWeight: 500,
+                  color: "#0b0b56",
+                }}
+              >
+                {item.label}
+              </Typography>
+            </ListItem>
+          ))}
+        </List>
+      )}
     </Box>
   );
 };
