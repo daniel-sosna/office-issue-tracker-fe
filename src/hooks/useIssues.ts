@@ -1,15 +1,22 @@
-import { useQuery } from "@tanstack/react-query";
-import { fetchIssues } from "../api/issues";
+// src/hooks/useIssues.ts
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { fetchIssues } from "@api/issues";
 import type { FetchIssuesParams, IssuePageResponse } from "@data/issues";
 
-export const useIssues = (params: FetchIssuesParams) => {
-  return useQuery<IssuePageResponse, unknown>({
+export function useIssues(params: FetchIssuesParams) {
+  return useQuery<IssuePageResponse, Error>({
     queryKey: ["issues", params],
     queryFn: async () => {
-      const res = await fetchIssues(params);
-      return res;
+      try {
+        return await fetchIssues(params);
+      } catch (err: unknown) {
+        if (err instanceof Error) {
+          throw err;
+        }
+        throw new Error(String(err));
+      }
     },
+    placeholderData: keepPreviousData,
     staleTime: 0,
-    refetchOnWindowFocus: false,
   });
-};
+}

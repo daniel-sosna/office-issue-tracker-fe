@@ -1,14 +1,19 @@
+// src/hooks/useOffices.ts
 import { useQuery } from "@tanstack/react-query";
-import { fetchOffices, type Office } from "../api/offices";
+import { fetchOffices, type Office } from "@api/offices";
 
-export const useOffices = () => {
-  return useQuery<Office[], unknown>({
+export const useOffices = () =>
+  useQuery<Office[], Error>({
     queryKey: ["offices"],
     queryFn: async () => {
-      const res = await fetchOffices();
-      return res;
+      try {
+        const res = await fetchOffices();
+        return res;
+      } catch (err: unknown) {
+        if (err instanceof Error) throw err;
+        throw new Error("Unknown error occurred while fetching offices");
+      }
     },
-    staleTime: 0,
+    staleTime: 1000 * 60 * 5, // 5 minutes
     refetchOnWindowFocus: false,
   });
-};

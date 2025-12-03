@@ -82,6 +82,7 @@ export const fetchIssues = async (
   if (params.office) query.append("office", params.office);
 
   const url = `${API_BASE}?${query.toString()}`;
+  console.log(url);
   const res = await csrfFetch(url);
 
   if (!res.ok) throw new Error(`Failed to fetch issues: ${res.statusText}`);

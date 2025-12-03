@@ -1,3 +1,4 @@
+// src/pages/issues/IssuesList.tsx
 import { useState } from "react";
 import {
   Box,
@@ -85,7 +86,6 @@ const IssuesList: React.FC = () => {
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
-      {/* Background image */}
       <Box
         component="img"
         src={backgroundImage}
@@ -115,7 +115,10 @@ const IssuesList: React.FC = () => {
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue: number) => setSelectedTab(newValue)}
+          onChange={(_, newValue: number) => {
+            setSelectedTab(newValue);
+            setPage(1); // reset page when tab changes
+          }}
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
@@ -160,7 +163,7 @@ const IssuesList: React.FC = () => {
               onChange={(e) => {
                 const val = e.target.value;
                 setSelectedOffice(val === "all" ? undefined : String(val));
-                setPage(1);
+                setPage(1); // reset page
               }}
             >
               <MenuItem value="all">All offices</MenuItem>
@@ -217,7 +220,8 @@ const IssuesList: React.FC = () => {
       <Box sx={{ position: "relative", zIndex: 1 }}>
         {isLoading && <p>Loading issues…</p>}
         {!isLoading &&
-          data?.content.map((issue: Issue) => (
+          Array.isArray(data?.content) &&
+          data.content.map((issue: Issue) => (
             <IssueCard
               key={issue.id}
               issue={issue}
