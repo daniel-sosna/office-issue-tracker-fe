@@ -1,5 +1,4 @@
-// src/hooks/useOffices.ts
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchOffices, type Office } from "@api/offices";
 
 export const useOffices = () =>
@@ -14,6 +13,7 @@ export const useOffices = () =>
         throw new Error("Unknown error occurred while fetching offices");
       }
     },
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    refetchOnWindowFocus: false,
+    staleTime: 1000 * 60,
+    refetchOnWindowFocus: true,
+    placeholderData: keepPreviousData,
   });

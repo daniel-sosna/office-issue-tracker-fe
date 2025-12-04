@@ -1,4 +1,3 @@
-// src/pages/issues/IssuesList.tsx
 import { useState } from "react";
 import {
   Box,
@@ -117,7 +116,7 @@ const IssuesList: React.FC = () => {
           value={selectedTab}
           onChange={(_, newValue: number) => {
             setSelectedTab(newValue);
-            setPage(1); // reset page when tab changes
+            setPage(1);
           }}
           textColor="secondary"
           indicatorColor="secondary"
@@ -163,7 +162,7 @@ const IssuesList: React.FC = () => {
               onChange={(e) => {
                 const val = e.target.value;
                 setSelectedOffice(val === "all" ? undefined : String(val));
-                setPage(1); // reset page
+                setPage(1);
               }}
             >
               <MenuItem value="all">All offices</MenuItem>

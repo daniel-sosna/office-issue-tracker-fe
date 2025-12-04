@@ -1,4 +1,3 @@
-// src/hooks/useIssues.ts
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { fetchIssues } from "@api/issues";
 import type { FetchIssuesParams, IssuePageResponse } from "@data/issues";
@@ -17,6 +16,6 @@ export function useIssues(params: FetchIssuesParams) {
       }
     },
     placeholderData: keepPreviousData,
-    staleTime: 0,
+    staleTime: 1000 * 60 * 5,
   });
 }

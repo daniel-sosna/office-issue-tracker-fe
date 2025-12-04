@@ -2,6 +2,7 @@ import { Card, CardContent, Box, Typography } from "@mui/material";
 import type { Issue } from "@data/issues";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { VoteSection } from "@pages/issues/components/VoteSection";
+import { stripHtml, formatDate } from "@utils/formatters";
 
 interface IssueCardProps {
   issue: Issue;
@@ -44,7 +45,7 @@ export default function IssueCard({
           {/* Issue summary */}
           <Box flex="1 1 50%">
             <Typography variant="subtitle1" fontWeight={500}>
-              {issue.summary.replace(/<\/?[^>]+(>|$)/g, "")}
+              {stripHtml(issue.summary)}
             </Typography>
             <Typography
               variant="body2"
@@ -57,7 +58,7 @@ export default function IssueCard({
                 overflow: "hidden",
               }}
             >
-              {issue.description.replace(/<\/?[^>]+(>|$)/g, "")}
+              {stripHtml(issue.description)}
             </Typography>
             <Typography
               variant="caption"
@@ -65,7 +66,7 @@ export default function IssueCard({
               mt={0.5}
               display="block"
             >
-              {issue.date}
+              {formatDate(issue.date)}
             </Typography>
           </Box>
 

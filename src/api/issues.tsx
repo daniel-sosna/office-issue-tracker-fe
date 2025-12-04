@@ -94,6 +94,8 @@ export const fetchIssues = async (
     content: response.content.map((issue) => ({
       ...issue,
       status: mapIssueStatus(issue.status),
+      votes: issue.votes ?? 0,
+      comments: issue.comments ?? 0,
     })),
   };
 };
