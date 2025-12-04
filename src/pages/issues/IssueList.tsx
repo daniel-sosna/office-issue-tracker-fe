@@ -24,17 +24,22 @@ const tabLabels = [
   "Resolved",
   "Closed",
   "Reported by me",
-];
+] as const;
 
-const statusMap: Record<
-  number,
-  "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED" | undefined
-> = {
-  1: "OPEN",
-  2: "IN_PROGRESS",
-  3: "RESOLVED",
-  4: "CLOSED",
-};
+const tabStatuses: (
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "CLOSED"
+  | undefined
+)[] = [
+  undefined, // 0: All issues
+  "OPEN",
+  "IN_PROGRESS",
+  "RESOLVED",
+  "CLOSED",
+  undefined, // 5: Reported by me
+];
 
 const sortMap: Record<
   string,
@@ -60,15 +65,15 @@ const IssuesList: React.FC = () => {
 
   const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
 
-  const statusParam = statusMap[selectedTab];
-  const sortParam = sortMap[selectedSort];
+  const statusParam = tabStatuses[selectedTab];
+  const reportedByParam = selectedTab === 5 ? currentUserId : undefined;
 
   const params: FetchIssuesParams = {
     page,
     size: 10,
     status: statusParam,
-    sort: sortParam,
-    reportedBy: selectedTab === 5 ? currentUserId : undefined,
+    sort: sortMap[selectedSort],
+    reportedBy: reportedByParam,
     office: selectedOffice,
   };
 

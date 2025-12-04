@@ -1,8 +1,10 @@
 export const IssueStatus = {
   Open: "Open",
-  InProgress: "In progress",
+  Planned: "Planned",
   Resolved: "Resolved",
   Closed: "Closed",
+  Pending: "Pending",
+  Blocked: "Blocked",
 } as const;
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
@@ -26,7 +28,13 @@ export interface IssueDetails extends Issue {
 export interface FetchIssuesParams {
   page: number;
   size: number;
-  status?: "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED";
+  status?:
+    | "OPEN"
+    | "IN_PROGRESS"
+    | "RESOLVED"
+    | "CLOSED"
+    | "PENDING"
+    | "BLOCKED";
   reportedBy?: string;
   sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
   office?: string;

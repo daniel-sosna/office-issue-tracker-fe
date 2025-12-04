@@ -1,4 +1,5 @@
 import { csrfFetch } from "@utils/csrfFetch";
+import { BASE_URL, ENDPOINTS } from "./urls";
 
 export interface Office {
   id: string;
@@ -7,8 +8,7 @@ export interface Office {
 }
 
 export const fetchOffices = async (): Promise<Office[]> => {
-  const res = await csrfFetch("http://localhost:8080/offices");
-
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.OFFICES}`);
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }
