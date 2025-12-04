@@ -1,10 +1,33 @@
-import { type Issue, type IssueDetails } from "@data/issues";
+import {
+  type Issue,
+  type IssueDetails,
+  type IssueStatusType,
+} from "@data/issues";
 import { csrfFetch } from "@utils/csrfFetch";
+import { BASE_URL, ENDPOINTS } from "./urls";
 
 export interface IssueData {
   summary: string;
   description: string;
   officeId: string;
+}
+
+export interface IssueDTO {
+  votes: number;
+  comments: number;
+  id: string;
+  summary: string;
+  description: string;
+  status: IssueStatusType;
+  date: string;
+}
+
+export interface PaginatedIssuesResponse {
+  content: IssueDTO[];
+  totalPages: number;
+  totalElements: number;
+  page: number;
+  size: number;
 }
 
 interface IssueDetailsResponse {
@@ -18,7 +41,7 @@ export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
   const res = await csrfFetch(
-    `http://localhost:8080/issues/${issueId}/details`
+    `${BASE_URL}${ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)}`
   );
 
   if (!res.ok) {
@@ -35,7 +58,7 @@ export const fetchIssueDetails = async (
 };
 
 export const createIssue = async (issue: IssueData): Promise<void> => {
-  const res = await csrfFetch("http://localhost:8080/issues", {
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -48,4 +71,19 @@ export const createIssue = async (issue: IssueData): Promise<void> => {
   }
 
   await res.json();
+};
+
+export const fetchIssues = async (
+  page = 1,
+  size = 10
+): Promise<PaginatedIssuesResponse> => {
+  const res = await csrfFetch(
+    `${BASE_URL}${ENDPOINTS.ISSUES}?page=${page}&size=${size}`
+  );
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  const data = (await res.json()) as PaginatedIssuesResponse;
+  return data;
 };

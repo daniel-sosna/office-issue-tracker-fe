@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Tabs,
@@ -12,7 +12,8 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import issues, { type Issue, type IssueDetails } from "@data/issues";
+import type { Issue, IssueDetails } from "@data/issues";
+import { fetchIssues } from "@api/issues";
 
 const tabLabels = [
   "All issues",
@@ -26,9 +27,39 @@ const tabLabels = [
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
+  const [paginatedIssues, setIssues] = useState<Issue[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
-  const issuesPerPage = 10;
-  const totalPages = Math.ceil(issues.length / issuesPerPage);
+  const size = 10;
+
+  useEffect(() => {
+    const getIssues = async () => {
+      setLoading(true);
+      try {
+        const data = await fetchIssues(page, size);
+
+        const normalized: Issue[] = (data.content ?? []).map((issue) => ({
+          id: issue.id,
+          title: issue.summary,
+          description: issue.description,
+          status: issue.status,
+          votes: issue.votes ?? 0,
+          comments: issue.comments ?? 0,
+          date: issue.date,
+        }));
+
+        setIssues(normalized);
+        setTotalPages(data.totalPages ?? 1);
+      } catch (error) {
+        console.error("Failed to fetch issues:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    void getIssues();
+  }, [page]);
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssue({
@@ -39,12 +70,7 @@ const IssuesList: React.FC = () => {
     });
   };
 
-  const paginatedIssues: Issue[] = issues.slice(
-    (page - 1) * issuesPerPage,
-    page * issuesPerPage
-  );
   const relativeZBox = { position: "relative", zIndex: 1 };
-
   const pillSelectStyle = {
     borderRadius: "9999px",
     backgroundColor: "#f4f4f4",
@@ -53,6 +79,8 @@ const IssuesList: React.FC = () => {
     "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
     "& fieldset": { borderRadius: "9999px" },
   };
+
+  if (loading) return <Box p={4}>Loading issues...</Box>;
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
