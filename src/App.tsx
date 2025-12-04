@@ -3,7 +3,7 @@ import {
   RouterProvider,
   Navigate,
 } from "react-router-dom";
-import { Profile } from "@pages/Profile";
+import { Profile } from "@pages/profile/Profile";
 import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
 import { ErrorPage } from "@pages/error/ErrorPage";
