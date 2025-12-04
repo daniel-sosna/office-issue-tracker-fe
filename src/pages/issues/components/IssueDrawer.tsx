@@ -183,6 +183,7 @@ export default function IssueDetailsSidebar({
               >
                 <MenuItem value="OPEN">Open</MenuItem>
                 <MenuItem value="IN_PROGRESS">In progress</MenuItem>
+                <MenuItem value="BLOCKED">Blocked</MenuItem>
                 <MenuItem value="RESOLVED">Resolved</MenuItem>
                 <MenuItem value="CLOSED">Closed</MenuItem>
               </Select>
