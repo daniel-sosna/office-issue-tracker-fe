@@ -228,6 +228,8 @@ export default function IssueDetailsSidebar({
                 <MenuItem value="Vilnius">Vilnius</MenuItem>
                 <MenuItem value="Kaunas">Kaunas</MenuItem>
                 <MenuItem value="Krakow">Krakow</MenuItem>
+                <MenuItem value="Gdansk">Gdansk</MenuItem>
+                <MenuItem value="Wroclaw">Wroclaw</MenuItem>
               </Select>
             ) : (
               <Typography>{issue.office}</Typography>
