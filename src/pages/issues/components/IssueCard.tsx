@@ -45,7 +45,7 @@ export default function IssueCard({
           {/* Issue summary */}
           <Box flex="1 1 50%">
             <Typography variant="subtitle1" fontWeight={500}>
-              {issue.title}
+              {issue.summary}
             </Typography>
             <Typography
               variant="body2"

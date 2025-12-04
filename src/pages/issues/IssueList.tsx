@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Tabs,
@@ -12,8 +12,10 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails } from "@data/issues";
-import { fetchIssues } from "@api/issues";
+import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
+import { useIssues } from "@hooks/useIssues";
+import { useOffices } from "@hooks/useOffices";
+import { useAuth } from "@context/UseAuth";
 
 const tabLabels = [
   "All issues",
@@ -22,44 +24,60 @@ const tabLabels = [
   "Resolved",
   "Closed",
   "Reported by me",
+] as const;
+
+const tabStatuses: (
+  | "OPEN"
+  | "IN_PROGRESS"
+  | "RESOLVED"
+  | "CLOSED"
+  | undefined
+)[] = [
+  undefined, // 0: All issues
+  "OPEN",
+  "IN_PROGRESS",
+  "RESOLVED",
+  "CLOSED",
+  undefined, // 5: Reported by me
 ];
 
+const sortMap: Record<
+  string,
+  "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc"
+> = {
+  latest: "dateDesc",
+  oldest: "dateAsc",
+  mostVotes: "votesDesc",
+  mostComments: "commentsDesc",
+};
+
 const IssuesList: React.FC = () => {
-  const [page, setPage] = useState(1);
-  const [selectedTab, setSelectedTab] = useState(0);
-  const [paginatedIssues, setIssues] = useState<Issue[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
+  const { user } = useAuth();
+  const currentUserId = user?.name;
+
+  const [page, setPage] = useState<number>(1);
+  const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [selectedSort, setSelectedSort] = useState<string>("latest");
+  const [selectedOffice, setSelectedOffice] = useState<string | undefined>(
+    undefined
+  );
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
-  const size = 10;
 
-  useEffect(() => {
-    const getIssues = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchIssues(page, size);
+  const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
 
-        const normalized: Issue[] = (data.content ?? []).map((issue) => ({
-          id: issue.id,
-          title: issue.summary,
-          description: issue.description,
-          status: issue.status,
-          votes: issue.votes ?? 0,
-          comments: issue.comments ?? 0,
-          date: issue.date,
-        }));
+  const statusParam = tabStatuses[selectedTab];
+  const reportedByParam = selectedTab === 5 ? currentUserId : undefined;
 
-        setIssues(normalized);
-        setTotalPages(data.totalPages ?? 1);
-      } catch (error) {
-        console.error("Failed to fetch issues:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const params: FetchIssuesParams = {
+    page,
+    size: 10,
+    status: statusParam,
+    sort: sortMap[selectedSort],
+    reportedBy: reportedByParam,
+    office: selectedOffice,
+  };
 
-    void getIssues();
-  }, [page]);
+  const { data, isLoading } = useIssues(params);
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssue({
@@ -69,18 +87,6 @@ const IssuesList: React.FC = () => {
       reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
     });
   };
-
-  const relativeZBox = { position: "relative", zIndex: 1 };
-  const pillSelectStyle = {
-    borderRadius: "9999px",
-    backgroundColor: "#f4f4f4",
-    px: 1.5,
-    fontSize: 14,
-    "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
-    "& fieldset": { borderRadius: "9999px" },
-  };
-
-  if (loading) return <Box p={4}>Loading issues...</Box>;
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -104,11 +110,19 @@ const IssuesList: React.FC = () => {
       {/* Tabs */}
       <Box
         mb={3}
-        sx={{ borderBottom: 1, borderColor: "divider", ...relativeZBox }}
+        sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+          position: "relative",
+          zIndex: 1,
+        }}
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue) => setSelectedTab(newValue as number)}
+          onChange={(_, newValue: number) => {
+            setSelectedTab(newValue);
+            setPage(1);
+          }}
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
@@ -134,64 +148,112 @@ const IssuesList: React.FC = () => {
         </Tabs>
       </Box>
 
-      {/* Filters */}
+      {/* Filters / Sort */}
       <Box
         display="flex"
         justifyContent="space-between"
         mb={4}
-        sx={relativeZBox}
+        sx={{ position: "relative", zIndex: 1 }}
       >
         <Box display="flex" gap={2}>
-          {["All offices", "All employees"].map((label) => (
-            <FormControl size="small" disabled key={label}>
-              <Select value="all" sx={{ minWidth: 140, ...pillSelectStyle }}>
-                <MenuItem value="all">{label}</MenuItem>
-              </Select>
-            </FormControl>
-          ))}
+          <FormControl size="small" disabled={isOfficesLoading}>
+            <Select
+              value={selectedOffice ?? "all"}
+              sx={{
+                minWidth: 140,
+                borderRadius: "9999px",
+                backgroundColor: "#f4f4f4",
+              }}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedOffice(val === "all" ? undefined : String(val));
+                setPage(1);
+              }}
+            >
+              <MenuItem value="all">All offices</MenuItem>
+              {offices.map((office) => (
+                <MenuItem key={office.id} value={office.id}>
+                  {office.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <FormControl size="small" disabled>
+            <Select
+              value="allEmployees"
+              sx={{
+                minWidth: 140,
+                borderRadius: "9999px",
+                backgroundColor: "#f4f4f4",
+              }}
+            >
+              <MenuItem value="allEmployees">All employees</MenuItem>
+            </Select>
+          </FormControl>
         </Box>
 
+        {/* Sort */}
         <Box display="flex" alignItems="center" gap={1}>
           <InputLabel sx={{ fontSize: 14, color: "text.secondary" }}>
             Sort by:
           </InputLabel>
-          <FormControl size="small" disabled>
-            <Select value="latest" sx={{ minWidth: 160, ...pillSelectStyle }}>
-              <MenuItem value="reportedByMe">Reported by me</MenuItem>
+          <FormControl size="small">
+            <Select
+              value={selectedSort}
+              sx={{
+                minWidth: 160,
+                borderRadius: "9999px",
+                backgroundColor: "#f4f4f4",
+              }}
+              onChange={(e) => {
+                setSelectedSort(e.target.value);
+                setPage(1);
+              }}
+            >
               <MenuItem value="latest">Latest</MenuItem>
               <MenuItem value="oldest">Oldest</MenuItem>
               <MenuItem value="mostVotes">Most votes</MenuItem>
+              <MenuItem value="mostComments">Most comments</MenuItem>
             </Select>
           </FormControl>
         </Box>
       </Box>
 
-      {/* Issue Cards */}
-      <Box sx={relativeZBox}>
-        {paginatedIssues.map((issue) => (
-          <IssueCard
-            key={issue.id}
-            issue={issue}
-            onClickCard={() => handleCardClick(issue)}
-          />
-        ))}
+      {/* Issue cards */}
+      <Box sx={{ position: "relative", zIndex: 1 }}>
+        {isLoading && <p>Loading issues…</p>}
+        {!isLoading &&
+          Array.isArray(data?.content) &&
+          data.content.map((issue: Issue) => (
+            <IssueCard
+              key={issue.id}
+              issue={issue}
+              onClickCard={() => handleCardClick(issue)}
+            />
+          ))}
       </Box>
 
-      {/* Issue details sidebar */}
+      {/* Issue drawer */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
       />
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
+      <Box
+        display="flex"
+        justifyContent="center"
+        mt={5}
+        sx={{ position: "relative", zIndex: 1 }}
+      >
         <Pagination
-          count={totalPages}
+          count={data?.totalPages ?? 1}
           page={page}
-          onChange={(_, value) => setPage(value)}
+          onChange={(_, value: number) => setPage(value)}
           color="primary"
           hidePrevButton={page === 1}
-          hideNextButton={page === totalPages}
+          hideNextButton={page === (data?.totalPages ?? 1)}
           sx={{
             "& .MuiPaginationItem-root.Mui-selected": {
               backgroundColor: "#78ece8",

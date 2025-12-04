@@ -35,7 +35,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
   return (
     <RightDrawer open={true} onClose={onClose}>
       <Typography variant="h4" sx={{ fontWeight: 400, mt: 3 }}>
-        {issue.title}
+        {issue.summary}
       </Typography>
 
       <Divider sx={{ my: 4 }} />
