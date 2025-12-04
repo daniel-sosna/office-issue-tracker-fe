@@ -2,10 +2,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { App } from "@app";
 import { AuthProvider } from "@context/AuthProvider";
-import { ThemeProvider, CssBaseline } from "@mui/material";
 import theme from "@styles/theme";
 import "@styles/index.css";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { CssBaseline, ThemeProvider } from "@mui/material";
 
 const queryClient = new QueryClient();
 

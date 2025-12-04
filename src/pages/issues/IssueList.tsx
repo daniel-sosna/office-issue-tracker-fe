@@ -16,7 +16,7 @@ import backgroundImage from "@assets/background.png";
 import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
 import { useIssues } from "@hooks/useIssues";
 import { useOffices } from "@hooks/useOffices";
-import { useAuth } from "@context/use-auth";
+import { useAuth } from "@context/UseAuth";
 
 const tabLabels = [
   "All issues",
