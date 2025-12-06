@@ -12,6 +12,7 @@ const statusStyles: Record<
   [IssueStatus.Open]: { backgroundColor: "#C1E1C1", color: "secondary" },
   [IssueStatus.InProgress]: { backgroundColor: "#B3E5FC", color: "secondary" },
   [IssueStatus.Resolved]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
+  [IssueStatus.Blocked]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
   [IssueStatus.Closed]: { backgroundColor: "#E0E0E0", color: "#9E9E9E" },
 };
 

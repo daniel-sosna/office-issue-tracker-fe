@@ -14,6 +14,14 @@ interface IssueDetailsResponse {
   reportedByAvatar: string;
 }
 
+interface IssuePageResponse {
+  content: Issue[];
+  totalElements: number;
+  totalPages: number;
+  page: number;
+  size: number;
+}
+
 export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
@@ -51,7 +59,7 @@ export const createIssue = async (issue: IssueData): Promise<void> => {
 };
 
 export const updateIssue = async (
-  issueId: number,
+  issueId: string,
   data: IssueData
 ): Promise<IssueDetails> => {
   const res = await csrfFetch(`http://localhost:8080/issues/${issueId}`, {
@@ -70,7 +78,7 @@ export const updateIssue = async (
 };
 
 export const updateIssueStatus = async (
-  issueId: number,
+  issueId: string,
   status: string
 ): Promise<IssueDetails> => {
   const res = await csrfFetch(
@@ -97,6 +105,7 @@ export const fetchIssues = async (): Promise<Issue[]> => {
   if (!res.ok) {
     throw new Error(`Failed to fetch issues (HTTP ${res.status})`);
   }
+  const data = (await res.json()) as IssuePageResponse;
 
-  return res.json() as Promise<Issue[]>;
+  return data.content;
 };

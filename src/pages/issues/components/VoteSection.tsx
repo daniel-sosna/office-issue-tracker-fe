@@ -4,8 +4,8 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { IssueStatus, type IssueStatusType } from "@data/issues";
 
 export interface VoteSectionProps {
-  votes: number;
-  comments: number;
+  votes?: number | null;
+  comments?: number | null;
   status: IssueStatusType;
   onVote?: () => void;
 }

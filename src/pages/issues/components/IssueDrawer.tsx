@@ -43,7 +43,7 @@ export default function IssueDetailsSidebar({
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
 
   const [form, setForm] = useState({
-    title: issue?.title ?? "",
+    summary: issue?.summary ?? "",
     description: issue?.description ?? "",
     status: issue?.status ?? "",
     office: issue?.office ?? "",
@@ -52,7 +52,7 @@ export default function IssueDetailsSidebar({
   useEffect(() => {
     if (issue) {
       setForm({
-        title: issue.title,
+        summary: issue.summary,
         description: issue.description,
         status: issue.status,
         office: issue.office,
@@ -65,7 +65,7 @@ export default function IssueDetailsSidebar({
 
     try {
       const updatedDetails = await updateIssue(issue.id, {
-        summary: form.title,
+        summary: form.summary,
         description: form.description,
         officeId: form.office,
       });
@@ -84,7 +84,7 @@ export default function IssueDetailsSidebar({
   function handleCancel() {
     if (!issue) return;
     setForm({
-      title: issue.title,
+      summary: issue.summary,
       description: issue.description,
       status: issue.status,
       office: issue.office,
@@ -113,9 +113,9 @@ export default function IssueDetailsSidebar({
         <TextField
           variant="standard"
           fullWidth
-          value={form.title}
+          value={form.summary}
           onChange={(e) =>
-            setForm((prev) => ({ ...prev, title: e.target.value }))
+            setForm((prev) => ({ ...prev, summary: e.target.value }))
           }
           InputProps={{
             readOnly: !canEdit,
@@ -149,8 +149,8 @@ export default function IssueDetailsSidebar({
               }}
             >
               <Avatar
-                alt={issue.reportedBy}
-                src={issue.reportedByAvatar}
+                alt={issue.reportedBy ?? "Unknown user"}
+                src={issue.reportedByAvatar || undefined}
                 sx={{ width: 20, height: 20, mr: 1 }}
               />
               <Typography variant="body1" color="text.primary">
@@ -164,7 +164,7 @@ export default function IssueDetailsSidebar({
           </Box>
           <Box>
             <Typography variant="body2" color="text.primary">
-              {issue.date}
+              {issue.dateCreated}
             </Typography>
           </Box>
 
