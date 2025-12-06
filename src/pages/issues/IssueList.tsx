@@ -53,7 +53,7 @@ const sortMap: Record<
 
 const IssuesList: React.FC = () => {
   const { user } = useAuth();
-  const currentUserId = user?.name;
+  const currentUserId = user?.id;
 
   const [page, setPage] = useState<number>(1);
   const [selectedTab, setSelectedTab] = useState<number>(0);

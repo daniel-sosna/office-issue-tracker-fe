@@ -54,7 +54,7 @@ export function mapFrontendStatus(
 }
 
 export interface Issue {
-  id: number;
+  id: string;
   summary: string;
   description: string;
   status: IssueStatusType;

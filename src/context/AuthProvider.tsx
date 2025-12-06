@@ -21,6 +21,7 @@ export const AuthProvider = ({ children }: Props) => {
         if (!data) setUser(null);
         else {
           setUser({
+            id: data.id,
             name: data.name,
             email: data.email,
             picture: data.picture,
