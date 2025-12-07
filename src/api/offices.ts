@@ -1,5 +1,5 @@
-import { csrfFetch } from "@utils/csrfFetch";
-import { BASE_URL, ENDPOINTS } from "./urls";
+import { api } from "@api/httpClient";
+import { ENDPOINTS } from "@api/urls";
 
 export interface Office {
   id: string;
@@ -8,10 +8,6 @@ export interface Office {
 }
 
 export const fetchOffices = async (): Promise<Office[]> => {
-  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.OFFICES}`);
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
-  const data = (await res.json()) as Office[];
-  return data;
+  const res = await api.get<Office[]>(ENDPOINTS.OFFICES);
+  return res.data;
 };

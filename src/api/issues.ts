@@ -1,10 +1,6 @@
-import {
-  type Issue,
-  type IssueDetails,
-  type IssueStatusType,
-} from "@data/issues";
-import { csrfFetch } from "@utils/csrfFetch";
-import { BASE_URL, ENDPOINTS } from "./urls";
+import { type IssueDetails, type IssueStatusType } from "@data/issues";
+import { api } from "@api/httpClient";
+import { ENDPOINTS } from "@api/urls";
 
 export interface IssueData {
   summary: string;
@@ -31,7 +27,7 @@ export interface PaginatedIssuesResponse {
 }
 
 interface IssueDetailsResponse {
-  issue: Issue;
+  issue: IssueDTO;
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
@@ -40,17 +36,18 @@ interface IssueDetailsResponse {
 export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
-  const res = await csrfFetch(
-    `${BASE_URL}${ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)}`
+  const { data } = await api.get<IssueDetailsResponse>(
+    ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
   );
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
-  const data = (await res.json()) as IssueDetailsResponse;
-
   return {
-    ...data.issue,
+    id: data.issue.id,
+    title: data.issue.summary,
+    description: data.issue.description,
+    status: data.issue.status,
+    votes: data.issue.votes ?? 0,
+    comments: data.issue.comments ?? 0,
+    date: data.issue.date,
     office: data.office,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
@@ -58,32 +55,15 @@ export const fetchIssueDetails = async (
 };
 
 export const createIssue = async (issue: IssueData): Promise<void> => {
-  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(issue),
-  });
-
-  if (!res.ok) {
-    throw new Error("Failed to submit the issue");
-  }
-
-  await res.json();
+  await api.post(ENDPOINTS.ISSUES, issue);
 };
 
 export const fetchIssues = async (
   page = 1,
   size = 10
 ): Promise<PaginatedIssuesResponse> => {
-  const res = await csrfFetch(
-    `${BASE_URL}${ENDPOINTS.ISSUES}?page=${page}&size=${size}`
-  );
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
-
-  const data = (await res.json()) as PaginatedIssuesResponse;
+  const { data } = await api.get<PaginatedIssuesResponse>(ENDPOINTS.ISSUES, {
+    params: { page, size },
+  });
   return data;
 };
