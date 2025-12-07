@@ -21,7 +21,7 @@ import { useAuth } from "@context/UseAuth.tsx";
 const tabLabels = [
   "All issues",
   "Open",
-  "Planned",
+  "In Progress",
   "Resolved",
   "Closed",
   "Reported by me",
