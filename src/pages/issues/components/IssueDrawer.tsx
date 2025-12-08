@@ -15,22 +15,24 @@ import type { IssueDetails } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { updateIssue, updateIssueStatus } from "@api/issues";
+import { deleteIssue, updateIssue, updateIssueStatus } from "@api/issues";
 
 interface Props {
   issue: IssueDetails | null;
   onClose: () => void;
-  canEdit: boolean;
-  canEditStatus: boolean;
+  issueOwner: boolean;
+  admin: boolean;
   onIssueUpdated: (updated: IssueDetails) => void;
+  onIssueDeleted: (deletedId: string) => void;
 }
 
 export default function IssueDetailsSidebar({
   issue,
   onClose,
-  canEdit,
-  canEditStatus,
+  issueOwner,
+  admin,
   onIssueUpdated,
+  onIssueDeleted,
 }: Props) {
   const TabIndex = {
     Details: 0,
@@ -41,7 +43,7 @@ export default function IssueDetailsSidebar({
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
-
+  const [deleting, setDeleting] = useState(false);
   const [form, setForm] = useState({
     summary: issue?.summary ?? "",
     description: issue?.description ?? "",
@@ -72,7 +74,7 @@ export default function IssueDetailsSidebar({
 
       let finalIssue = updatedDetails;
 
-      if (canEditStatus && form.status !== issue.status) {
+      if (admin && form.status !== issue.status) {
         finalIssue = await updateIssueStatus(issue.id, form.status);
       }
 
@@ -90,6 +92,24 @@ export default function IssueDetailsSidebar({
       office: issue.office,
     });
   }
+  const handleDelete = async () => {
+    if (!issue) return;
+
+    try {
+      setDeleting(true);
+
+      await deleteIssue(issue.id);
+
+      onIssueDeleted(issue.id);
+
+      onClose();
+    } catch (err) {
+      console.error("Failed to delete issue:", err);
+      alert("Failed to delete issue. Please try again.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (!issue) {
     return (
@@ -118,7 +138,7 @@ export default function IssueDetailsSidebar({
             setForm((prev) => ({ ...prev, summary: e.target.value }))
           }
           InputProps={{
-            readOnly: !canEdit,
+            readOnly: !issueOwner,
             sx: {
               fontSize: "22px",
               fontWeight: 400,
@@ -172,7 +192,7 @@ export default function IssueDetailsSidebar({
             <Typography variant="body2">Status</Typography>
           </Box>
           <Box>
-            {canEditStatus ? (
+            {admin ? (
               <Select
                 size="small"
                 value={form.status}
@@ -217,7 +237,7 @@ export default function IssueDetailsSidebar({
             <Typography variant="body2">Office</Typography>
           </Box>
           <Box>
-            {canEdit ? (
+            {issueOwner ? (
               <Select
                 size="small"
                 value={form.office}
@@ -279,7 +299,7 @@ export default function IssueDetailsSidebar({
               setForm((prev) => ({ ...prev, description: e.target.value }))
             }
             InputProps={{
-              readOnly: !canEdit,
+              readOnly: !issueOwner,
             }}
           />
         </Box>
@@ -299,21 +319,35 @@ export default function IssueDetailsSidebar({
 
       <Divider sx={{ my: 4, mt: 50 }} />
 
-      <Box display="flex" justifyContent="flex-end" mt={4} gap={2}>
-        <Button variant="outlined" size="small" onClick={handleCancel}>
-          Cancel
-        </Button>
+      {(issueOwner || admin) && (
+        <Box display="flex" justifyContent="flex-end">
+          <Button
+            variant="outlined"
+            size="medium"
+            onClick={() => void handleDelete()}
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </Box>
+      )}
 
-        <Button
-          variant="contained"
-          size="medium"
-          color="secondary"
-          // eslint-disable-next-line @typescript-eslint/no-misused-promises
-          onClick={handleSave}
-        >
-          Save
-        </Button>
-      </Box>
+      {issueOwner && (
+        <Box display="flex" justifyContent="flex-end">
+          <Button variant="outlined" size="medium" onClick={handleCancel}>
+            Cancel
+          </Button>
+
+          <Button
+            variant="contained"
+            size="medium"
+            color="secondary"
+            onClick={() => void handleSave()}
+          >
+            Save
+          </Button>
+        </Box>
+      )}
     </RightDrawer>
   );
 }

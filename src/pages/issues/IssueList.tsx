@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Tabs,
@@ -16,6 +16,7 @@ import backgroundImage from "@assets/background.png";
 
 import type { Issue, IssueDetails } from "@data/issues";
 import { fetchIssues, fetchIssueDetails } from "@api/issues";
+import { normalizeStatus } from "@utils/status.ts";
 import { useAuth } from "@context/UseAuth.tsx";
 
 const tabLabels = [
@@ -28,33 +29,46 @@ const tabLabels = [
 ];
 
 const IssuesList: React.FC = () => {
-  const { user } = useAuth();
-
-  const [issueList, setIssueList] = useState<Issue[]>([]);
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
+  const [paginatedIssues, setPaginatedIssues] = useState<Issue[]>([]);
+  const [totalPages, setTotalPages] = useState(1);
+  const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
+  const { user } = useAuth();
 
-  const issuesPerPage = 10;
-  const totalPages = Math.ceil(issueList.length / issuesPerPage);
+  const size = 10;
 
   useEffect(() => {
-    async function loadIssues() {
+    const load = async () => {
+      setLoading(true);
+
       try {
-        const fetchedIssues = await fetchIssues();
-        setIssueList(fetchedIssues);
+        const data = await fetchIssues(page, size);
+        const normalized = data.content.map((issue) => ({
+          id: issue.id,
+          summary: issue.summary,
+          description: issue.description,
+          status: normalizeStatus(issue.status),
+          createdBy: issue.createdBy,
+          officeId: issue.officeId,
+          dateCreated: issue.dateCreated,
+          dateModified: issue.dateModified ?? null,
+
+          votes: issue.votes ?? 0,
+          comments: issue.comments ?? 0,
+        }));
+        setPaginatedIssues(normalized);
+        setTotalPages(data.totalPages ?? 1);
       } catch (err) {
-        console.error("Failed to fetch issues:", err);
+        console.error("Failed to load issues:", err);
+      } finally {
+        setLoading(false);
       }
-    }
-    void loadIssues();
-  }, []);
+    };
 
-  const canEdit =
-    selectedIssue !== null &&
-    (selectedIssue.reportedBy === user?.email || user?.role === "ADMIN");
-
-  const canEditStatus = user?.role === "ADMIN";
+    void load();
+  }, [page]);
 
   const handleCardClick = async (issue: Issue) => {
     try {
@@ -65,19 +79,7 @@ const IssuesList: React.FC = () => {
     }
   };
 
-  function handleIssueUpdated(updatedIssue: IssueDetails) {
-    setIssueList((prev) =>
-      prev.map((issue) => (issue.id === updatedIssue.id ? updatedIssue : issue))
-    );
-    setSelectedIssue(updatedIssue);
-  }
-
-  const paginatedIssues = issueList.slice(
-    (page - 1) * issuesPerPage,
-    page * issuesPerPage
-  );
   const relativeZBox = { position: "relative", zIndex: 1 };
-
   const pillSelectStyle = {
     borderRadius: "9999px",
     backgroundColor: "#f4f4f4",
@@ -86,6 +88,8 @@ const IssuesList: React.FC = () => {
     "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
     "& fieldset": { borderRadius: "9999px" },
   };
+
+  if (loading) return <Box p={4}>Loading issues...</Box>;
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -100,8 +104,8 @@ const IssuesList: React.FC = () => {
           width: "90%",
           transform: "translate(-50%, -50%)",
           opacity: 0.12,
-          zIndex: 0,
           pointerEvents: "none",
+          zIndex: 0,
           filter: "grayscale(80%) brightness(1.2)",
         }}
       />
@@ -113,26 +117,25 @@ const IssuesList: React.FC = () => {
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue) => setSelectedTab(newValue as number)}
+          onChange={(_, v) => setSelectedTab(v as number)}
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
-            cursor: "pointer",
             "& .MuiTabs-indicator": {
               backgroundColor: "#78ece8",
-              boxShadow: "0 0 8px rgba(40,203,221,0.3)",
+              height: 3,
+              borderRadius: 2,
             },
           }}
         >
-          {tabLabels.map((label, index) => (
+          {tabLabels.map((label, i) => (
             <Tab
               key={label}
               label={label}
               sx={{
                 textTransform: "none",
                 fontWeight: 500,
-                color:
-                  index === selectedTab ? "text.primary" : "text.secondary",
+                color: i === selectedTab ? "text.primary" : "text.secondary",
               }}
             />
           ))}
@@ -162,7 +165,6 @@ const IssuesList: React.FC = () => {
           </InputLabel>
           <FormControl size="small" disabled>
             <Select value="latest" sx={{ minWidth: 160, ...pillSelectStyle }}>
-              <MenuItem value="reportedByMe">Reported by me</MenuItem>
               <MenuItem value="latest">Latest</MenuItem>
               <MenuItem value="oldest">Oldest</MenuItem>
               <MenuItem value="mostVotes">Most votes</MenuItem>
@@ -171,7 +173,6 @@ const IssuesList: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Issue Cards */}
       <Box sx={relativeZBox}>
         {paginatedIssues.map((issue) => (
           <IssueCard
@@ -182,29 +183,37 @@ const IssuesList: React.FC = () => {
         ))}
       </Box>
 
-      {/* Issue Drawer */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
-        canEdit={canEdit}
-        canEditStatus={canEditStatus}
-        onIssueUpdated={handleIssueUpdated}
+        issueOwner={
+          selectedIssue !== null && selectedIssue.createdByEmail === user?.email
+        }
+        admin={user?.role === "ADMIN"}
+        onIssueUpdated={(updated) => {
+          setPaginatedIssues((prev) =>
+            prev.map((issue) => (issue.id === updated.id ? updated : issue))
+          );
+          setSelectedIssue(updated);
+        }}
+        onIssueDeleted={(deletedId) => {
+          setPaginatedIssues((prev) =>
+            prev.filter((issue) => issue.id !== deletedId)
+          );
+          setSelectedIssue(null);
+        }}
       />
 
-      {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
         <Pagination
           count={totalPages}
           page={page}
-          onChange={(_, value) => setPage(value)}
+          onChange={(_, v) => setPage(v)}
           color="primary"
-          hidePrevButton={page === 1}
-          hideNextButton={page === totalPages}
           sx={{
             "& .MuiPaginationItem-root.Mui-selected": {
               backgroundColor: "#78ece8",
               borderRadius: "50%",
-              color: "primary.text",
             },
           }}
         />

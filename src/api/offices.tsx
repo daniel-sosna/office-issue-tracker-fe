@@ -1,4 +1,4 @@
-import { csrfFetch } from "@utils/csrfFetch";
+import { csrfFetch } from "@utils/csrfFetch.ts";
 
 export interface Office {
   id: string;

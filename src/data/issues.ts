@@ -17,12 +17,13 @@ export interface Issue {
   officeId: string;
   dateCreated: string;
   dateModified?: string | null;
-  votes?: number;
-  comments?: number;
+  votes?: number | null;
+  comments?: number | null;
 }
 
 export interface IssueDetails extends Issue {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
+  createdByEmail: string;
 }

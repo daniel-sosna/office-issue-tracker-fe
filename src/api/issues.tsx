@@ -1,5 +1,19 @@
 import { type Issue, type IssueDetails } from "@data/issues";
-import { csrfFetch } from "@utils/csrfFetch";
+import { csrfFetch } from "@utils/csrfFetch.ts";
+import { BASE_URL, ENDPOINTS } from "@api/urls.tsx";
+
+export interface BackendIssueDTO {
+  id: string;
+  summary: string;
+  description: string;
+  status: string;
+  createdBy: string;
+  officeId: string;
+  dateCreated: string;
+  dateModified: string | null;
+  votes: number | null;
+  comments: number | null;
+}
 
 export interface IssueData {
   summary: string;
@@ -12,10 +26,11 @@ interface IssueDetailsResponse {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
+  createdByEmail: string;
 }
 
 interface IssuePageResponse {
-  content: Issue[];
+  content: BackendIssueDTO[];
   totalElements: number;
   totalPages: number;
   page: number;
@@ -39,6 +54,7 @@ export const fetchIssueDetails = async (
     office: data.office,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
+    createdByEmail: data.createdByEmail,
   };
 };
 
@@ -99,13 +115,28 @@ export const updateIssueStatus = async (
   return res.json() as Promise<IssueDetails>;
 };
 
-export const fetchIssues = async (): Promise<Issue[]> => {
-  const res = await csrfFetch("http://localhost:8080/issues");
+export const fetchIssues = async (
+  page = 1,
+  size = 10
+): Promise<IssuePageResponse> => {
+  const backendPage = page;
+
+  const res = await csrfFetch(
+    `${BASE_URL}${ENDPOINTS.ISSUES}?page=${backendPage}&size=${size}`
+  );
 
   if (!res.ok) {
-    throw new Error(`Failed to fetch issues (HTTP ${res.status})`);
+    throw new Error(`HTTP ${res.status}`);
   }
-  const data = (await res.json()) as IssuePageResponse;
 
-  return data.content;
+  return (await res.json()) as IssuePageResponse;
+};
+export const deleteIssue = async (issueId: string): Promise<void> => {
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}`, {
+    method: "DELETE",
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to delete issue: HTTP ${res.status}`);
+  }
 };
