@@ -204,11 +204,13 @@ export default function IssueDetailsSidebar({
           }
           error={!!errors.summary}
           helperText={errors.summary}
-          InputProps={{
-            readOnly: !issueOwner,
-            sx: {
-              fontSize: "22px",
-              fontWeight: 400,
+          slotProps={{
+            input: {
+              readOnly: !issueOwner,
+              sx: {
+                fontSize: "22px",
+                fontWeight: 400,
+              },
             },
           }}
         />
@@ -408,8 +410,9 @@ export default function IssueDetailsSidebar({
                 backgroundColor: "#fafafa",
                 minHeight: "120px",
               }}
-              dangerouslySetInnerHTML={{ __html: issue.description }}
-            />
+            >
+              {stripHtmlDescription(issue.description)}
+            </Box>
           )}
         </Box>
       )}
