@@ -80,11 +80,26 @@ export const fetchIssueDetails = async (
   };
 };
 
-export const createIssue = async (issue: IssueData): Promise<void> => {
+export const createIssue = async (
+  issue: IssueData,
+  files?: File[]
+): Promise<void> => {
+  const formData = new FormData();
+
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(issue)], { type: "application/json" })
+  );
+
+  if (files && files.length > 0) {
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
   const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(issue),
+    body: formData,
   });
 
   if (!res.ok) throw new Error("Failed to submit the issue");
