@@ -80,7 +80,6 @@ export default function IssueDetailsSidebar({
       try {
         const data = await fetchOffices();
         setOffices(data);
-        console.log("offices:", data);
       } catch (err) {
         console.error("Failed to load offices:", err);
       }
@@ -90,7 +89,6 @@ export default function IssueDetailsSidebar({
   }, []);
 
   useEffect(() => {
-    console.log("officeId:", form.officeId);
     if (issue) {
       setForm({
         summary: issue.summary,
