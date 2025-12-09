@@ -10,9 +10,15 @@ interface Attachment {
 
 interface AttachmentListProps {
   attachments: Attachment[];
+  showDelete?: boolean;
+  onDelete?: (id: string) => void;
 }
 
-const AttachmentList: React.FC<AttachmentListProps> = ({ attachments }) => {
+const AttachmentList: React.FC<AttachmentListProps> = ({
+  attachments,
+  showDelete,
+  onDelete,
+}) => {
   return (
     <Box
       sx={{
@@ -29,6 +35,8 @@ const AttachmentList: React.FC<AttachmentListProps> = ({ attachments }) => {
           key={attachment.id}
           name={attachment.name}
           url={attachment.url}
+          showDelete={showDelete}
+          onDelete={() => onDelete?.(attachment.id)}
         />
       ))}
     </Box>

@@ -1,10 +1,12 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Box, Typography, Divider, Avatar, Tabs, Tab } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueDetails } from "@data/issues";
+import type { IssueDetails, IssueAttachmentResponse } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import { formatDate, stripHtml } from "@utils/formatters";
+import AttachmentList from "./AttachmentList";
+import { fetchIssueDetails } from "../../../api/issues";
 
 interface Props {
   issue: IssueDetails | null;
@@ -21,6 +23,34 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
+
+  const [attachments, setAttachments] = useState<
+    IssueAttachmentResponse[] | null
+  >(null);
+  const [, setLoading] = useState(false);
+  const [, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!issue?.id) {
+      setAttachments(null);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    fetchIssueDetails(issue.id)
+      .then((data) => {
+        setAttachments(data.attachments ?? null);
+      })
+      .catch((err) => {
+        console.error("Failed to fetch issue details:", err);
+        setError("Failed to load issue details.");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [issue?.id]);
 
   if (!issue) {
     return (
@@ -153,6 +183,22 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           <Typography variant="body1" color="text.primary">
             {stripHtml(issue.description)}
           </Typography>
+
+          {attachments && attachments.length > 0 && (
+            <Box mt={2}>
+              <Typography variant="body2" color="text.secondary" mb={1}>
+                Attachments
+              </Typography>
+
+              <AttachmentList
+                attachments={attachments.map((attachment) => ({
+                  id: attachment.id,
+                  name: attachment.originalFilename,
+                  url: attachment.url,
+                }))}
+              />
+            </Box>
+          )}
         </Box>
       )}
 

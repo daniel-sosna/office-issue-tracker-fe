@@ -1,9 +1,12 @@
 import React from "react";
-import { Box, Typography, Link, Avatar } from "@mui/material";
+import { Box, Typography, Link, Avatar, IconButton } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
 
 interface AttachmentItemProps {
   name: string;
   url: string;
+  showDelete?: boolean;
+  onDelete?: () => void;
 }
 
 const getThumbnailUrl = (url: string): string => {
@@ -27,13 +30,21 @@ const getDownloadUrl = (url: string): string => {
   return url;
 };
 
-const AttachmentItem: React.FC<AttachmentItemProps> = ({ name, url }) => {
+const AttachmentItem: React.FC<AttachmentItemProps> = ({
+  name,
+  url,
+  showDelete,
+  onDelete,
+}) => {
   const thumbnailUrl = getThumbnailUrl(url);
   const downloadUrl = getDownloadUrl(url);
+
+  const isLocal = url.startsWith("blob:");
 
   return (
     <Box
       sx={{
+        position: "relative",
         display: "flex",
         alignItems: "center",
         backgroundColor: "white",
@@ -46,6 +57,22 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({ name, url }) => {
         height: "64px",
       }}
     >
+      {showDelete && (
+        <IconButton
+          size="small"
+          onClick={onDelete}
+          color="primary"
+          disableRipple
+          sx={{
+            position: "absolute",
+            top: "-2px",
+            right: "-2px",
+          }}
+        >
+          <CloseIcon fontSize="small" />
+        </IconButton>
+      )}
+
       <Avatar
         src={thumbnailUrl}
         variant="rounded"
@@ -82,16 +109,32 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({ name, url }) => {
             Media
           </Link>{" "}
           •{" "}
-          <Link
-            href={downloadUrl}
-            underline="none"
-            sx={{
-              color: "text.secondary",
-              "&:hover": { color: "text.primary" },
-            }}
-          >
-            Download
-          </Link>
+          {isLocal ? (
+            <Typography
+              component="span"
+              sx={{
+                color: "text.disabled",
+                fontSize: "0.75rem",
+                lineHeight: 1.2,
+                cursor: "not-allowed",
+              }}
+            >
+              Download
+            </Typography>
+          ) : (
+            <Link
+              href={downloadUrl}
+              underline="none"
+              sx={{
+                color: "text.secondary",
+                fontSize: "0.75rem",
+                lineHeight: 1.2,
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              Download
+            </Link>
+          )}
         </Typography>
       </Box>
     </Box>

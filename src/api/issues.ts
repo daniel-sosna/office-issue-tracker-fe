@@ -1,5 +1,6 @@
 import {
   type Issue,
+  type IssueAttachmentResponse,
   type IssueDetails,
   type IssueStatusType,
 } from "@data/issues";
@@ -35,6 +36,7 @@ interface IssueDetailsResponse {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
+  attachments?: IssueAttachmentResponse[];
 }
 
 export const fetchIssueDetails = async (
@@ -54,16 +56,30 @@ export const fetchIssueDetails = async (
     office: data.office,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
+    attachments: data.attachments,
   };
 };
 
-export const createIssue = async (issue: IssueData): Promise<void> => {
+export const createIssue = async (
+  issue: IssueData,
+  files?: File[]
+): Promise<void> => {
+  const formData = new FormData();
+
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(issue)], { type: "application/json" })
+  );
+
+  if (files && files.length > 0) {
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
   const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(issue),
+    body: formData,
   });
 
   if (!res.ok) {

@@ -23,4 +23,13 @@ export interface IssueDetails extends Issue {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
+  attachments?: IssueAttachmentResponse[];
+}
+
+export interface IssueAttachmentResponse {
+  id: string;
+  url: string;
+  format: string;
+  originalFilename: string;
+  fileSize: number;
 }

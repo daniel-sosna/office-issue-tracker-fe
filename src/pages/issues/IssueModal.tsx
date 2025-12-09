@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import type { DragEvent, ChangeEvent } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -8,6 +9,7 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
+import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
 
 import EditorToolbar from "@components/EditorToolbar";
 
@@ -15,6 +17,7 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/offices";
 import { createIssue } from "@api/issues";
+import AttachmentList from "./components/AttachmentList";
 
 interface IssueFormData {
   summary: string;
@@ -34,6 +37,11 @@ interface Office {
   country: string;
 }
 
+interface FileWithURL {
+  file: File;
+  url: string;
+}
+
 export default function IssueModal({
   open,
   onClose,
@@ -44,6 +52,8 @@ export default function IssueModal({
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<FileWithURL[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -72,6 +82,9 @@ export default function IssueModal({
       setOffice("");
       setDescription("");
       setErrorMessage("");
+      selectedFiles.forEach((file) => URL.revokeObjectURL(file.url));
+      setSelectedFiles([]);
+      setIsDragging(false);
     }
   }, [open, editor]);
 
@@ -93,6 +106,51 @@ export default function IssueModal({
   const isFormValid =
     summary.trim() !== "" && office !== "" && description !== "";
 
+  const handleFilesAdd = (files: FileList | null) => {
+    if (!files) {
+      return;
+    }
+
+    const newFiles: FileWithURL[] = Array.from(files).map((file) => ({
+      file,
+      url: URL.createObjectURL(file),
+    }));
+
+    setSelectedFiles((prev) => {
+      const existingKeys = new Set(prev.map((f) => f.file.name + f.file.size));
+      const filtered = newFiles.filter(
+        (f) => !existingKeys.has(f.file.name + f.file.size)
+      );
+
+      return [...prev, ...filtered];
+    });
+  };
+
+  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+    handleFilesAdd(event.dataTransfer.files);
+  };
+
+  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!isDragging) {
+      setIsDragging(true);
+    }
+  };
+
+  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragging(false);
+  };
+
+  const handleFileInputChange = (event: ChangeEvent<HTMLInputElement>) => {
+    handleFilesAdd(event.target.files);
+  };
+
   const handleSubmit = async (): Promise<void> => {
     if (!isFormValid) {
       setErrorMessage("Please fill in all required fields");
@@ -105,12 +163,17 @@ export default function IssueModal({
       return;
     }
 
+    const issuePayload = {
+      summary,
+      description: editor?.getHTML() ?? "",
+      officeId: selectedOffice.id,
+    };
+
     try {
-      await createIssue({
-        summary,
-        description: editor?.getHTML() ?? "",
-        officeId: selectedOffice.id,
-      });
+      await createIssue(
+        issuePayload,
+        selectedFiles.map((f) => f.file)
+      );
 
       onSubmit({
         summary,
@@ -230,6 +293,134 @@ export default function IssueModal({
                 </MenuItem>
               ))}
             </TextField>
+          </Box>
+
+          <Box>
+            <Box
+              mb={1}
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                color: "text.secondary",
+                fontSize: "14px",
+              }}
+            >
+              <Box>Attachments</Box>
+
+              {selectedFiles.length > 0 && (
+                <Box
+                  sx={{
+                    fontSize: "13px",
+                    color: "primary.main",
+                    textDecoration: "underline",
+                    cursor: "pointer",
+                    fontWeight: "600",
+                  }}
+                  onClick={() => {
+                    const input = document.getElementById(
+                      "issue-file-input"
+                    ) as HTMLInputElement | null;
+                    input?.click();
+                  }}
+                >
+                  Upload File
+                </Box>
+              )}
+            </Box>
+
+            <input
+              id="issue-file-input"
+              type="file"
+              multiple
+              style={{ display: "none" }}
+              onChange={handleFileInputChange}
+            />
+
+            {selectedFiles.length === 0 && (
+              <Box
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                sx={{
+                  border: "2px dashed",
+                  borderColor: isDragging ? "secondary.main" : "divider",
+                  borderRadius: 1,
+                  padding: 2,
+                  textAlign: "center",
+                  cursor: "pointer",
+                  backgroundColor: isDragging ? "action.hover" : "transparent",
+                  transition: "all 0.2s",
+                }}
+                onClick={() => {
+                  const input = document.getElementById(
+                    "issue-file-input"
+                  ) as HTMLInputElement | null;
+                  input?.click();
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    py: 1.3,
+                    gap: 0.7,
+                    cursor: "pointer",
+                  }}
+                >
+                  <CloudUploadIcon
+                    sx={{ fontSize: 23, color: "text.secondary" }}
+                  />
+
+                  <Box sx={{ fontSize: "13px", color: "text.secondary" }}>
+                    Drop files to attach or{" "}
+                    <Box
+                      component="span"
+                      sx={{
+                        color: "primary.main",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                      }}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        const input = document.getElementById(
+                          "issue-file-input"
+                        ) as HTMLInputElement | null;
+                        input?.click();
+                      }}
+                    >
+                      browse
+                    </Box>
+                  </Box>
+                </Box>
+              </Box>
+            )}
+
+            <Box>
+              {selectedFiles.length > 0 && (
+                <AttachmentList
+                  attachments={selectedFiles.map((f) => ({
+                    id: f.file.name + f.file.size,
+                    name: f.file.name,
+                    url: f.url,
+                  }))}
+                  showDelete={true}
+                  onDelete={(id) => {
+                    setSelectedFiles((prev) =>
+                      prev.filter((f) => {
+                        const fileId = f.file.name + f.file.size;
+                        if (fileId === id) {
+                          URL.revokeObjectURL(f.url);
+                        }
+                        return fileId !== id;
+                      })
+                    );
+                  }}
+                />
+              )}
+            </Box>
           </Box>
         </Box>
       </DialogContent>
