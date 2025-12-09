@@ -1,7 +1,7 @@
 import { IssueStatus, type IssueStatusType } from "@data/issues";
 import { Chip } from "@mui/material";
 import theme from "@styles/theme";
-import { backendToFrontendStatus } from "@utils/issueStatusMapping";
+import { backendToFrontendStatus } from "@utils/IssueStatusMapping.ts";
 
 interface StatusChipProps {
   status: IssueStatusType;
