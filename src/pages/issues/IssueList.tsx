@@ -9,13 +9,11 @@ import {
   Pagination,
   InputLabel,
 } from "@mui/material";
-
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-
 import type { Issue, IssueDetails } from "@data/issues";
-import { fetchIssues, fetchIssueDetails } from "@api/issues";
+import { fetchIssues, fetchIssueDetails } from "@api/issues.ts";
 import { normalizeStatus } from "@utils/status.ts";
 import { useAuth } from "@context/UseAuth.tsx";
 import { formatDate } from "@utils/formatters.ts";
@@ -33,7 +31,7 @@ const tabLabels = [
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [paginatedIssues, setPaginatedIssues] = useState<Issue[]>([]);
+  const [paginatedIssues, setIssues] = useState<Issue[]>([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
@@ -60,10 +58,13 @@ const IssuesList: React.FC = () => {
           votes: issue.votes ?? 0,
           comments: issue.comments ?? 0,
         }));
-        setPaginatedIssues(normalized);
+        setIssues(normalized);
         setTotalPages(data.totalPages ?? 1);
-      } catch (err) {
-        console.error("Failed to load issues:", err);
+      } catch (err: unknown) {
+        console.error(
+          "Failed to load issues:",
+          err instanceof Error ? err.message : err
+        );
       } finally {
         setLoading(false);
       }
@@ -82,6 +83,7 @@ const IssuesList: React.FC = () => {
   };
 
   const relativeZBox = { position: "relative", zIndex: 1 };
+
   const pillSelectStyle = {
     borderRadius: "9999px",
     backgroundColor: "#f4f4f4",
@@ -90,9 +92,7 @@ const IssuesList: React.FC = () => {
     "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
     "& fieldset": { borderRadius: "9999px" },
   };
-  console.log("User email:", user?.email);
-  console.log("Issue createdBy:", selectedIssue?.reportedBy);
-  console.log("Match:", selectedIssue?.reportedBy === user?.email);
+  if (loading) return <Box p={4}>Loading issues...</Box>;
 
   if (loading) return <Box p={4}>Loading issues...</Box>;
 
@@ -109,8 +109,8 @@ const IssuesList: React.FC = () => {
           width: "90%",
           transform: "translate(-50%, -50%)",
           opacity: 0.12,
-          pointerEvents: "none",
           zIndex: 0,
+          pointerEvents: "none",
           filter: "grayscale(80%) brightness(1.2)",
         }}
       />
@@ -122,25 +122,26 @@ const IssuesList: React.FC = () => {
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, v) => setSelectedTab(v as number)}
+          onChange={(_, newValue) => setSelectedTab(newValue as number)}
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
+            cursor: "pointer",
             "& .MuiTabs-indicator": {
               backgroundColor: "#78ece8",
-              height: 3,
-              borderRadius: 2,
+              boxShadow: "0 0 8px rgba(40,203,221,0.3)",
             },
           }}
         >
-          {tabLabels.map((label, i) => (
+          {tabLabels.map((label, index) => (
             <Tab
               key={label}
               label={label}
               sx={{
                 textTransform: "none",
                 fontWeight: 500,
-                color: i === selectedTab ? "text.primary" : "text.secondary",
+                color:
+                  index === selectedTab ? "text.primary" : "text.secondary",
               }}
             />
           ))}
@@ -170,6 +171,7 @@ const IssuesList: React.FC = () => {
           </InputLabel>
           <FormControl size="small" disabled>
             <Select value="latest" sx={{ minWidth: 160, ...pillSelectStyle }}>
+              <MenuItem value="reportedByMe">Reported by me</MenuItem>
               <MenuItem value="latest">Latest</MenuItem>
               <MenuItem value="oldest">Oldest</MenuItem>
               <MenuItem value="mostVotes">Most votes</MenuItem>
@@ -178,6 +180,7 @@ const IssuesList: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Issue Cards */}
       <Box sx={relativeZBox}>
         {paginatedIssues.map((issue) => (
           <IssueCard
@@ -188,6 +191,7 @@ const IssuesList: React.FC = () => {
         ))}
       </Box>
 
+      {/* Issue details sidebar */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
@@ -209,29 +213,31 @@ const IssuesList: React.FC = () => {
             votes: updated.votes ?? 0,
             comments: updated.comments ?? 0,
           };
-          setPaginatedIssues((prev) =>
+          setIssues((prev) =>
             prev.map((issue) => (issue.id === updated.id ? normalized : issue))
           );
           setSelectedIssue(updated);
         }}
         onIssueDeleted={(deletedId) => {
-          setPaginatedIssues((prev) =>
-            prev.filter((issue) => issue.id !== deletedId)
-          );
+          setIssues((prev) => prev.filter((issue) => issue.id !== deletedId));
           setSelectedIssue(null);
         }}
       />
 
+      {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
         <Pagination
           count={totalPages}
           page={page}
-          onChange={(_, v) => setPage(v)}
+          onChange={(_, value) => setPage(value)}
           color="primary"
+          hidePrevButton={page === 1}
+          hideNextButton={page === totalPages}
           sx={{
             "& .MuiPaginationItem-root.Mui-selected": {
               backgroundColor: "#78ece8",
               borderRadius: "50%",
+              color: "primary.text",
             },
           }}
         />

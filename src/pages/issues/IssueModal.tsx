@@ -14,7 +14,7 @@ import EditorToolbar from "@components/EditorToolbar";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/offices";
-import { createIssue } from "@api/issues";
+import { createIssue } from "@api/issues.ts";
 
 interface IssueFormData {
   summary: string;

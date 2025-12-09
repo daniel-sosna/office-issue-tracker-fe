@@ -12,6 +12,7 @@ export interface AuthContextType {
   loading: boolean;
   user: User | null;
   setUser: (user: User | null) => void;
+  logout: () => Promise<void>;
   error: string | null;
 }
 
@@ -21,6 +22,9 @@ export const AuthContext = createContext<AuthContextType>({
   user: null,
   setUser: () => {
     throw new Error("setUser called outside of AuthProvider");
+  },
+  logout: () => {
+    throw new Error("logout called outside of AuthProvider");
   },
   error: null,
 });

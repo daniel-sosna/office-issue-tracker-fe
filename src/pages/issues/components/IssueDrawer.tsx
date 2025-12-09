@@ -20,7 +20,7 @@ import {
   fetchIssueDetails,
   updateIssue,
   updateIssueStatus,
-} from "@api/issues";
+} from "@api/issues.ts";
 import { fetchOffices } from "@api/offices";
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
 

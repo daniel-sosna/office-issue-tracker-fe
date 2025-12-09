@@ -1,5 +1,5 @@
 import { csrfFetch } from "@utils/csrfFetch.ts";
-import { BASE_URL, ENDPOINTS } from "@api/urls.tsx";
+import { BASE_URL, ENDPOINTS } from "@api/urls.ts";
 
 export interface Office {
   id: string;

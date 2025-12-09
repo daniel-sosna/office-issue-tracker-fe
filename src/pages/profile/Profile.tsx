@@ -1,18 +1,13 @@
 import { Navigate, useNavigate } from "react-router-dom";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { csrfFetch } from "@utils/csrfFetch.ts";
 import Stack from "@mui/material/Stack";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import { useAuth } from "@context/UseAuth";
 
-import IssueModal from "@pages/issues/IssueModal";
-import { useState } from "react";
-
 export const Profile = () => {
-  const { isAuthenticated, loading, user, setUser } = useAuth();
+  const { isAuthenticated, loading, user, logout } = useAuth();
   const navigate = useNavigate();
-  const [modalOpen, setModalOpen] = useState(false);
 
   if (loading) {
     return <div>Loading...</div>;
@@ -23,16 +18,8 @@ export const Profile = () => {
   }
 
   const handleLogout = async () => {
-    try {
-      await csrfFetch("/logout", {
-        method: "POST",
-      });
-    } catch (error) {
-      reportError(error);
-    } finally {
-      setUser(null);
-      void navigate("/login", { replace: true });
-    }
+    await logout();
+    void navigate("/login", { replace: true });
   };
 
   const picture = user?.picture ?? "/images/default.png";
@@ -53,16 +40,7 @@ export const Profile = () => {
         >
           Logout
         </Button>
-
-        <Button variant="contained" onClick={() => setModalOpen(true)}>
-          Report Issue
-        </Button>
       </div>
-      <IssueModal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        onSubmit={() => setModalOpen(false)}
-      />
     </div>
   );
 };
