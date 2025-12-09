@@ -18,6 +18,8 @@ import type { Issue, IssueDetails } from "@data/issues";
 import { fetchIssues, fetchIssueDetails } from "@api/issues";
 import { normalizeStatus } from "@utils/status.ts";
 import { useAuth } from "@context/UseAuth.tsx";
+import { formatDate } from "@utils/formatters.ts";
+import { truncate } from "@utils/truncation.ts";
 
 const tabLabels = [
   "All issues",
@@ -47,12 +49,12 @@ const IssuesList: React.FC = () => {
         const data = await fetchIssues(page, size);
         const normalized = data.content.map((issue) => ({
           id: issue.id,
-          summary: issue.summary,
-          description: issue.description,
+          summary: truncate(issue.summary, 80),
+          description: truncate(issue.description, 120),
           status: normalizeStatus(issue.status),
           createdBy: issue.createdBy,
           officeId: issue.officeId,
-          dateCreated: issue.dateCreated,
+          dateCreated: formatDate(issue.dateCreated),
           dateModified: issue.dateModified ?? null,
 
           votes: issue.votes ?? 0,
@@ -88,6 +90,9 @@ const IssuesList: React.FC = () => {
     "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
     "& fieldset": { borderRadius: "9999px" },
   };
+  console.log("User email:", user?.email);
+  console.log("Issue createdBy:", selectedIssue?.reportedBy);
+  console.log("Match:", selectedIssue?.reportedBy === user?.email);
 
   if (loading) return <Box p={4}>Loading issues...</Box>;
 
@@ -187,12 +192,25 @@ const IssuesList: React.FC = () => {
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
         issueOwner={
-          selectedIssue !== null && selectedIssue.createdByEmail === user?.email
+          selectedIssue !== null &&
+          selectedIssue.reportedByEmail === user?.email
         }
         admin={user?.role === "ADMIN"}
         onIssueUpdated={(updated) => {
+          const normalized = {
+            id: updated.id,
+            summary: truncate(updated.summary, 80),
+            description: truncate(updated.description, 120),
+            status: normalizeStatus(updated.status),
+            createdBy: updated.createdBy,
+            officeId: updated.officeId,
+            dateCreated: formatDate(updated.dateCreated),
+            dateModified: updated.dateModified ?? null,
+            votes: updated.votes ?? 0,
+            comments: updated.comments ?? 0,
+          };
           setPaginatedIssues((prev) =>
-            prev.map((issue) => (issue.id === updated.id ? updated : issue))
+            prev.map((issue) => (issue.id === updated.id ? normalized : issue))
           );
           setSelectedIssue(updated);
         }}

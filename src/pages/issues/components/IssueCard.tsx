@@ -2,6 +2,7 @@ import { Card, CardContent, Box, Typography } from "@mui/material";
 import type { Issue } from "@data/issues";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { VoteSection } from "@pages/issues/components/VoteSection";
+import { stripHtmlDescription } from "@utils/formatters.ts";
 
 interface IssueCardProps {
   issue: Issue;
@@ -56,8 +57,9 @@ export default function IssueCard({
                 WebkitBoxOrient: "vertical",
                 overflow: "hidden",
               }}
+              noWrap
             >
-              {issue.description}
+              {stripHtmlDescription(issue.description)}
             </Typography>
             <Typography
               variant="caption"

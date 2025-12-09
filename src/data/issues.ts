@@ -23,7 +23,8 @@ export interface Issue {
 
 export interface IssueDetails extends Issue {
   office: string;
+  officeId: string;
   reportedBy: string;
   reportedByAvatar: string;
-  createdByEmail: string;
+  reportedByEmail: string;
 }

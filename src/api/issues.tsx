@@ -1,4 +1,8 @@
-import { type Issue, type IssueDetails } from "@data/issues";
+import {
+  type Issue,
+  type IssueDetails,
+  type IssueStatusType,
+} from "@data/issues";
 import { csrfFetch } from "@utils/csrfFetch.ts";
 import { BASE_URL, ENDPOINTS } from "@api/urls.tsx";
 
@@ -22,11 +26,11 @@ export interface IssueData {
 }
 
 interface IssueDetailsResponse {
-  issue: Issue;
-  office: string;
+  issue: BackendIssueDTO;
+  officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
-  createdByEmail: string;
+  reportedByEmail: string;
 }
 
 interface IssuePageResponse {
@@ -41,25 +45,39 @@ export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
   const res = await csrfFetch(
-    `http://localhost:8080/issues/${issueId}/details`
+    `${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}/details`
   );
 
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
   }
+
   const data = (await res.json()) as IssueDetailsResponse;
 
+  const base: Issue = {
+    id: data.issue.id,
+    summary: data.issue.summary,
+    description: data.issue.description,
+    status: data.issue.status as IssueStatusType,
+    createdBy: data.issue.createdBy,
+    officeId: data.issue.officeId,
+    dateCreated: data.issue.dateCreated,
+    dateModified: data.issue.dateModified,
+    votes: data.issue.votes ?? 0,
+    comments: data.issue.comments ?? 0,
+  };
+
   return {
-    ...data.issue,
-    office: data.office,
+    ...base,
+    office: data.officeName,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
-    createdByEmail: data.createdByEmail,
+    reportedByEmail: data.reportedByEmail,
   };
 };
 
 export const createIssue = async (issue: IssueData): Promise<void> => {
-  const res = await csrfFetch("http://localhost:8080/issues", {
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -78,7 +96,7 @@ export const updateIssue = async (
   issueId: string,
   data: IssueData
 ): Promise<IssueDetails> => {
-  const res = await csrfFetch(`http://localhost:8080/issues/${issueId}`, {
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -98,7 +116,7 @@ export const updateIssueStatus = async (
   status: string
 ): Promise<IssueDetails> => {
   const res = await csrfFetch(
-    `http://localhost:8080/issues/${issueId}/status`,
+    `${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}/status`,
     {
       method: "PATCH",
       headers: {

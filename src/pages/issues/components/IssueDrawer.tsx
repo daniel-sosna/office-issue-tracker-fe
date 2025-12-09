@@ -11,12 +11,24 @@ import {
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueDetails } from "@data/issues";
+import type { IssueDetails, IssueStatusType } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import { deleteIssue, updateIssue, updateIssueStatus } from "@api/issues";
+import {
+  deleteIssue,
+  fetchIssueDetails,
+  updateIssue,
+  updateIssueStatus,
+} from "@api/issues";
+import { fetchOffices } from "@api/offices";
+import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
 
+interface Office {
+  id: string;
+  title: string;
+  country: string;
+}
 interface Props {
   issue: IssueDetails | null;
   onClose: () => void;
@@ -44,57 +56,112 @@ export default function IssueDetailsSidebar({
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [deleting, setDeleting] = useState(false);
-  const [form, setForm] = useState({
-    summary: issue?.summary ?? "",
-    description: issue?.description ?? "",
-    status: issue?.status ?? "",
-    office: issue?.office ?? "",
+  const [offices, setOffices] = useState<Office[]>([]);
+  const [editingOffice, setEditingOffice] = useState(false);
+  const [errors, setErrors] = useState<{
+    summary?: string;
+    description?: string;
+  }>({});
+
+  const [form, setForm] = useState<{
+    summary: string;
+    description: string;
+    status: IssueStatusType | "";
+    officeId: string;
+  }>({
+    summary: "",
+    description: "",
+    status: "",
+    officeId: "",
   });
 
   useEffect(() => {
+    const loadOffices = async () => {
+      try {
+        const data = await fetchOffices();
+        setOffices(data);
+        console.log("offices:", data);
+      } catch (err) {
+        console.error("Failed to load offices:", err);
+      }
+    };
+
+    void loadOffices();
+  }, []);
+
+  useEffect(() => {
+    console.log("officeId:", form.officeId);
     if (issue) {
       setForm({
         summary: issue.summary,
-        description: issue.description,
+        description: stripHtmlDescription(issue.description),
         status: issue.status,
-        office: issue.office,
+        officeId: issue.officeId || "",
       });
     }
   }, [issue]);
 
+  function validateForm() {
+    const newErrors: typeof errors = {};
+
+    if (!form.summary || form.summary.trim().length === 0) {
+      newErrors.summary = "Summary is required";
+    } else if (form.summary.trim().length < 3) {
+      newErrors.summary = "Summary must be at least 3 characters";
+    } else if (form.summary.length > 200) {
+      newErrors.summary = "Summary must be less than 200 characters";
+    }
+
+    if (!form.description || form.description.trim().length === 0) {
+      newErrors.description = "Description is required";
+    } else if (form.description.length > 2000) {
+      newErrors.description = "Description must be less than 2000 characters";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
   async function handleSave() {
     if (!issue) return;
+    if (!validateForm()) return;
 
     try {
-      const updatedDetails = await updateIssue(issue.id, {
-        summary: form.summary,
-        description: form.description,
-        officeId: form.office,
-      });
+      if (issueOwner) {
+        const payload = {
+          summary: form.summary,
+          description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
+          officeId: form.officeId || issue.officeId,
+        };
 
-      let finalIssue = updatedDetails;
-
-      if (admin && form.status !== issue.status) {
-        finalIssue = await updateIssueStatus(issue.id, form.status);
+        await updateIssue(issue.id, payload);
       }
 
-      onIssueUpdated(finalIssue);
+      if (admin && form.status !== issue.status) {
+        await updateIssueStatus(issue.id, form.status);
+      }
+      const refreshedIssue = await fetchIssueDetails(issue.id);
+      onIssueUpdated(refreshedIssue);
     } catch (err) {
       console.error("Failed to save issue:", err);
     }
   }
+
   function handleCancel() {
     if (!issue) return;
     setForm({
       summary: issue.summary,
-      description: issue.description,
+      description: stripHtmlDescription(issue.description),
       status: issue.status,
-      office: issue.office,
+      officeId: issue.officeId,
     });
   }
   const handleDelete = async () => {
     if (!issue) return;
-
+    const deleteConfirmation = window.confirm(
+      "Are you sure you want to delete this issue? This action cannot be undone."
+    );
+    if (!deleteConfirmation) return;
     try {
       setDeleting(true);
 
@@ -137,6 +204,8 @@ export default function IssueDetailsSidebar({
           onChange={(e) =>
             setForm((prev) => ({ ...prev, summary: e.target.value }))
           }
+          error={!!errors.summary}
+          helperText={errors.summary}
           InputProps={{
             readOnly: !issueOwner,
             sx: {
@@ -184,7 +253,7 @@ export default function IssueDetailsSidebar({
           </Box>
           <Box>
             <Typography variant="body2" color="text.primary">
-              {issue.dateCreated}
+              {formatDate(issue.dateCreated)}
             </Typography>
           </Box>
 
@@ -236,23 +305,52 @@ export default function IssueDetailsSidebar({
           <Box>
             <Typography variant="body2">Office</Typography>
           </Box>
-          <Box>
-            {issueOwner ? (
-              <Select
-                size="small"
-                value={form.office}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, office: e.target.value }))
-                }
-              >
-                <MenuItem value="Vilnius">Vilnius</MenuItem>
-                <MenuItem value="Kaunas">Kaunas</MenuItem>
-                <MenuItem value="Krakow">Krakow</MenuItem>
-                <MenuItem value="Gdansk">Gdansk</MenuItem>
-                <MenuItem value="Wroclaw">Wroclaw</MenuItem>
-              </Select>
-            ) : (
-              <Typography>{issue.office}</Typography>
+
+          <Box display="flex" alignItems="center" gap={1}>
+            {!editingOffice && (
+              <>
+                <Typography>{issue.office}</Typography>
+
+                {(issueOwner || admin) && (
+                  <Button
+                    variant="text"
+                    size="small"
+                    onClick={() => setEditingOffice(true)}
+                  >
+                    Edit
+                  </Button>
+                )}
+              </>
+            )}
+
+            {editingOffice && (issueOwner || admin) && (
+              <>
+                <Select
+                  size="small"
+                  value={form.officeId}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      officeId: e.target.value,
+                    }))
+                  }
+                  sx={{ minWidth: 160 }}
+                >
+                  {offices.map((o) => (
+                    <MenuItem key={o.id} value={o.id}>
+                      {o.title}, {o.country}
+                    </MenuItem>
+                  ))}
+                </Select>
+
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setEditingOffice(false)}
+                >
+                  Done
+                </Button>
+              </>
             )}
           </Box>
         </Box>
@@ -290,18 +388,31 @@ export default function IssueDetailsSidebar({
           <Typography variant="body2" color="text.secondary" mb={1}>
             Description
           </Typography>
-          <TextField
-            multiline
-            fullWidth
-            minRows={4}
-            value={form.description}
-            onChange={(e) =>
-              setForm((prev) => ({ ...prev, description: e.target.value }))
-            }
-            InputProps={{
-              readOnly: !issueOwner,
-            }}
-          />
+
+          {issueOwner ? (
+            <TextField
+              multiline
+              fullWidth
+              minRows={4}
+              value={form.description}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, description: e.target.value }))
+              }
+              error={!!errors.description}
+              helperText={errors.description}
+            />
+          ) : (
+            <Box
+              sx={{
+                border: "1px solid #eee",
+                borderRadius: 1,
+                padding: 2,
+                backgroundColor: "#fafafa",
+                minHeight: "120px",
+              }}
+              dangerouslySetInnerHTML={{ __html: issue.description }}
+            />
+          )}
         </Box>
       )}
 
@@ -319,35 +430,44 @@ export default function IssueDetailsSidebar({
 
       <Divider sx={{ my: 4, mt: 50 }} />
 
-      {(issueOwner || admin) && (
-        <Box display="flex" justifyContent="flex-end">
-          <Button
-            variant="outlined"
-            size="medium"
-            onClick={() => void handleDelete()}
-            disabled={deleting}
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
+      <Box
+        display="flex"
+        justifyContent="space-between"
+        alignItems="center"
+        mt={4}
+      >
+        <Box>
+          {(issueOwner || admin) && (
+            <Button
+              variant="outlined"
+              size="medium"
+              onClick={() => void handleDelete()}
+              disabled={deleting}
+            >
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+          )}
         </Box>
-      )}
 
-      {issueOwner && (
-        <Box display="flex" justifyContent="flex-end">
-          <Button variant="outlined" size="medium" onClick={handleCancel}>
-            Cancel
-          </Button>
+        <Box display="flex" gap={2}>
+          {(issueOwner || admin) && (
+            <>
+              <Button variant="outlined" size="medium" onClick={handleCancel}>
+                Cancel
+              </Button>
 
-          <Button
-            variant="contained"
-            size="medium"
-            color="secondary"
-            onClick={() => void handleSave()}
-          >
-            Save
-          </Button>
+              <Button
+                variant="contained"
+                size="medium"
+                color="secondary"
+                onClick={() => void handleSave()}
+              >
+                Save
+              </Button>
+            </>
+          )}
         </Box>
-      )}
+      </Box>
     </RightDrawer>
   );
 }
