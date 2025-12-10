@@ -1,6 +1,6 @@
 export const IssueStatus = {
   Open: "Open",
-  Planned: "Planned",
+  InProgress: "In Progress",
   Resolved: "Resolved",
   Closed: "Closed",
   Pending: "Pending",
@@ -22,7 +22,7 @@ export const backendToFrontendStatusMap: Record<
   IssueStatusType
 > = {
   OPEN: "Open",
-  IN_PROGRESS: "Planned",
+  IN_PROGRESS: "In Progress",
   RESOLVED: "Resolved",
   CLOSED: "Closed",
   PENDING: "Pending",
@@ -34,7 +34,7 @@ export const frontendToBackendStatusMap: Record<
   BackendIssueStatusType
 > = {
   Open: "OPEN",
-  Planned: "IN_PROGRESS",
+  "In Progress": "IN_PROGRESS",
   Resolved: "RESOLVED",
   Closed: "CLOSED",
   Pending: "PENDING",

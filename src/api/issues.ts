@@ -50,7 +50,7 @@ export interface FetchIssuesParams {
 function mapIssueStatus(apiStatus: string): IssueStatusType {
   const map: Record<string, IssueStatusType> = {
     OPEN: "Open",
-    IN_PROGRESS: "Planned",
+    IN_PROGRESS: "In Progress",
     RESOLVED: "Resolved",
     CLOSED: "Closed",
     PENDING: "Pending",

@@ -16,7 +16,7 @@ const statusStyles: Record<
     backgroundColor: palette.openBg,
     color: palette.mainText,
   },
-  [IssueStatus.Planned]: {
+  [IssueStatus.InProgress]: {
     backgroundColor: palette.inProgressBg,
     color: palette.mainText,
   },
