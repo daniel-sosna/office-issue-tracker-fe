@@ -12,9 +12,8 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails } from "@data/issues";
-import { useQuery } from "@tanstack/react-query";
-import { fetchIssues } from "@api/issues";
+import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
+import { useIssues } from "@hooks/useIssues";
 
 const tabLabels = [
   "All issues",
@@ -32,32 +31,14 @@ const IssuesList: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
 
-  const { data, isPending, error } = useQuery<{
-    paginatedIssues: Issue[];
-    totalPages: number;
-  }>({
-    queryKey: ["issues", page, size],
-    queryFn: async () => {
-      const data = await fetchIssues(page, size);
+  const params: FetchIssuesParams = {
+    page,
+    size,
+  };
 
-      const paginatedIssues: Issue[] = (data.content ?? []).map((issue) => ({
-        id: issue.id,
-        title: issue.summary,
-        description: issue.description,
-        status: issue.status,
-        votes: issue.votes ?? 0,
-        comments: issue.comments ?? 0,
-        date: issue.date,
-      }));
+  const { data, isLoading, error } = useIssues(params);
 
-      return {
-        paginatedIssues,
-        totalPages: data.totalPages ?? 1,
-      };
-    },
-  });
-
-  const paginatedIssues = data?.paginatedIssues ?? [];
+  const paginatedIssues = data?.content ?? [];
   const totalPages = data?.totalPages ?? 1;
 
   const handleCardClick = (issue: Issue) => {
@@ -79,7 +60,7 @@ const IssuesList: React.FC = () => {
     "& fieldset": { borderRadius: "9999px" },
   };
 
-  if (isPending) return <Box p={4}>Loading issues...</Box>;
+  if (isLoading) return <Box p={4}>Loading issues...</Box>;
 
   if (error) {
     return (
@@ -175,7 +156,7 @@ const IssuesList: React.FC = () => {
 
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
-        {paginatedIssues.map((issue) => (
+        {paginatedIssues.map((issue: Issue) => (
           <IssueCard
             key={issue.id}
             issue={issue}

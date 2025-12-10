@@ -1,4 +1,10 @@
-import { type IssueDetails, type IssueStatusType } from "@data/issues";
+import {
+  type Issue,
+  type IssueDetails,
+  type IssueStatusType,
+  type FetchIssuesParams,
+  type IssuePageResponse,
+} from "@data/issues";
 import { api } from "@api/httpClient";
 import { ENDPOINTS } from "@api/urls";
 
@@ -9,12 +15,12 @@ export interface IssueData {
 }
 
 export interface IssueDTO {
-  votes: number;
-  comments: number;
+  votes: number | null;
+  comments: number | null;
   id: string;
   summary: string;
   description: string;
-  status: IssueStatusType;
+  status: string;
   date: string;
 }
 
@@ -33,6 +39,19 @@ interface IssueDetailsResponse {
   reportedByAvatar: string;
 }
 
+function mapIssueStatus(apiStatus: string): IssueStatusType {
+  const map: Record<string, IssueStatusType> = {
+    OPEN: "Open",
+    IN_PROGRESS: "In progress",
+    RESOLVED: "Resolved",
+    CLOSED: "Closed",
+    PENDING: "Pending",
+    BLOCKED: "Blocked",
+  };
+
+  return map[apiStatus] ?? "Open";
+}
+
 export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
@@ -40,14 +59,18 @@ export const fetchIssueDetails = async (
     ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
   );
 
-  return {
+  const issue: Issue = {
     id: data.issue.id,
     title: data.issue.summary,
     description: data.issue.description,
-    status: data.issue.status,
+    status: mapIssueStatus(data.issue.status),
     votes: data.issue.votes ?? 0,
     comments: data.issue.comments ?? 0,
     date: data.issue.date,
+  };
+
+  return {
+    ...issue,
     office: data.office,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
@@ -59,11 +82,27 @@ export const createIssue = async (issue: IssueData): Promise<void> => {
 };
 
 export const fetchIssues = async (
-  page = 1,
-  size = 10
-): Promise<PaginatedIssuesResponse> => {
+  params: FetchIssuesParams
+): Promise<IssuePageResponse> => {
   const { data } = await api.get<PaginatedIssuesResponse>(ENDPOINTS.ISSUES, {
-    params: { page, size },
+    params,
   });
-  return data;
+
+  const content: Issue[] = (data.content ?? []).map((issue) => ({
+    id: issue.id,
+    title: issue.summary,
+    description: issue.description,
+    status: mapIssueStatus(issue.status),
+    votes: issue.votes ?? 0,
+    comments: issue.comments ?? 0,
+    date: issue.date,
+  }));
+
+  return {
+    content,
+    totalPages: data.totalPages,
+    totalElements: data.totalElements,
+    page: data.page,
+    size: data.size,
+  };
 };
