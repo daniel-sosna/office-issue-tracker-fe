@@ -14,6 +14,7 @@ import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
 import { useIssues } from "@hooks/useIssues";
+import Loader from "@components/Loader";
 
 const tabLabels = [
   "All issues",
@@ -65,6 +66,10 @@ const IssuesList: React.FC = () => {
   };
 
   if (isLoading) return <Box p={4}>Loading issues...</Box>;
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   if (error) {
     return (
