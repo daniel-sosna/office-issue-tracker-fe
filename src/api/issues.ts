@@ -45,7 +45,6 @@ function mapIssueStatus(apiStatus: string): IssueStatusType {
     IN_PROGRESS: "In progress",
     RESOLVED: "Resolved",
     CLOSED: "Closed",
-    PENDING: "Pending",
     BLOCKED: "Blocked",
   };
 
