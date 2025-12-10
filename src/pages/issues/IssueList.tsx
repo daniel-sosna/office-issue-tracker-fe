@@ -8,6 +8,8 @@ import {
   MenuItem,
   Pagination,
   InputLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
@@ -35,6 +37,7 @@ const IssuesList: React.FC = () => {
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
+  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
 
   const size = 10;
@@ -54,17 +57,13 @@ const IssuesList: React.FC = () => {
           officeId: issue.officeId,
           dateCreated: formatDate(issue.dateCreated),
           dateModified: issue.dateModified ?? null,
-
           votes: issue.votes ?? 0,
           comments: issue.comments ?? 0,
         }));
         setIssues(normalized);
         setTotalPages(data.totalPages ?? 1);
       } catch (err: unknown) {
-        console.error(
-          "Failed to load issues:",
-          err instanceof Error ? err.message : err
-        );
+        setError(err instanceof Error ? err.message : "Failed to load issues.");
       } finally {
         setLoading(false);
       }
@@ -78,7 +77,9 @@ const IssuesList: React.FC = () => {
       const details = await fetchIssueDetails(issue.id.toString());
       setSelectedIssue(details);
     } catch (err) {
-      console.error("Failed to fetch issue details:", err);
+      setError(
+        err instanceof Error ? err.message : "Failed to load issue details."
+      );
     }
   };
 
@@ -92,7 +93,6 @@ const IssuesList: React.FC = () => {
     "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
     "& fieldset": { borderRadius: "9999px" },
   };
-  if (loading) return <Box p={4}>Loading issues...</Box>;
 
   if (loading) return <Box p={4}>Loading issues...</Box>;
 
@@ -242,6 +242,20 @@ const IssuesList: React.FC = () => {
           }}
         />
       </Box>
+      <Snackbar
+        open={!!error}
+        autoHideDuration={4000}
+        onClose={() => setError(null)}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert
+          severity="error"
+          onClose={() => setError(null)}
+          sx={{ width: "100%" }}
+        >
+          {error}
+        </Alert>
+      </Snackbar>
     </Box>
   );
 };
