@@ -77,8 +77,30 @@ export const fetchIssueDetails = async (
   };
 };
 
-export const createIssue = async (issue: IssueData): Promise<void> => {
-  await api.post(ENDPOINTS.ISSUES, issue);
+export const createIssue = async (
+  issue: IssueData,
+  files?: File[]
+): Promise<void> => {
+  if (!files || files.length === 0) {
+    await api.post(ENDPOINTS.ISSUES, issue);
+    return;
+  }
+  const formData = new FormData();
+
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(issue)], { type: "application/json" })
+  );
+
+  files.forEach((file) => {
+    formData.append("files", file);
+  });
+
+  await api.post(ENDPOINTS.ISSUES, formData, {
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
+  });
 };
 
 export const fetchIssues = async (
