@@ -13,7 +13,7 @@ import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
-import { useIssues } from "@hooks/useIssues";
+import { useIssues } from "@api/queries/useIssues";
 import Loader from "@components/Loader";
 
 const tabLabels = [

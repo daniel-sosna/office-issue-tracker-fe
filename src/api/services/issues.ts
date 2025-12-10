@@ -5,8 +5,8 @@ import {
   type FetchIssuesParams,
   type IssuePageResponse,
 } from "@data/issues";
-import { api } from "@api/httpClient";
-import { ENDPOINTS } from "@api/urls";
+import { api } from "@api/services/httpClient";
+import { ENDPOINTS } from "@api/services/urls";
 
 export interface IssueData {
   summary: string;

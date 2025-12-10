@@ -13,8 +13,8 @@ import EditorToolbar from "@components/EditorToolbar";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { fetchOffices } from "@api/offices";
-import { createIssue } from "@api/issues";
+import { fetchOffices } from "@api/services/offices";
+import { createIssue } from "@api/services/issues";
 
 interface IssueFormData {
   summary: string;

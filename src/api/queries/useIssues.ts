@@ -1,5 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchIssues } from "@api/issues";
+import { fetchIssues } from "@api/services/issues";
 import type { IssuePageResponse, FetchIssuesParams } from "@data/issues";
 import { queryKeys } from "@data/queryKeys";
 

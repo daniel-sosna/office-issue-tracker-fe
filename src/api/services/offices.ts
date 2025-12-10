@@ -1,5 +1,5 @@
-import { api } from "@api/httpClient";
-import { ENDPOINTS } from "@api/urls";
+import { api } from "@api/services/httpClient";
+import { ENDPOINTS } from "@api/services/urls";
 
 export interface Office {
   id: string;
