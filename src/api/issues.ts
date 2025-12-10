@@ -76,39 +76,67 @@ export const fetchIssueDetails = async (
   };
 };
 
-export const createIssue = async (issue: IssueData): Promise<void> => {
+export const createIssue = async (
+  issue: IssueData,
+  files?: File[]
+): Promise<void> => {
+  const formData = new FormData();
+
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(issue)], { type: "application/json" })
+  );
+
+  if (files && files.length > 0) {
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
   const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(issue),
+    body: formData,
   });
 
   if (!res.ok) {
-    throw new Error("Failed to submit the issue");
+    throw new Error(`Failed to submit the issue (HTTP ${res.status})`);
   }
-
-  await res.json();
 };
 
 export const updateIssue = async (
   issueId: string,
-  data: IssueData
+  data: IssueData,
+  files?: File[],
+  deleteAttachmentIds?: string[]
 ): Promise<IssueDetails> => {
+  const formData = new FormData();
+
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(data)], { type: "application/json" })
+  );
+
+  if (files && files.length > 0) {
+    files.forEach((file) => {
+      formData.append("files", file);
+    });
+  }
+
+  if (deleteAttachmentIds && deleteAttachmentIds.length > 0) {
+    deleteAttachmentIds.forEach((id) => {
+      formData.append("deleteAttachmentIds", id);
+    });
+  }
+
   const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}`, {
     method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(data),
+    body: formData,
   });
 
   if (!res.ok) {
     throw new Error(`Failed to update issue (HTTP ${res.status})`);
   }
-
-  return res.json() as Promise<IssueDetails>;
+  return (await res.json()) as IssueDetails;
 };
 
 export const updateIssueStatus = async (
@@ -130,17 +158,15 @@ export const updateIssueStatus = async (
     throw new Error(`Failed to update status (HTTP ${res.status})`);
   }
 
-  return res.json() as Promise<IssueDetails>;
+  return (await res.json()) as Promise<IssueDetails>;
 };
 
 export const fetchIssues = async (
   page = 1,
   size = 10
 ): Promise<IssuePageResponse> => {
-  const backendPage = page;
-
   const res = await csrfFetch(
-    `${BASE_URL}${ENDPOINTS.ISSUES}?page=${backendPage}&size=${size}`
+    `${BASE_URL}${ENDPOINTS.ISSUES}?page=${page}&size=${size}`
   );
 
   if (!res.ok) {

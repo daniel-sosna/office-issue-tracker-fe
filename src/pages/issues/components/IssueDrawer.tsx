@@ -8,6 +8,8 @@ import {
   Tab,
   MenuItem,
   Select,
+  Alert,
+  Snackbar,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
@@ -58,6 +60,7 @@ export default function IssueDetailsSidebar({
   const [deleting, setDeleting] = useState(false);
   const [offices, setOffices] = useState<Office[]>([]);
   const [editingOffice, setEditingOffice] = useState(false);
+  const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     summary?: string;
     description?: string;
@@ -140,6 +143,7 @@ export default function IssueDetailsSidebar({
       }
       const refreshedIssue = await fetchIssueDetails(issue.id);
       onIssueUpdated(refreshedIssue);
+      setSaveSuccess(true);
     } catch (err) {
       console.error("Failed to save issue:", err);
     }
@@ -189,284 +193,306 @@ export default function IssueDetailsSidebar({
   return (
     <RightDrawer open={true} onClose={onClose}>
       <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mt={3}
-        mb={1}
+        sx={{ display: "flex", flexDirection: "column", minHeight: "92.5vh" }}
       >
-        <TextField
-          variant="standard"
-          fullWidth
-          value={form.summary}
-          onChange={(e) =>
-            setForm((prev) => ({ ...prev, summary: e.target.value }))
-          }
-          error={!!errors.summary}
-          helperText={errors.summary}
-          slotProps={{
-            input: {
-              readOnly: !issueOwner,
-              sx: {
-                fontSize: "22px",
-                fontWeight: 400,
-              },
-            },
-          }}
-        />
-      </Box>
-
-      <Divider sx={{ my: 4 }} />
-      <Box mb={2}>
-        <Box
-          display="grid"
-          gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
-          gap={2}
-          alignItems="center"
-        >
-          <Box>
-            <Typography variant="body2">Reported by</Typography>
-          </Box>
-          <Box display="flex" alignItems="center" gap={1}>
-            <Box
-              sx={{
-                borderRadius: 16,
-                p: "4px 12px 4px 5px",
-                display: "inline-flex",
-                alignItems: "center",
-                backgroundColor: "#f4f4f4",
+        <Box sx={{ flex: 1, overflowY: "auto" }}>
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+            mt={3}
+            mb={1}
+          >
+            <TextField
+              variant="standard"
+              fullWidth
+              value={form.summary}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, summary: e.target.value }))
+              }
+              error={!!errors.summary}
+              helperText={errors.summary}
+              slotProps={{
+                input: {
+                  readOnly: !issueOwner,
+                  sx: {
+                    fontSize: "22px",
+                    fontWeight: 400,
+                  },
+                },
               }}
-            >
-              <Avatar
-                alt={issue.reportedBy ?? "Unknown user"}
-                src={issue.reportedByAvatar || undefined}
-                sx={{ width: 20, height: 20, mr: 1 }}
-              />
-              <Typography variant="body1" color="text.primary">
-                {issue.reportedBy}
-              </Typography>
-            </Box>
+            />
           </Box>
 
-          <Box>
-            <Typography variant="body2">Reported</Typography>
-          </Box>
-          <Box>
-            <Typography variant="body2" color="text.primary">
-              {formatDate(issue.dateCreated)}
-            </Typography>
-          </Box>
+          <Divider sx={{ my: 4 }} />
 
-          <Box>
-            <Typography variant="body2">Status</Typography>
-          </Box>
-          <Box>
-            {admin ? (
-              <Select
-                size="small"
-                value={form.status}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, status: e.target.value }))
-                }
-                sx={{ minWidth: 120 }}
-              >
-                <MenuItem value="OPEN">Open</MenuItem>
-                <MenuItem value="IN_PROGRESS">In progress</MenuItem>
-                <MenuItem value="BLOCKED">Blocked</MenuItem>
-                <MenuItem value="RESOLVED">Resolved</MenuItem>
-                <MenuItem value="CLOSED">Closed</MenuItem>
-              </Select>
-            ) : (
-              <StatusChip status={issue.status} />
-            )}
-          </Box>
-
-          <Box>
-            <Typography variant="body2">Upvotes</Typography>
-          </Box>
-          <Box>
+          <Box mb={2}>
             <Box
-              sx={{
-                display: "inline-flex",
-                alignItems: "center",
-                px: 1,
-                py: 0.25,
-                borderRadius: 16,
-                backgroundColor: "#f4f4f4",
-              }}
+              display="grid"
+              gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
+              gap={2}
+              alignItems="center"
             >
-              <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
-              <Typography variant="body2" color="text.primary">
-                {issue.votes}
-              </Typography>
-            </Box>
-          </Box>
+              <Box>
+                <Typography variant="body2">Reported by</Typography>
+              </Box>
+              <Box display="flex" alignItems="center" gap={1}>
+                <Box
+                  sx={{
+                    borderRadius: 16,
+                    p: "4px 12px 4px 5px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    backgroundColor: "#f4f4f4",
+                  }}
+                >
+                  <Avatar
+                    alt={issue.reportedBy ?? "Unknown user"}
+                    src={issue.reportedByAvatar || undefined}
+                    sx={{ width: 20, height: 20, mr: 1 }}
+                  />
+                  <Typography variant="body1" color="text.primary">
+                    {issue.reportedBy}
+                  </Typography>
+                </Box>
+              </Box>
 
-          <Box>
-            <Typography variant="body2">Office</Typography>
-          </Box>
+              <Box>
+                <Typography variant="body2">Reported</Typography>
+              </Box>
+              <Box>
+                <Typography variant="body2" color="text.primary">
+                  {formatDate(issue.dateCreated)}
+                </Typography>
+              </Box>
 
-          <Box display="flex" alignItems="center" gap={1}>
-            {!editingOffice && (
-              <>
-                <Typography>{issue.office}</Typography>
-
-                {(issueOwner || admin) && (
-                  <Button
-                    variant="text"
+              <Box>
+                <Typography variant="body2">Status</Typography>
+              </Box>
+              <Box>
+                {admin ? (
+                  <Select
                     size="small"
-                    onClick={() => setEditingOffice(true)}
+                    value={form.status}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, status: e.target.value }))
+                    }
+                    sx={{ minWidth: 120 }}
                   >
-                    Edit
-                  </Button>
+                    <MenuItem value="OPEN">Open</MenuItem>
+                    <MenuItem value="IN_PROGRESS">In progress</MenuItem>
+                    <MenuItem value="BLOCKED">Blocked</MenuItem>
+                    <MenuItem value="RESOLVED">Resolved</MenuItem>
+                    <MenuItem value="CLOSED">Closed</MenuItem>
+                  </Select>
+                ) : (
+                  <StatusChip status={issue.status} />
                 )}
-              </>
-            )}
+              </Box>
 
-            {editingOffice && (issueOwner || admin) && (
-              <>
-                <Select
-                  size="small"
-                  value={form.officeId}
+              <Box>
+                <Typography variant="body2">Upvotes</Typography>
+              </Box>
+              <Box>
+                <Box
+                  sx={{
+                    display: "inline-flex",
+                    alignItems: "center",
+                    px: 1,
+                    py: 0.25,
+                    borderRadius: 16,
+                    backgroundColor: "#f4f4f4",
+                  }}
+                >
+                  <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
+                  <Typography variant="body2" color="text.primary">
+                    {issue.votes}
+                  </Typography>
+                </Box>
+              </Box>
+
+              <Box>
+                <Typography variant="body2">Office</Typography>
+              </Box>
+
+              <Box display="flex" alignItems="center" gap={1}>
+                {!editingOffice && (
+                  <>
+                    <Typography>{issue.office}</Typography>
+                    {(issueOwner || admin) && (
+                      <Button
+                        variant="text"
+                        size="small"
+                        onClick={() => setEditingOffice(true)}
+                      >
+                        Edit
+                      </Button>
+                    )}
+                  </>
+                )}
+
+                {editingOffice && (issueOwner || admin) && (
+                  <>
+                    <Select
+                      size="small"
+                      value={form.officeId}
+                      onChange={(e) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          officeId: e.target.value,
+                        }))
+                      }
+                      sx={{ minWidth: 160 }}
+                    >
+                      {offices.map((o) => (
+                        <MenuItem key={o.id} value={o.id}>
+                          {o.title}, {o.country}
+                        </MenuItem>
+                      ))}
+                    </Select>
+
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setEditingOffice(false)}
+                    >
+                      Done
+                    </Button>
+                  </>
+                )}
+              </Box>
+            </Box>
+          </Box>
+
+          <Tabs
+            value={selectedTab}
+            onChange={(_, value: TabIndex) => setSelectedTab(value)}
+            sx={{
+              borderBottom: 1,
+              borderColor: "divider",
+              mb: 2,
+              "& .MuiTabs-indicator": {
+                height: 3,
+                backgroundColor: "#78ece8",
+                borderRadius: 2,
+              },
+            }}
+          >
+            <Tab label="Details" sx={{ textTransform: "none" }} />
+            <Tab
+              disabled={true}
+              label={`Comments (${issue.comments})`}
+              sx={{ textTransform: "none" }}
+            />
+            <Tab
+              disabled={true}
+              label="Activity log"
+              sx={{ textTransform: "none" }}
+            />
+          </Tabs>
+
+          {selectedTab === TabIndex.Details && (
+            <Box>
+              <Typography variant="body2" color="text.secondary" mb={1}>
+                Description
+              </Typography>
+              {issueOwner ? (
+                <TextField
+                  multiline
+                  fullWidth
+                  minRows={4}
+                  value={form.description}
                   onChange={(e) =>
                     setForm((prev) => ({
                       ...prev,
-                      officeId: e.target.value,
+                      description: e.target.value,
                     }))
                   }
-                  sx={{ minWidth: 160 }}
+                  error={!!errors.description}
+                  helperText={errors.description}
+                />
+              ) : (
+                <Box
+                  sx={{
+                    border: "1px solid #eee",
+                    borderRadius: 1,
+                    padding: 2,
+                    backgroundColor: "#fafafa",
+                    minHeight: "120px",
+                  }}
                 >
-                  {offices.map((o) => (
-                    <MenuItem key={o.id} value={o.id}>
-                      {o.title}, {o.country}
-                    </MenuItem>
-                  ))}
-                </Select>
+                  {stripHtmlDescription(issue.description)}
+                </Box>
+              )}
+            </Box>
+          )}
+
+          {selectedTab === TabIndex.Comments && (
+            <Typography variant="body1" color="text.primary">
+              Comments section is under construction.
+            </Typography>
+          )}
+
+          {selectedTab === TabIndex.Activity && (
+            <Typography variant="body1" color="text.primary">
+              Activity log is under construction.
+            </Typography>
+          )}
+        </Box>
+
+        <Divider sx={{ mt: 4 }} />
+
+        <Box
+          display="flex"
+          justifyContent="space-between"
+          alignItems="center"
+          mt={4}
+        >
+          <Box>
+            {(issueOwner || admin) && (
+              <Button
+                variant="outlined"
+                size="medium"
+                onClick={() => void handleDelete()}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : "Delete"}
+              </Button>
+            )}
+          </Box>
+
+          <Box display="flex" gap={2}>
+            {(issueOwner || admin) && (
+              <>
+                <Button variant="outlined" size="medium" onClick={handleCancel}>
+                  Cancel
+                </Button>
 
                 <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setEditingOffice(false)}
+                  variant="contained"
+                  size="medium"
+                  color="secondary"
+                  onClick={() => void handleSave()}
                 >
-                  Done
+                  Save
                 </Button>
               </>
             )}
-          </Box>
-        </Box>
-      </Box>
-
-      <Tabs
-        value={selectedTab}
-        onChange={(_, value: TabIndex) => setSelectedTab(value)}
-        sx={{
-          borderBottom: 1,
-          borderColor: "divider",
-          mb: 2,
-          "& .MuiTabs-indicator": {
-            height: 3,
-            backgroundColor: "#78ece8",
-            borderRadius: 2,
-          },
-        }}
-      >
-        <Tab label="Details" sx={{ textTransform: "none" }} />
-        <Tab
-          disabled={true}
-          label={`Comments (${issue.comments})`}
-          sx={{ textTransform: "none" }}
-        />
-        <Tab
-          disabled={true}
-          label="Activity log"
-          sx={{ textTransform: "none" }}
-        />
-      </Tabs>
-
-      {selectedTab === TabIndex.Details && (
-        <Box>
-          <Typography variant="body2" color="text.secondary" mb={1}>
-            Description
-          </Typography>
-
-          {issueOwner ? (
-            <TextField
-              multiline
-              fullWidth
-              minRows={4}
-              value={form.description}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, description: e.target.value }))
-              }
-              error={!!errors.description}
-              helperText={errors.description}
-            />
-          ) : (
-            <Box
-              sx={{
-                border: "1px solid #eee",
-                borderRadius: 1,
-                padding: 2,
-                backgroundColor: "#fafafa",
-                minHeight: "120px",
-              }}
+            <Snackbar
+              open={saveSuccess}
+              autoHideDuration={3000}
+              onClose={() => setSaveSuccess(false)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >
-              {stripHtmlDescription(issue.description)}
-            </Box>
-          )}
-        </Box>
-      )}
-
-      {selectedTab === TabIndex.Comments && (
-        <Typography variant="body1" color="text.primary">
-          Comments section is under construction.
-        </Typography>
-      )}
-
-      {selectedTab === TabIndex.Activity && (
-        <Typography variant="body1" color="text.primary">
-          Activity log is under construction.
-        </Typography>
-      )}
-
-      <Divider sx={{ my: 4, mt: 50 }} />
-
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        alignItems="center"
-        mt={4}
-      >
-        <Box>
-          {(issueOwner || admin) && (
-            <Button
-              variant="outlined"
-              size="medium"
-              onClick={() => void handleDelete()}
-              disabled={deleting}
-            >
-              {deleting ? "Deleting..." : "Delete"}
-            </Button>
-          )}
-        </Box>
-
-        <Box display="flex" gap={2}>
-          {(issueOwner || admin) && (
-            <>
-              <Button variant="outlined" size="medium" onClick={handleCancel}>
-                Cancel
-              </Button>
-
-              <Button
-                variant="contained"
-                size="medium"
-                color="secondary"
-                onClick={() => void handleSave()}
+              <Alert
+                onClose={() => setSaveSuccess(false)}
+                severity="success"
+                sx={{ width: "100%" }}
               >
-                Save
-              </Button>
-            </>
-          )}
+                Issue saved successfully!
+              </Alert>
+            </Snackbar>
+          </Box>
         </Box>
       </Box>
     </RightDrawer>
