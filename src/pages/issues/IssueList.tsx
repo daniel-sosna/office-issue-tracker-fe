@@ -36,10 +36,14 @@ const IssuesList: React.FC = () => {
     size,
   };
 
-  const { data, isLoading, error } = useIssues(params);
+  const {
+    data = { content: [], totalPages: 1 },
+    isLoading,
+    error,
+  } = useIssues(params);
 
-  const paginatedIssues = data?.content ?? [];
-  const totalPages = data?.totalPages ?? 1;
+  const paginatedIssues = data.content;
+  const totalPages = data.totalPages;
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssue({
