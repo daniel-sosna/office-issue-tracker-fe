@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchIssues } from "@api/services/issues";
 import type { IssuePageResponse, FetchIssuesParams } from "@data/issues";
-import { queryKeys } from "@data/queryKeys";
+import { queryKeys } from "@api/queries/queryKeys";
 
 export function useIssues(params: FetchIssuesParams) {
   return useQuery<IssuePageResponse, Error>({
