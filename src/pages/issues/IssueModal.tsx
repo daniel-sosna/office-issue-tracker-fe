@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import type { DragEvent, ChangeEvent } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -59,6 +59,12 @@ export default function IssueModal({
     extensions: [StarterKit],
     content: "",
   });
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const triggerFileInput = () => {
+    fileInputRef.current?.click();
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -317,12 +323,7 @@ export default function IssueModal({
                     cursor: "pointer",
                     fontWeight: "600",
                   }}
-                  onClick={() => {
-                    const input = document.getElementById(
-                      "issue-file-input"
-                    ) as HTMLInputElement | null;
-                    input?.click();
-                  }}
+                  onClick={triggerFileInput}
                 >
                   Upload File
                 </Box>
@@ -330,7 +331,7 @@ export default function IssueModal({
             </Box>
 
             <input
-              id="issue-file-input"
+              ref={fileInputRef}
               type="file"
               multiple
               style={{ display: "none" }}
@@ -352,11 +353,9 @@ export default function IssueModal({
                   backgroundColor: isDragging ? "action.hover" : "transparent",
                   transition: "all 0.2s",
                 }}
-                onClick={() => {
-                  const input = document.getElementById(
-                    "issue-file-input"
-                  ) as HTMLInputElement | null;
-                  input?.click();
+                onClick={(e) => {
+                  e.stopPropagation();
+                  triggerFileInput();
                 }}
               >
                 <Box
@@ -385,10 +384,7 @@ export default function IssueModal({
                       }}
                       onClick={(e) => {
                         e.stopPropagation();
-                        const input = document.getElementById(
-                          "issue-file-input"
-                        ) as HTMLInputElement | null;
-                        input?.click();
+                        triggerFileInput();
                       }}
                     >
                       browse

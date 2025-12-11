@@ -27,8 +27,6 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
   const [attachments, setAttachments] = useState<
     IssueAttachmentResponse[] | null
   >(null);
-  const [, setLoading] = useState(false);
-  const [, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!issue?.id) {
@@ -36,19 +34,12 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
       return;
     }
 
-    setLoading(true);
-    setError(null);
-
     fetchIssueDetails(issue.id)
       .then((data) => {
         setAttachments(data.attachments ?? null);
       })
       .catch((err) => {
         console.error("Failed to fetch issue details:", err);
-        setError("Failed to load issue details.");
-      })
-      .finally(() => {
-        setLoading(false);
       });
   }, [issue?.id]);
 

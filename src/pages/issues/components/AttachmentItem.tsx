@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import { Box, Typography, Link, Avatar, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
@@ -36,8 +36,8 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
   showDelete,
   onDelete,
 }) => {
-  const thumbnailUrl = getThumbnailUrl(url);
-  const downloadUrl = getDownloadUrl(url);
+  const thumbnailUrl = useMemo(() => getThumbnailUrl(url), [url]);
+  const downloadUrl = useMemo(() => getDownloadUrl(url), [url]);
 
   const isLocal = url.startsWith("blob:");
 
