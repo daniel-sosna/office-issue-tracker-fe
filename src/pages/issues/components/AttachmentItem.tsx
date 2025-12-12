@@ -107,33 +107,25 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
             }}
           >
             Media
-          </Link>{" "}
-          •{" "}
-          {isLocal ? (
-            <Typography
-              component="span"
-              sx={{
-                color: "text.disabled",
-                fontSize: "0.75rem",
-                lineHeight: 1.2,
-                cursor: "not-allowed",
-              }}
-            >
-              Download
-            </Typography>
-          ) : (
-            <Link
-              href={downloadUrl}
-              underline="none"
-              sx={{
-                color: "text.secondary",
-                fontSize: "0.75rem",
-                lineHeight: 1.2,
-                "&:hover": { color: "text.primary" },
-              }}
-            >
-              Download
-            </Link>
+          </Link>
+
+          {!isLocal && (
+            <>
+              {" "}
+              •{" "}
+              <Link
+                href={downloadUrl}
+                underline="none"
+                sx={{
+                  color: "text.secondary",
+                  fontSize: "0.75rem",
+                  lineHeight: 1.2,
+                  "&:hover": { color: "text.primary" },
+                }}
+              >
+                Download
+              </Link>
+            </>
           )}
         </Typography>
       </Box>
