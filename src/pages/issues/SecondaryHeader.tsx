@@ -24,15 +24,35 @@ const SecondaryHeader: React.FC = () => {
         </Typography>
       </Box>
 
-      <Button
-        variant="contained"
-        color="secondary"
-        startIcon={<AddIcon />}
-        sx={{ borderRadius: "50px" }}
-        onClick={() => setModalOpen(true)}
-      >
-        Report Issue
-      </Button>
+      <Box display="flex" gap={1}>
+        <Button
+          variant="outlined"
+          sx={{
+            borderRadius: "50px",
+            borderColor: "text.secondary",
+            color: "secondary",
+            backgroundColor: "#fff",
+            fontWeight: "bold",
+            "&:hover": {
+              backgroundColor: "#d8d8d8ff",
+              borderColor: "#0000001f",
+            },
+          }}
+          onClick={() => setModalOpen(true)}
+        >
+          Manage Offices
+        </Button>
+
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AddIcon />}
+          sx={{ borderRadius: "50px" }}
+          onClick={() => setModalOpen(true)}
+        >
+          Report Issue
+        </Button>
+      </Box>
 
       <IssueModal
         open={modalOpen}
