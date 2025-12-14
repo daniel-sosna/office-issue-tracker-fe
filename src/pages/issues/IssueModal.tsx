@@ -109,9 +109,12 @@ export default function IssueModal({
 
     try {
       await createIssue({
-        summary,
-        description: editor?.getHTML() ?? "",
-        officeId: selectedOffice.id,
+        issue: {
+          summary,
+          description: editor?.getHTML() ?? "",
+          officeId: selectedOffice.id,
+        },
+        // files: [] // jei neturi failų upload'o, gali visai nerašyti
       });
 
       onSubmit({
@@ -126,7 +129,13 @@ export default function IssueModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      disableRestoreFocus
+    >
       <DialogTitle
         sx={{
           display: "flex",
