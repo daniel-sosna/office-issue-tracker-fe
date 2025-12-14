@@ -14,6 +14,7 @@ import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue, IssueDetails } from "@data/issues";
 import { fetchIssues } from "@api/issues";
+import { voteOnIssue } from "@api/votes";
 
 const tabLabels = [
   "All issues",
@@ -71,17 +72,40 @@ const IssuesList: React.FC = () => {
     });
   };
 
-  const handleVoteClick = (issueId: string) => {
+  const handleVoteClick = async (issueId: string) => {
+    let voted: boolean;
     setIssues((prev) =>
       prev.map((issue) => {
-        if (issue.id === issueId) {
-          const hasVoted = issue.hasVoted;
-          const votes = hasVoted ? issue.votes - 1 : issue.votes + 1;
-          return { ...issue, hasVoted: !hasVoted, votes: votes };
-        }
-        return issue;
+        if (issue.id !== issueId) return issue;
+
+        voted = !issue.hasVoted;
+
+        return {
+          ...issue,
+          hasVoted: voted,
+          votes: voted ? issue.votes + 1 : issue.votes - 1,
+        };
       })
     );
+
+    try {
+      await voteOnIssue(issueId, voted!);
+    } catch (error) {
+      // rollback
+      setIssues((prev) =>
+        prev.map((issue) =>
+          issue.id === issueId
+            ? {
+                ...issue,
+                hasVoted: !issue.hasVoted,
+                votes: issue.hasVoted ? issue.votes + 1 : issue.votes - 1,
+              }
+            : issue
+        )
+      );
+
+      console.error("Failed to vote on issue:", error);
+    }
   };
 
   const relativeZBox = { position: "relative", zIndex: 1 };
@@ -187,7 +211,7 @@ const IssuesList: React.FC = () => {
             key={issue.id}
             issue={issue}
             onClickCard={() => handleCardClick(issue)}
-            onClickVote={() => handleVoteClick(issue.id)}
+            onClickVote={() => void handleVoteClick(issue.id)}
           />
         ))}
       </Box>
