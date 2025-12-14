@@ -65,8 +65,6 @@ const IssuesList: React.FC = () => {
     "& fieldset": { borderRadius: "9999px" },
   };
 
-  if (isLoading) return <Box p={4}>Loading issues...</Box>;
-
   if (isLoading) {
     return <Loader />;
   }
