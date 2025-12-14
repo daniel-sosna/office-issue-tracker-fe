@@ -62,16 +62,21 @@ export function VoteSection({
             borderRadius: "9999px",
             textTransform: "none",
             visibility: isClosedOrResolved ? "hidden" : "visible",
-            borderColor: "primary.main",
+            borderColor: hasVoted ? "vote.active" : "vote.inactive",
+            backgroundColor: hasVoted ? "vote.activeBg" : "vote.inactiveBg",
             "&:hover": {
-              borderColor: "primary.dark",
-              backgroundColor: "#d8d8d8ff",
+              borderColor: hasVoted
+                ? "vote.hover.active"
+                : "vote.hover.inactive",
+              backgroundColor: hasVoted
+                ? "vote.hover.activeBg"
+                : "vote.hover.inactiveBg",
               boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
               transform: "translateY(-0.5px)",
             },
           }}
         >
-          {hasVoted ? "Unvote" : "Vote"}
+          {hasVoted ? "Voted" : "Vote"}
         </Button>
       </Box>
     </Box>
