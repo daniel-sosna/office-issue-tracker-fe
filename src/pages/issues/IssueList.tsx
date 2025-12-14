@@ -44,9 +44,10 @@ const IssuesList: React.FC = () => {
           title: issue.summary,
           description: issue.description,
           status: issue.status,
-          votes: issue.votes ?? 0,
-          comments: issue.comments ?? 0,
           date: issue.date,
+          hasVoted: issue.hasVoted,
+          votes: issue.voteCount,
+          comments: issue.commentCount ?? 0,
         }));
 
         setIssues(normalized);
@@ -68,6 +69,10 @@ const IssuesList: React.FC = () => {
       reportedBy: "John Doe",
       reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
     });
+  };
+
+  const handleVoteClick = (issueId: string) => {
+    console.log("Vote clicked for issue:", issueId);
   };
 
   const relativeZBox = { position: "relative", zIndex: 1 };
@@ -173,6 +178,7 @@ const IssuesList: React.FC = () => {
             key={issue.id}
             issue={issue}
             onClickCard={() => handleCardClick(issue)}
+            onClickVote={() => handleVoteClick(issue.id)}
           />
         ))}
       </Box>

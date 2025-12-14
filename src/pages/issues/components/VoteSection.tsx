@@ -4,13 +4,15 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { IssueStatus, type IssueStatusType } from "@data/issues";
 
 export interface VoteSectionProps {
+  hasVoted: boolean;
   votes: number;
   comments: number;
   status: IssueStatusType;
-  onVote?: () => void;
+  onVote: () => void;
 }
 
 export function VoteSection({
+  hasVoted,
   votes,
   comments,
   status,
@@ -48,7 +50,10 @@ export function VoteSection({
           variant="outlined"
           size="small"
           color="secondary"
-          onClick={onVote}
+          onClick={(e) => {
+            e.stopPropagation();
+            onVote();
+          }}
           disabled={isClosedOrResolved}
           startIcon={
             <ArrowUpwardIcon fontSize="medium" sx={{ color: "primary.main" }} />
@@ -66,7 +71,7 @@ export function VoteSection({
             },
           }}
         >
-          Vote
+          {hasVoted ? "Unvote" : "Vote"}
         </Button>
       </Box>
     </Box>

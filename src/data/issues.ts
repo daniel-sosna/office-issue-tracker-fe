@@ -14,9 +14,10 @@ export interface Issue {
   title: string;
   description: string;
   status: IssueStatusType;
+  date: string;
+  hasVoted: boolean;
   votes: number;
   comments: number;
-  date: string;
 }
 
 export interface IssueDetails extends Issue {

@@ -13,13 +13,14 @@ export interface IssueData {
 }
 
 export interface IssueDTO {
-  votes: number;
-  comments: number;
   id: string;
   summary: string;
   description: string;
   status: IssueStatusType;
   date: string;
+  hasVoted: boolean;
+  voteCount: number;
+  commentCount: number;
 }
 
 export interface PaginatedIssuesResponse {
