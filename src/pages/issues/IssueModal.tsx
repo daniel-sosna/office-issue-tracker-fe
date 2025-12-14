@@ -14,7 +14,7 @@ import EditorToolbar from "@components/EditorToolbar";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/services/offices";
-import { createIssue } from "@api/services/issues";
+import { useCreateIssue } from "@api/queries/useCreateIssue";
 
 interface IssueFormData {
   summary: string;
@@ -49,6 +49,8 @@ export default function IssueModal({
     extensions: [StarterKit],
     content: "",
   });
+
+  const { mutateAsync: createIssue, isPending } = useCreateIssue();
 
   useEffect(() => {
     if (!open) return;
@@ -266,7 +268,7 @@ export default function IssueModal({
             backgroundColor: "secondary.main",
           }}
         >
-          Report Issue
+          {isPending ? "Reporting..." : "Report Issue"}
         </Button>
       </Box>
 

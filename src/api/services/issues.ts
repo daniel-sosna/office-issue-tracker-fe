@@ -8,10 +8,15 @@ import {
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-export interface IssueData {
+export interface CreateIssuePayload {
   summary: string;
   description: string;
   officeId: string;
+}
+
+export interface CreateIssueArgs {
+  issue: CreateIssuePayload;
+  files?: File[];
 }
 
 export interface IssueDTO {
@@ -76,10 +81,10 @@ export const fetchIssueDetails = async (
   };
 };
 
-export const createIssue = async (
-  issue: IssueData,
-  files?: File[]
-): Promise<void> => {
+export const createIssue = async ({
+  issue,
+  files,
+}: CreateIssueArgs): Promise<void> => {
   if (!files || files.length === 0) {
     await api.post(ENDPOINTS.ISSUES, issue);
     return;
