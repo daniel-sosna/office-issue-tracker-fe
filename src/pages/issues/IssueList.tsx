@@ -72,7 +72,16 @@ const IssuesList: React.FC = () => {
   };
 
   const handleVoteClick = (issueId: string) => {
-    console.log("Vote clicked for issue:", issueId);
+    setIssues((prev) =>
+      prev.map((issue) => {
+        if (issue.id === issueId) {
+          const hasVoted = issue.hasVoted;
+          const votes = hasVoted ? issue.votes - 1 : issue.votes + 1;
+          return { ...issue, hasVoted: !hasVoted, votes: votes };
+        }
+        return issue;
+      })
+    );
   };
 
   const relativeZBox = { position: "relative", zIndex: 1 };
