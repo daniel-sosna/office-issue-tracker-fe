@@ -114,7 +114,6 @@ export default function IssueModal({
           description: editor?.getHTML() ?? "",
           officeId: selectedOffice.id,
         },
-        // files: [] // jei neturi failų upload'o, gali visai nerašyti
       });
 
       onSubmit({
