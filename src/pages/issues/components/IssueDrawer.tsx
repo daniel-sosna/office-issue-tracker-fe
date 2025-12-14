@@ -1,5 +1,14 @@
 import { useEffect, useState } from "react";
-import { Box, Typography, Divider, Avatar, Tabs, Tab } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  Avatar,
+  Tabs,
+  Tab,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import type { IssueDetails, IssueAttachmentResponse } from "@data/issues";
@@ -28,6 +37,8 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
     IssueAttachmentResponse[] | null
   >(null);
 
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
   useEffect(() => {
     if (!issue?.id) {
       setAttachments(null);
@@ -38,8 +49,8 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
       .then((data) => {
         setAttachments(data.attachments ?? null);
       })
-      .catch((err) => {
-        console.error("Failed to fetch issue details:", err);
+      .catch(() => {
+        setErrorMessage("Failed to fetch issue details:");
       });
   }, [issue?.id]);
 
@@ -204,6 +215,21 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           Activity log is under construction.
         </Typography>
       )}
+
+      <Snackbar
+        open={!!errorMessage}
+        autoHideDuration={4000}
+        onClose={() => setErrorMessage(null)}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          severity="error"
+          onClose={() => setErrorMessage(null)}
+          sx={{ width: "100%" }}
+        >
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </RightDrawer>
   );
 }
