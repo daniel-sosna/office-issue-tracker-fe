@@ -1,5 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createIssue, type CreateIssueArgs } from "@api/services/issues";
+import { queryKeys } from "./queryKeys";
 
 export function useCreateIssue() {
   const queryClient = useQueryClient();
@@ -9,7 +10,7 @@ export function useCreateIssue() {
       return await createIssue(vars);
     },
     onSuccess: () => {
-      void queryClient.invalidateQueries({ queryKey: ["issues"] });
+      void queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
     },
   });
 }
