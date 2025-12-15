@@ -35,7 +35,8 @@
       "@styles/*": ["styles/*"],
       "@assets/*": ["assets/*"],
       "@data/*": ["data/*"],
-      "@api/*": ["api/*"]
+      "@api/*": ["api/*"],
+      "@hooks/*": ["hooks/*"],
     }
   },
 
