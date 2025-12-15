@@ -2,9 +2,11 @@ import { useState } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import IssueModal from "@pages/issues/IssueModal";
+import OfficeModal from "@pages/office/OfficeModal";
 
 const SecondaryHeader: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [officeModalOpen, setOfficeModalOpen] = useState(false);
 
   return (
     <Box
@@ -38,7 +40,7 @@ const SecondaryHeader: React.FC = () => {
               borderColor: "#0000001f",
             },
           }}
-          onClick={() => setModalOpen(true)}
+          onClick={() => setOfficeModalOpen(true)}
         >
           Manage Offices
         </Button>
@@ -58,6 +60,13 @@ const SecondaryHeader: React.FC = () => {
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={() => setModalOpen(false)}
+      />
+
+      <OfficeModal
+        open={officeModalOpen}
+        onClose={() => setOfficeModalOpen(false)}
+        offices={[]}
+        onSave={() => setOfficeModalOpen(false)}
       />
     </Box>
   );
