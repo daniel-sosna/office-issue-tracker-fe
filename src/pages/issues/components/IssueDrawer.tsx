@@ -10,7 +10,9 @@ import {
   Select,
   Alert,
   Snackbar,
+  IconButton,
 } from "@mui/material";
+import EditIcon from "@mui/icons-material/Edit";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import type { IssueDetails, IssueStatusType } from "@data/issues";
@@ -18,7 +20,7 @@ import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {
-  deleteIssue,
+  softDeleteIssue,
   fetchIssueDetails,
   updateIssue,
   updateIssueStatus,
@@ -38,6 +40,7 @@ interface Props {
   admin: boolean;
   onIssueUpdated: (updated: IssueDetails) => void;
   onIssueDeleted: (deletedId: string) => void;
+  onRefreshIssues: () => void;
 }
 
 export default function IssueDetailsSidebar({
@@ -47,6 +50,7 @@ export default function IssueDetailsSidebar({
   admin,
   onIssueUpdated,
   onIssueDeleted,
+  onRefreshIssues,
 }: Props) {
   const TabIndex = {
     Details: 0,
@@ -60,6 +64,9 @@ export default function IssueDetailsSidebar({
   const [deleting, setDeleting] = useState(false);
   const [offices, setOffices] = useState<Office[]>([]);
   const [editingOffice, setEditingOffice] = useState(false);
+  const [editingSummary, setEditingSummary] = useState(false);
+  const [editingDescription, setEditingDescription] = useState(false);
+  const [editingStatus, setEditingStatus] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     summary?: string;
@@ -141,9 +148,18 @@ export default function IssueDetailsSidebar({
       if (admin && form.status !== issue.status) {
         await updateIssueStatus(issue.id, form.status);
       }
+
       const refreshedIssue = await fetchIssueDetails(issue.id);
       onIssueUpdated(refreshedIssue);
+      onRefreshIssues();
+
+      setEditingOffice(false);
+      setEditingSummary(false);
+      setEditingDescription(false);
+      setEditingStatus(false);
       setSaveSuccess(true);
+
+      onClose();
     } catch (err) {
       console.error("Failed to save issue:", err);
     }
@@ -157,6 +173,11 @@ export default function IssueDetailsSidebar({
       status: issue.status,
       officeId: issue.officeId,
     });
+    setEditingOffice(false);
+    setEditingSummary(false);
+    setEditingDescription(false);
+    setEditingStatus(false);
+    onClose();
   }
   const handleDelete = async () => {
     if (!issue) return;
@@ -167,7 +188,7 @@ export default function IssueDetailsSidebar({
     try {
       setDeleting(true);
 
-      await deleteIssue(issue.id);
+      await softDeleteIssue(issue.id);
 
       onIssueDeleted(issue.id);
 
@@ -203,28 +224,59 @@ export default function IssueDetailsSidebar({
             mt={3}
             mb={1}
           >
-            <TextField
-              variant="standard"
-              fullWidth
-              value={form.summary}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, summary: e.target.value }))
-              }
-              error={!!errors.summary}
-              helperText={errors.summary}
-              slotProps={{
-                input: {
-                  readOnly: !issueOwner,
-                  sx: {
+            {!editingSummary && (
+              <>
+                <Typography
+                  variant="h4"
+                  sx={{
                     fontSize: "22px",
                     fontWeight: 400,
+                    lineHeight: "1.3",
+                    display: "-webkit-box",
+                    WebkitLineClamp: 3,
+                    WebkitBoxOrient: "vertical",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "100%",
+                  }}
+                >
+                  {issue.summary}
+                </Typography>
+
+                {issueOwner && (
+                  <IconButton
+                    size="small"
+                    onClick={() => setEditingSummary(true)}
+                  >
+                    <EditIcon fontSize="small" />
+                  </IconButton>
+                )}
+              </>
+            )}
+
+            {editingSummary && issueOwner && (
+              <TextField
+                variant="standard"
+                fullWidth
+                value={form.summary}
+                onChange={(e) =>
+                  setForm((prev) => ({ ...prev, summary: e.target.value }))
+                }
+                error={!!errors.summary}
+                helperText={errors.summary}
+                slotProps={{
+                  input: {
+                    sx: {
+                      fontSize: "22px",
+                      fontWeight: 400,
+                    },
                   },
-                },
-              }}
-            />
+                }}
+              />
+            )}
           </Box>
 
-          <Divider sx={{ my: 4 }} />
+          <Divider sx={{ my: 2 }} />
 
           <Box mb={2}>
             <Box
@@ -270,14 +322,28 @@ export default function IssueDetailsSidebar({
                 <Typography variant="body2">Status</Typography>
               </Box>
               <Box>
-                {admin ? (
+                {!editingStatus && (
+                  <Box display="flex" alignItems="center" gap={1}>
+                    <StatusChip status={issue.status} />
+                    {admin && (
+                      <IconButton
+                        size="small"
+                        onClick={() => setEditingStatus(true)}
+                      >
+                        <EditIcon fontSize="small" />
+                      </IconButton>
+                    )}
+                  </Box>
+                )}
+
+                {editingStatus && admin && (
                   <Select
                     size="small"
                     value={form.status}
                     onChange={(e) =>
                       setForm((prev) => ({ ...prev, status: e.target.value }))
                     }
-                    sx={{ minWidth: 120 }}
+                    sx={{ minWidth: 160 }}
                   >
                     <MenuItem value="OPEN">Open</MenuItem>
                     <MenuItem value="IN_PROGRESS">In progress</MenuItem>
@@ -285,8 +351,6 @@ export default function IssueDetailsSidebar({
                     <MenuItem value="RESOLVED">Resolved</MenuItem>
                     <MenuItem value="CLOSED">Closed</MenuItem>
                   </Select>
-                ) : (
-                  <StatusChip status={issue.status} />
                 )}
               </Box>
 
@@ -320,13 +384,13 @@ export default function IssueDetailsSidebar({
                   <>
                     <Typography>{issue.office}</Typography>
                     {(issueOwner || admin) && (
-                      <Button
-                        variant="text"
+                      <IconButton
                         size="small"
                         onClick={() => setEditingOffice(true)}
+                        sx={{ padding: "4px" }}
                       >
-                        Edit
-                      </Button>
+                        <EditIcon fontSize="small" />
+                      </IconButton>
                     )}
                   </>
                 )}
@@ -350,14 +414,6 @@ export default function IssueDetailsSidebar({
                         </MenuItem>
                       ))}
                     </Select>
-
-                    <Button
-                      variant="outlined"
-                      size="small"
-                      onClick={() => setEditingOffice(false)}
-                    >
-                      Done
-                    </Button>
                   </>
                 )}
               </Box>
@@ -384,11 +440,6 @@ export default function IssueDetailsSidebar({
               label={`Comments (${issue.comments})`}
               sx={{ textTransform: "none" }}
             />
-            <Tab
-              disabled={true}
-              label="Activity log"
-              sx={{ textTransform: "none" }}
-            />
           </Tabs>
 
           {selectedTab === TabIndex.Details && (
@@ -396,7 +447,44 @@ export default function IssueDetailsSidebar({
               <Typography variant="body2" color="text.secondary" mb={1}>
                 Description
               </Typography>
-              {issueOwner ? (
+              {!editingDescription && (
+                <Box
+                  sx={{
+                    border: "1px solid #eee",
+                    borderRadius: 1,
+                    padding: 2,
+                    backgroundColor: "#fafafa",
+                    minHeight: "60px",
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                  }}
+                >
+                  <Typography
+                    sx={{
+                      fontSize: "16px",
+                      lineHeight: "1.5",
+                      whiteSpace: "pre-wrap",
+                      wordBreak: "break-word",
+                      flexGrow: 1,
+                      maxWidth: "auto",
+                    }}
+                  >
+                    {stripHtmlDescription(issue.description)}
+                  </Typography>
+
+                  {issueOwner && (
+                    <IconButton
+                      size="small"
+                      onClick={() => setEditingDescription(true)}
+                      sx={{ ml: 1 }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  )}
+                </Box>
+              )}
+              {editingDescription && issueOwner && (
                 <TextField
                   multiline
                   fullWidth
@@ -411,18 +499,6 @@ export default function IssueDetailsSidebar({
                   error={!!errors.description}
                   helperText={errors.description}
                 />
-              ) : (
-                <Box
-                  sx={{
-                    border: "1px solid #eee",
-                    borderRadius: 1,
-                    padding: 2,
-                    backgroundColor: "#fafafa",
-                    minHeight: "120px",
-                  }}
-                >
-                  {stripHtmlDescription(issue.description)}
-                </Box>
               )}
             </Box>
           )}
@@ -454,6 +530,10 @@ export default function IssueDetailsSidebar({
                 variant="outlined"
                 size="medium"
                 onClick={() => void handleDelete()}
+                sx={{
+                  borderRadius: "999px",
+                  paddingX: 3,
+                }}
                 disabled={deleting}
               >
                 {deleting ? "Deleting..." : "Delete"}
@@ -464,7 +544,15 @@ export default function IssueDetailsSidebar({
           <Box display="flex" gap={2}>
             {(issueOwner || admin) && (
               <>
-                <Button variant="outlined" size="medium" onClick={handleCancel}>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  onClick={handleCancel}
+                  sx={{
+                    borderRadius: "999px",
+                    paddingX: 3,
+                  }}
+                >
                   Cancel
                 </Button>
 
@@ -473,6 +561,10 @@ export default function IssueDetailsSidebar({
                   size="medium"
                   color="secondary"
                   onClick={() => void handleSave()}
+                  sx={{
+                    borderRadius: "999px",
+                    paddingX: 3,
+                  }}
                 >
                   Save
                 </Button>

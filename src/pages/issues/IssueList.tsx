@@ -18,7 +18,11 @@ import type { Issue, IssueDetails } from "@data/issues";
 import { fetchIssues, fetchIssueDetails } from "@api/issues.ts";
 import { normalizeStatus } from "@utils/status.ts";
 import { useAuth } from "@context/UseAuth.tsx";
-import { formatDate } from "@utils/formatters.ts";
+import {
+  formatDate,
+  stripHtml,
+  stripHtmlDescription,
+} from "@utils/formatters.ts";
 import { truncate } from "@utils/truncation.ts";
 
 const tabLabels = [
@@ -50,8 +54,8 @@ const IssuesList: React.FC = () => {
         const data = await fetchIssues(page, size);
         const normalized = data.content.map((issue) => ({
           id: issue.id,
-          summary: truncate(issue.summary, 80),
-          description: truncate(issue.description, 120),
+          summary: truncate(issue.summary, 50),
+          description: truncate(issue.description, 50),
           status: normalizeStatus(issue.status),
           createdBy: issue.createdBy,
           officeId: issue.officeId,
@@ -95,6 +99,24 @@ const IssuesList: React.FC = () => {
   };
 
   if (loading) return <Box p={4}>Loading issues...</Box>;
+
+  const refreshIssues = async () => {
+    const data = await fetchIssues(page, size);
+    const normalized = data.content.map((issue) => ({
+      id: issue.id,
+      summary: truncate(stripHtml(issue.summary), 50),
+      description: truncate(stripHtmlDescription(issue.description), 47),
+      status: normalizeStatus(issue.status),
+      createdBy: issue.createdBy,
+      officeId: issue.officeId,
+      dateCreated: formatDate(issue.dateCreated),
+      dateModified: issue.dateModified ?? null,
+      votes: issue.votes ?? 0,
+      comments: issue.comments ?? 0,
+    }));
+    setIssues(normalized);
+    setTotalPages(data.totalPages ?? 1);
+  };
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -203,8 +225,8 @@ const IssuesList: React.FC = () => {
         onIssueUpdated={(updated) => {
           const normalized = {
             id: updated.id,
-            summary: truncate(updated.summary, 80),
-            description: truncate(updated.description, 120),
+            summary: stripHtml(updated.summary),
+            description: stripHtmlDescription(updated.description),
             status: normalizeStatus(updated.status),
             createdBy: updated.createdBy,
             officeId: updated.officeId,
@@ -221,6 +243,9 @@ const IssuesList: React.FC = () => {
         onIssueDeleted={(deletedId) => {
           setIssues((prev) => prev.filter((issue) => issue.id !== deletedId));
           setSelectedIssue(null);
+        }}
+        onRefreshIssues={() => {
+          void refreshIssues();
         }}
       />
 

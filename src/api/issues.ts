@@ -175,10 +175,11 @@ export const fetchIssues = async (
 
   return (await res.json()) as IssuePageResponse;
 };
-export const deleteIssue = async (issueId: string): Promise<void> => {
-  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}`, {
-    method: "DELETE",
-  });
+export const softDeleteIssue = async (issueId: string): Promise<void> => {
+  const res = await csrfFetch(
+    `${BASE_URL}${ENDPOINTS.ISSUES}/${issueId}/delete`,
+    { method: "PATCH" }
+  );
 
   if (!res.ok) {
     throw new Error(`Failed to delete issue: HTTP ${res.status}`);
