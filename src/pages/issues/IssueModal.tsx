@@ -14,7 +14,7 @@ import EditorToolbar from "@components/EditorToolbar";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/services/offices";
-import { createIssue } from "@api/services/issues.ts";
+import { useCreateIssue } from "@api/queries/useCreateIssue.ts";
 
 interface IssueFormData {
   summary: string;
@@ -34,16 +34,13 @@ interface Office {
   country: string;
 }
 
-export default function IssueModal({
-  open,
-  onClose,
-  onSubmit,
-}: IssueModalProps) {
+export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [summary, setSummary] = useState("");
   const [office, setOffice] = useState("");
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const { mutateAsync: createIssueMutation } = useCreateIssue();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -106,20 +103,21 @@ export default function IssueModal({
     }
 
     try {
-      await createIssue({
-        summary,
-        description: editor?.getHTML() ?? "",
-        officeId: selectedOffice.id,
+      await createIssueMutation({
+        issue: {
+          summary,
+          description: editor?.getHTML() ?? "",
+          officeId: selectedOffice.id,
+        },
       });
 
-      onSubmit({
-        summary,
-        description: editor?.getHTML() ?? "",
-        office,
-      });
       onClose();
-    } catch {
-      setErrorMessage("An error occurred while submitting the issue");
+    } catch (err) {
+      setErrorMessage(
+        err instanceof Error
+          ? err.message
+          : "An error occurred while submitting the issue"
+      );
     }
   };
 

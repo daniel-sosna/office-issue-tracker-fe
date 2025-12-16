@@ -21,7 +21,6 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import {
   softDeleteIssue,
-  fetchIssueDetails,
   updateIssue,
   updateIssueStatus,
 } from "@api/services/issues.ts";
@@ -40,7 +39,6 @@ interface Props {
   admin: boolean;
   onIssueUpdated: (updated: IssueDetails) => void;
   onIssueDeleted: (deletedId: string) => void;
-  onRefreshIssues: () => void;
 }
 
 export default function IssueDetailsSidebar({
@@ -50,7 +48,6 @@ export default function IssueDetailsSidebar({
   admin,
   onIssueUpdated,
   onIssueDeleted,
-  onRefreshIssues,
 }: Props) {
   const TabIndex = {
     Details: 0,
@@ -150,10 +147,7 @@ export default function IssueDetailsSidebar({
         await updateIssueStatus(issue.id, form.status);
       }
 
-      const refreshedIssue = await fetchIssueDetails(issue.id);
-      onIssueUpdated(refreshedIssue);
-      onRefreshIssues();
-
+      onIssueUpdated(issue);
       setEditingOffice(false);
       setEditingSummary(false);
       setEditingDescription(false);

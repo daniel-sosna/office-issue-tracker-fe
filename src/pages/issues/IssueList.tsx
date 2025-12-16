@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Tabs,
@@ -14,16 +14,16 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails } from "@data/issues";
-import { fetchIssues, fetchIssueDetails } from "@api/services/issues.ts";
-import { normalizeStatus } from "@utils/status.ts";
-import { useAuth } from "@context/UseAuth.tsx";
-import {
-  formatDate,
-  stripHtml,
-  stripHtmlDescription,
-} from "@utils/formatters.ts";
-import { truncate } from "@utils/truncation.ts";
+import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
+import { useIssues } from "@api/queries/useIssues";
+import { queryKeys } from "@api/queries/queryKeys";
+import { useQueryClient } from "@tanstack/react-query";
+import { normalizeStatus } from "@utils/status";
+import { useAuth } from "@context/UseAuth";
+import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
+import { truncate } from "@utils/truncation";
+import Loader from "@components/Loader";
+import { fetchIssueDetails } from "@api/services/issues.ts";
 
 const tabLabels = [
   "All issues",
@@ -34,51 +34,42 @@ const tabLabels = [
   "Reported by me",
 ];
 
+const size = 10;
+
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [paginatedIssues, setIssues] = useState<Issue[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+  const queryClient = useQueryClient();
 
-  const size = 10;
+  const params: FetchIssuesParams = {
+    page,
+    size,
+  };
 
-  useEffect(() => {
-    const load = async () => {
-      setLoading(true);
+  const { data, isLoading, isError } = useIssues(params);
 
-      try {
-        const data = await fetchIssues({ page, size });
-        const normalized = data.content.map((issue) => ({
-          id: issue.id,
-          summary: truncate(issue.summary, 50),
-          description: truncate(issue.description, 50),
-          status: normalizeStatus(issue.status),
-          createdBy: issue.createdBy,
-          officeId: issue.officeId,
-          dateCreated: formatDate(issue.dateCreated),
-          dateModified: issue.dateModified ?? null,
-          votes: issue.votes ?? 0,
-          comments: issue.comments ?? 0,
-        }));
-        setIssues(normalized);
-        setTotalPages(data.totalPages ?? 1);
-      } catch (err: unknown) {
-        setError(err instanceof Error ? err.message : "Failed to load issues.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const issues: Issue[] =
+    data?.content.map((issue) => ({
+      id: issue.id,
+      summary: truncate(stripHtml(issue.summary), 50),
+      description: truncate(stripHtmlDescription(issue.description), 50),
+      status: normalizeStatus(issue.status),
+      createdBy: issue.createdBy,
+      officeId: issue.officeId,
+      dateCreated: formatDate(issue.dateCreated),
+      dateModified: issue.dateModified ?? null,
+      votes: issue.votes ?? 0,
+      comments: issue.comments ?? 0,
+    })) ?? [];
 
-    void load();
-  }, [page]);
+  const totalPages = data?.totalPages ?? 1;
 
   const handleCardClick = async (issue: Issue) => {
     try {
-      const details = await fetchIssueDetails(issue.id.toString());
+      const details = await fetchIssueDetails(issue.id);
       setSelectedIssue(details);
     } catch (err) {
       setError(
@@ -98,25 +89,17 @@ const IssuesList: React.FC = () => {
     "& fieldset": { borderRadius: "9999px" },
   };
 
-  if (loading) return <Box p={4}>Loading issues...</Box>;
+  if (isLoading) {
+    return <Loader />;
+  }
 
-  const refreshIssues = async () => {
-    const data = await fetchIssues({ page, size });
-    const normalized = data.content.map((issue) => ({
-      id: issue.id,
-      summary: truncate(stripHtml(issue.summary), 50),
-      description: truncate(stripHtmlDescription(issue.description), 47),
-      status: normalizeStatus(issue.status),
-      createdBy: issue.createdBy,
-      officeId: issue.officeId,
-      dateCreated: formatDate(issue.dateCreated),
-      dateModified: issue.dateModified ?? null,
-      votes: issue.votes ?? 0,
-      comments: issue.comments ?? 0,
-    }));
-    setIssues(normalized);
-    setTotalPages(data.totalPages ?? 1);
-  };
+  if (isError) {
+    return (
+      <Box p={4}>
+        <Alert severity="error">Failed to load issues.</Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -137,7 +120,6 @@ const IssuesList: React.FC = () => {
         }}
       />
 
-      {/* Tabs */}
       <Box
         mb={3}
         sx={{ borderBottom: 1, borderColor: "divider", ...relativeZBox }}
@@ -170,7 +152,6 @@ const IssuesList: React.FC = () => {
         </Tabs>
       </Box>
 
-      {/* Filters */}
       <Box
         display="flex"
         justifyContent="space-between"
@@ -202,9 +183,8 @@ const IssuesList: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Issue Cards */}
       <Box sx={relativeZBox}>
-        {paginatedIssues.map((issue) => (
+        {issues.map((issue) => (
           <IssueCard
             key={issue.id}
             issue={issue}
@@ -213,7 +193,6 @@ const IssuesList: React.FC = () => {
         ))}
       </Box>
 
-      {/* Issue details sidebar */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
@@ -223,33 +202,19 @@ const IssuesList: React.FC = () => {
         }
         admin={user?.role === "ADMIN"}
         onIssueUpdated={(updated) => {
-          const normalized = {
-            id: updated.id,
-            summary: stripHtml(updated.summary),
-            description: stripHtmlDescription(updated.description),
-            status: normalizeStatus(updated.status),
-            createdBy: updated.createdBy,
-            officeId: updated.officeId,
-            dateCreated: formatDate(updated.dateCreated),
-            dateModified: updated.dateModified ?? null,
-            votes: updated.votes ?? 0,
-            comments: updated.comments ?? 0,
-          };
-          setIssues((prev) =>
-            prev.map((issue) => (issue.id === updated.id ? normalized : issue))
-          );
           setSelectedIssue(updated);
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.issues(),
+          });
         }}
-        onIssueDeleted={(deletedId) => {
-          setIssues((prev) => prev.filter((issue) => issue.id !== deletedId));
+        onIssueDeleted={() => {
           setSelectedIssue(null);
-        }}
-        onRefreshIssues={() => {
-          void refreshIssues();
+          void queryClient.invalidateQueries({
+            queryKey: queryKeys.issues(),
+          });
         }}
       />
 
-      {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
         <Pagination
           count={totalPages}
@@ -267,6 +232,7 @@ const IssuesList: React.FC = () => {
           }}
         />
       </Box>
+
       <Snackbar
         open={!!error}
         autoHideDuration={4000}
