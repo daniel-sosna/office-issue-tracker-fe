@@ -4,7 +4,7 @@ import {
   type IssueStatusType,
 } from "@data/issues";
 import { csrfFetch } from "@utils/csrfFetch.ts";
-import { BASE_URL, ENDPOINTS } from "@api/urls.ts";
+import { BASE_URL, ENDPOINTS } from "@api/services/urls.ts";
 
 export interface BackendIssueDTO {
   id: string;

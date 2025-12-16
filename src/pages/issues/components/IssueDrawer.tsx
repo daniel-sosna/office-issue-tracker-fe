@@ -24,8 +24,8 @@ import {
   fetchIssueDetails,
   updateIssue,
   updateIssueStatus,
-} from "@api/issues.ts";
-import { fetchOffices } from "@api/offices";
+} from "@api/services/issues.ts";
+import { fetchOffices } from "@api/services/offices";
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
 
 interface Office {

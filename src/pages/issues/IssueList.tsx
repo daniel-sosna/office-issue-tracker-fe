@@ -15,7 +15,7 @@ import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue, IssueDetails } from "@data/issues";
-import { fetchIssues, fetchIssueDetails } from "@api/issues.ts";
+import { fetchIssues, fetchIssueDetails } from "@api/services/issues.ts";
 import { normalizeStatus } from "@utils/status.ts";
 import { useAuth } from "@context/UseAuth.tsx";
 import {
@@ -51,7 +51,7 @@ const IssuesList: React.FC = () => {
       setLoading(true);
 
       try {
-        const data = await fetchIssues(page, size);
+        const data = await fetchIssues({ page, size });
         const normalized = data.content.map((issue) => ({
           id: issue.id,
           summary: truncate(issue.summary, 50),
@@ -101,7 +101,7 @@ const IssuesList: React.FC = () => {
   if (loading) return <Box p={4}>Loading issues...</Box>;
 
   const refreshIssues = async () => {
-    const data = await fetchIssues(page, size);
+    const data = await fetchIssues({ page, size });
     const normalized = data.content.map((issue) => ({
       id: issue.id,
       summary: truncate(stripHtml(issue.summary), 50),
