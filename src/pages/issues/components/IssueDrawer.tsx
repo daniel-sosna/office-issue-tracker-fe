@@ -193,8 +193,7 @@ export default function IssueDetailsSidebar({
       onIssueDeleted(issue.id);
 
       onClose();
-    } catch (err) {
-      console.error("Failed to delete issue:", err);
+    } catch {
       alert("Failed to delete issue. Please try again.");
     } finally {
       setDeleting(false);
@@ -212,7 +211,7 @@ export default function IssueDetailsSidebar({
   }
 
   return (
-    <RightDrawer open={true} onClose={onClose}>
+    <RightDrawer open={true} onClose={handleCancel}>
       <Box
         sx={{ display: "flex", flexDirection: "column", minHeight: "92.5vh" }}
       >
