@@ -72,6 +72,7 @@ export default function IssueDetailsSidebar({
     summary?: string;
     description?: string;
   }>({});
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   const [form, setForm] = useState<{
     summary: string;
@@ -90,8 +91,8 @@ export default function IssueDetailsSidebar({
       try {
         const data = await fetchOffices();
         setOffices(data);
-      } catch (err) {
-        console.error("Failed to load offices:", err);
+      } catch {
+        setErrorMessage("Failed to load offices.");
       }
     };
 
@@ -160,8 +161,8 @@ export default function IssueDetailsSidebar({
       setSaveSuccess(true);
 
       onClose();
-    } catch (err) {
-      console.error("Failed to save issue:", err);
+    } catch {
+      setErrorMessage("Failed to save the issue.");
     }
   }
 
@@ -179,6 +180,7 @@ export default function IssueDetailsSidebar({
     setEditingStatus(false);
     onClose();
   }
+
   const handleDelete = async () => {
     if (!issue) return;
     const deleteConfirmation = window.confirm(
@@ -194,7 +196,7 @@ export default function IssueDetailsSidebar({
 
       onClose();
     } catch {
-      alert("Failed to delete issue. Please try again.");
+      setErrorMessage("Failed to delete the issue.");
     } finally {
       setDeleting(false);
     }
@@ -581,6 +583,20 @@ export default function IssueDetailsSidebar({
                 sx={{ width: "100%" }}
               >
                 Issue saved successfully!
+              </Alert>
+            </Snackbar>
+            <Snackbar
+              open={!!errorMessage}
+              autoHideDuration={4000}
+              onClose={() => setErrorMessage(null)}
+              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+            >
+              <Alert
+                severity="error"
+                onClose={() => setErrorMessage(null)}
+                sx={{ width: "100%" }}
+              >
+                {errorMessage}
               </Alert>
             </Snackbar>
           </Box>
