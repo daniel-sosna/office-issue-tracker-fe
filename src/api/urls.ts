@@ -3,4 +3,5 @@ export const ENDPOINTS = {
   ISSUES: "/issues",
   ISSUE_DETAILS: "/issues/:issueId/details",
   OFFICES: "/offices",
+  COUNTRIES: "/offices/countries",
 } as const;

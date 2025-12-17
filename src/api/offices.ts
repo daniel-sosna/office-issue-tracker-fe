@@ -15,3 +15,12 @@ export const fetchOffices = async (): Promise<Office[]> => {
   const data = (await res.json()) as Office[];
   return data;
 };
+
+export const fetchCountries = async (): Promise<string[]> => {
+  const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.COUNTRIES}`);
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+  const data = (await res.json()) as string[];
+  return data;
+};
