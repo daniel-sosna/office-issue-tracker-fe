@@ -26,16 +26,7 @@ export interface IssueDetails extends Issue {
   reportedByAvatar: string;
 }
 
-export interface FetchIssuesParams {
-  page: number;
-  size: number;
-  status?: string;
-  reportedBy?: string;
-  sort?: string;
-  office?: string;
-}
-
-export interface IssuePageResponse {
+export interface IssuePage {
   content: Issue[];
   totalPages: number;
   totalElements: number;

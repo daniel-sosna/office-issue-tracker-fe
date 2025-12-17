@@ -2,14 +2,13 @@ import {
   type Issue,
   type IssueDetails,
   type IssueStatusType,
-  type FetchIssuesParams,
-  type IssuePageResponse,
+  type IssuePage,
   IssueStatus,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-export interface CreateIssuePayload {
+interface CreateIssuePayload {
   summary: string;
   description: string;
   officeId: string;
@@ -20,7 +19,16 @@ export interface CreateIssueArgs {
   files?: File[];
 }
 
-interface IssueResponseDto {
+export interface FetchIssuePageArgs {
+  page: number;
+  size: number;
+  status?: string;
+  reportedBy?: string;
+  sort?: string;
+  office?: string;
+}
+
+interface IssueResponse {
   id: string;
   summary: string;
   description: string;
@@ -31,16 +39,16 @@ interface IssueResponseDto {
   commentCount: number | null;
 }
 
-interface IssuePageResponseDto {
-  content: IssueResponseDto[];
+interface IssuePageResponse {
+  content: IssueResponse[];
   totalPages: number;
   totalElements: number;
   page: number;
   size: number;
 }
 
-interface IssueDetailsResponseDto {
-  issue: IssueResponseDto;
+interface IssueDetailsResponse {
+  issue: IssueResponse;
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
@@ -61,7 +69,7 @@ function mapIssueStatus(apiStatus: string): IssueStatusType {
 export const fetchIssueDetails = async (
   issueId: string
 ): Promise<IssueDetails> => {
-  const { data } = await api.get<IssueDetailsResponseDto>(
+  const { data } = await api.get<IssueDetailsResponse>(
     ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
   );
 
@@ -103,9 +111,9 @@ export const createIssue = async ({
 };
 
 export const fetchIssues = async (
-  params: FetchIssuesParams
-): Promise<IssuePageResponse> => {
-  const { data } = await api.get<IssuePageResponseDto>(ENDPOINTS.ISSUES, {
+  params: FetchIssuePageArgs
+): Promise<IssuePage> => {
+  const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
     params,
   });
 
