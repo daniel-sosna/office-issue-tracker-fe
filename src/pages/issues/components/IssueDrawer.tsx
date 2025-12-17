@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -15,7 +15,7 @@ import type { IssueDetails, IssueAttachmentResponse } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import { formatDate, stripHtml } from "@utils/formatters";
 import AttachmentList from "./AttachmentList";
-import { fetchIssueDetails } from "../../../api/services/issues";
+import { useIssueDetails } from "@api/queries/useIssueDetails";
 
 interface Props {
   issue: IssueDetails | null;
@@ -33,26 +33,14 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
 
-  const [attachments, setAttachments] = useState<
-    IssueAttachmentResponse[] | null
-  >(null);
+  const { data: issueDetails, isError, error } = useIssueDetails(issue?.id);
 
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const attachments: IssueAttachmentResponse[] | null =
+    issueDetails?.attachments ?? null;
 
-  useEffect(() => {
-    if (!issue?.id) {
-      setAttachments(null);
-      return;
-    }
-
-    fetchIssueDetails(issue.id)
-      .then((data) => {
-        setAttachments(data.attachments ?? null);
-      })
-      .catch(() => {
-        setErrorMessage("Failed to fetch issue details:");
-      });
-  }, [issue?.id]);
+  const errorMessage = isError
+    ? (error?.message ?? "Failed to fetch issue details")
+    : null;
 
   if (!issue) {
     return (
@@ -217,16 +205,11 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
       )}
 
       <Snackbar
-        open={!!errorMessage}
+        open={isError}
         autoHideDuration={4000}
-        onClose={() => setErrorMessage(null)}
         anchorOrigin={{ vertical: "top", horizontal: "center" }}
       >
-        <Alert
-          severity="error"
-          onClose={() => setErrorMessage(null)}
-          sx={{ width: "100%" }}
-        >
+        <Alert severity="error" sx={{ width: "100%" }}>
           {errorMessage}
         </Alert>
       </Snackbar>
