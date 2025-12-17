@@ -147,6 +147,15 @@ export async function updateIssueStatus(
   await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/status`, { status });
 }
 
+export async function updateIssueOffice(
+  issueId: string,
+  officeId: string
+): Promise<void> {
+  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/office`, {
+    officeId,
+  });
+}
+
 export async function softDeleteIssue(issueId: string): Promise<void> {
   await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/delete`);
 }

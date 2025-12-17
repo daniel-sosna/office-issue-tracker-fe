@@ -23,6 +23,7 @@ import {
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
+  updateIssueOffice,
 } from "@api/services/issues.ts";
 import { fetchOffices } from "@api/services/offices";
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
@@ -145,6 +146,13 @@ export default function IssueDetailsSidebar({
 
       if (admin && form.status !== issue.status) {
         await updateIssueStatus(issue.id, form.status);
+      }
+      if (
+        (issueOwner || admin) &&
+        form.officeId &&
+        form.officeId !== issue.officeId
+      ) {
+        await updateIssueOffice(issue.id, form.officeId);
       }
 
       onIssueUpdated(issue);
