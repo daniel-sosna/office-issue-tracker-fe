@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Tabs,
@@ -12,12 +12,10 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
-import { useIssues } from "@api/queries/useIssues";
-import Loader from "@components/Loader";
 import type { Issue, IssueDetails } from "@data/issues";
-import { fetchIssues } from "@api/issues";
-import { voteOnIssue } from "@api/votes";
+import { useIssues } from "@api/queries/useIssues";
+import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
+import Loader from "@components/Loader";
 
 const tabLabels = [
   "All issues",
@@ -35,16 +33,11 @@ const IssuesList: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
 
-  const params: FetchIssuesParams = {
-    page,
-    size,
-  };
-
   const {
     data = { content: [], totalPages: 1 },
     isLoading,
     error,
-  } = useIssues(params);
+  } = useIssues({ page, size });
 
   const paginatedIssues = data.content;
   const totalPages = data.totalPages;
@@ -58,41 +51,7 @@ const IssuesList: React.FC = () => {
     });
   };
 
-  const handleVoteClick = async (issueId: string) => {
-    let voted: boolean;
-    setIssues((prev) =>
-      prev.map((issue) => {
-        if (issue.id !== issueId) return issue;
-
-        voted = !issue.hasVoted;
-
-        return {
-          ...issue,
-          hasVoted: voted,
-          votes: voted ? issue.votes + 1 : issue.votes - 1,
-        };
-      })
-    );
-
-    try {
-      await voteOnIssue(issueId, voted!);
-    } catch (error) {
-      // rollback
-      setIssues((prev) =>
-        prev.map((issue) =>
-          issue.id === issueId
-            ? {
-                ...issue,
-                hasVoted: !issue.hasVoted,
-                votes: issue.hasVoted ? issue.votes + 1 : issue.votes - 1,
-              }
-            : issue
-        )
-      );
-
-      console.error("Failed to vote on issue:", error);
-    }
-  };
+  const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const relativeZBox = { position: "relative", zIndex: 1 };
   const pillSelectStyle = {
@@ -207,7 +166,9 @@ const IssuesList: React.FC = () => {
             key={issue.id}
             issue={issue}
             onClickCard={() => handleCardClick(issue)}
-            onClickVote={() => void handleVoteClick(issue.id)}
+            onClickVote={() =>
+              voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
+            }
           />
         ))}
       </Box>
