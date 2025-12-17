@@ -15,9 +15,9 @@ import EditorToolbar from "@components/EditorToolbar";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { fetchOffices } from "@api/offices";
-import { createIssue } from "@api/issues";
 import AttachmentList from "./components/AttachmentList";
+import { fetchOffices } from "@api/services/offices";
+import { useCreateIssue } from "@api/queries/useCreateIssue";
 
 interface IssueFormData {
   summary: string;
@@ -65,6 +65,7 @@ export default function IssueModal({
   const triggerFileInput = () => {
     fileInputRef.current?.click();
   };
+  const { mutateAsync: createIssue, isPending } = useCreateIssue();
 
   useEffect(() => {
     if (!open) return;
@@ -176,10 +177,10 @@ export default function IssueModal({
     };
 
     try {
-      await createIssue(
-        issuePayload,
-        selectedFiles.map((f) => f.file)
-      );
+      await createIssue({
+        issue: issuePayload,
+        files: selectedFiles.map((f) => f.file),
+      });
 
       onSubmit({
         summary,
@@ -193,7 +194,13 @@ export default function IssueModal({
   };
 
   return (
-    <Dialog open={open} onClose={onClose} fullWidth maxWidth="sm">
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="sm"
+      disableRestoreFocus
+    >
       <DialogTitle
         sx={{
           display: "flex",
@@ -453,7 +460,7 @@ export default function IssueModal({
             backgroundColor: "secondary.main",
           }}
         >
-          Report Issue
+          {isPending ? "Reporting..." : "Report Issue"}
         </Button>
       </Box>
 
