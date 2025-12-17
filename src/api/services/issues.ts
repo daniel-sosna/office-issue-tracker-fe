@@ -2,13 +2,13 @@ import {
   type Issue,
   type IssueDetails,
   type IssueStatusType,
-  type FetchIssuesParams,
-  type IssuePageResponse,
+  type IssuePage,
+  IssueStatus,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-export interface CreateIssuePayload {
+interface CreateIssuePayload {
   summary: string;
   description: string;
   officeId: string;
@@ -19,18 +19,28 @@ export interface CreateIssueArgs {
   files?: File[];
 }
 
-export interface IssueDTO {
-  votes: number | null;
-  comments: number | null;
+export interface FetchIssuePageArgs {
+  page: number;
+  size: number;
+  status?: string;
+  reportedBy?: string;
+  sort?: string;
+  office?: string;
+}
+
+interface IssueResponse {
   id: string;
   summary: string;
   description: string;
   status: string;
   date: string;
+  hasVoted: boolean;
+  voteCount: number;
+  commentCount: number | null;
 }
 
-export interface PaginatedIssuesResponse {
-  content: IssueDTO[];
+interface IssuePageResponse {
+  content: IssueResponse[];
   totalPages: number;
   totalElements: number;
   page: number;
@@ -38,7 +48,7 @@ export interface PaginatedIssuesResponse {
 }
 
 interface IssueDetailsResponse {
-  issue: IssueDTO;
+  issue: IssueResponse;
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
@@ -46,14 +56,14 @@ interface IssueDetailsResponse {
 
 function mapIssueStatus(apiStatus: string): IssueStatusType {
   const map: Record<string, IssueStatusType> = {
-    OPEN: "Open",
-    IN_PROGRESS: "In progress",
-    RESOLVED: "Resolved",
-    CLOSED: "Closed",
-    BLOCKED: "Blocked",
+    OPEN: IssueStatus.Open,
+    IN_PROGRESS: IssueStatus.InProgress,
+    RESOLVED: IssueStatus.Resolved,
+    CLOSED: IssueStatus.Closed,
+    BLOCKED: IssueStatus.Blocked,
   };
 
-  return map[apiStatus] ?? "Open";
+  return map[apiStatus] ?? IssueStatus.Open;
 }
 
 export const fetchIssueDetails = async (
@@ -68,8 +78,9 @@ export const fetchIssueDetails = async (
     title: data.issue.summary,
     description: data.issue.description,
     status: mapIssueStatus(data.issue.status),
-    votes: data.issue.votes ?? 0,
-    comments: data.issue.comments ?? 0,
+    hasVoted: data.issue.hasVoted,
+    votes: data.issue.voteCount,
+    comments: data.issue.commentCount ?? 0,
     date: data.issue.date,
   };
 
@@ -100,9 +111,9 @@ export const createIssue = async ({
 };
 
 export const fetchIssues = async (
-  params: FetchIssuesParams
-): Promise<IssuePageResponse> => {
-  const { data } = await api.get<PaginatedIssuesResponse>(ENDPOINTS.ISSUES, {
+  params: FetchIssuePageArgs
+): Promise<IssuePage> => {
+  const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
     params,
   });
 
@@ -111,8 +122,9 @@ export const fetchIssues = async (
     title: issue.summary,
     description: issue.description,
     status: mapIssueStatus(issue.status),
-    votes: issue.votes ?? 0,
-    comments: issue.comments ?? 0,
+    hasVoted: issue.hasVoted,
+    votes: issue.voteCount,
+    comments: issue.commentCount ?? 0,
     date: issue.date,
   }));
 

@@ -1,10 +1,10 @@
 export const IssueStatus = {
-  Open: "Open",
-  InProgress: "In progress",
-  Resolved: "Resolved",
-  Closed: "Closed",
-  Pending: "Pending",
-  Blocked: "Blocked",
+  Open: "OPEN",
+  InProgress: "IN_PROGRESS",
+  Resolved: "RESOLVED",
+  Closed: "CLOSED",
+  Pending: "PENDING",
+  Blocked: "BLOCKED",
 } as const;
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
@@ -14,9 +14,10 @@ export interface Issue {
   title: string;
   description: string;
   status: IssueStatusType;
+  date: string;
+  hasVoted: boolean;
   votes: number;
   comments: number;
-  date: string;
 }
 
 export interface IssueDetails extends Issue {
@@ -34,16 +35,7 @@ export interface IssueAttachmentResponse {
   fileSize: number;
 }
 
-export interface FetchIssuesParams {
-  page: number;
-  size: number;
-  status?: string;
-  reportedBy?: string;
-  sort?: string;
-  office?: string;
-}
-
-export interface IssuePageResponse {
+export interface IssuePage {
   content: Issue[];
   totalPages: number;
   totalElements: number;

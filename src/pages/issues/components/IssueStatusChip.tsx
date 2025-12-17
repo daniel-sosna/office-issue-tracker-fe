@@ -40,9 +40,11 @@ const statusStyles: Record<
 };
 
 export function StatusChip({ status }: StatusChipProps) {
-  const displayStatus = backendToFrontendStatus[status.toUpperCase()] ?? "Open";
-  const { backgroundColor, color } =
-    statusStyles[displayStatus as IssueStatusType];
+  const displayStatus = backendToFrontendStatus[status] ?? "Unknown";
+  const { backgroundColor, color } = statusStyles[status] ?? {
+    backgroundColor: palette.openBg,
+    color: palette.mainText,
+  };
 
   return (
     <Chip
