@@ -12,8 +12,9 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
+import type { Issue, IssueDetails } from "@data/issues";
 import { useIssues } from "@api/queries/useIssues";
+import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
 
 const tabLabels = [
@@ -32,16 +33,11 @@ const IssuesList: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
 
-  const params: FetchIssuesParams = {
-    page,
-    size,
-  };
-
   const {
     data = { content: [], totalPages: 1 },
     isLoading,
     error,
-  } = useIssues(params);
+  } = useIssues({ page, size });
 
   const paginatedIssues = data.content;
   const totalPages = data.totalPages;
@@ -54,6 +50,8 @@ const IssuesList: React.FC = () => {
       reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
     });
   };
+
+  const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const relativeZBox = { position: "relative", zIndex: 1 };
   const pillSelectStyle = {
@@ -168,6 +166,9 @@ const IssuesList: React.FC = () => {
             key={issue.id}
             issue={issue}
             onClickCard={() => handleCardClick(issue)}
+            onClickVote={() =>
+              voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
+            }
           />
         ))}
       </Box>
