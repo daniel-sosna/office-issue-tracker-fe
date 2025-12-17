@@ -15,7 +15,7 @@ import type { IssueDetails, IssueAttachmentResponse } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import { formatDate, stripHtml } from "@utils/formatters";
 import AttachmentList from "./AttachmentList";
-import { fetchIssueDetails } from "../../../api/issues";
+import { fetchIssueDetails } from "../../../api/services/issues";
 
 interface Props {
   issue: IssueDetails | null;
