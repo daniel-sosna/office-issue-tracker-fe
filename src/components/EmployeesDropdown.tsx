@@ -91,10 +91,6 @@ const EmployeesDropdown: React.FC<EmployeesDropdownProps> = ({
               backgroundColor: "#f4f4f4",
             },
           }}
-          InputProps={{
-            ...params.InputProps,
-            endAdornment: params.InputProps.endAdornment,
-          }}
         />
       )}
       noOptionsText="No users found"
