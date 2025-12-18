@@ -250,7 +250,6 @@ const IssuesList: React.FC = () => {
       </Box>
 
       {/* Issue Cards */}
-      {/* Issue Cards */}
       <Box sx={relativeZBox}>
         {isLoading && <p>Loading issues…</p>}
         {!isLoading &&

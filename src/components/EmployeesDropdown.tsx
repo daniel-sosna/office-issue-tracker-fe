@@ -25,9 +25,8 @@ const EmployeesDropdown: React.FC<EmployeesDropdownProps> = ({
 
   const options = [{ id: "", name: "All Employees" }, ...users];
 
-  const selectedUserObj = selectedUser
-    ? users.find((u) => u.id === selectedUser)
-    : options[0];
+  const selectedUserObj =
+    options.find((u) => u.id === selectedUser) ?? options[0];
 
   const displayText = selectedUserObj?.id
     ? selectedUserObj.name
@@ -54,6 +53,12 @@ const EmployeesDropdown: React.FC<EmployeesDropdownProps> = ({
       slots={{ popper: Popper }}
       slotProps={{
         popper: { style: { width: inputWidth } },
+        listbox: {
+          style: {
+            maxHeight: 250,
+            overflowY: "auto",
+          },
+        },
       }}
       sx={{
         width: inputWidth,
