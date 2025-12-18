@@ -20,6 +20,16 @@ const theme = createTheme({
       mainText: "secondary.main",
       mutedText: "#999999",
     },
+    vote: {
+      active: "#78ECE8",
+      activeBg: "#78ECE83D",
+      inactive: "#DDDDDD",
+      inactiveBg: "transparent",
+      hover: {
+        activeBg: "#78ece869",
+        inactiveBg: "#F4F4F4",
+      },
+    },
   },
   shape: { borderRadius: 12 },
   typography: {

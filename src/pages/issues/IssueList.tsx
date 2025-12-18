@@ -22,6 +22,7 @@ import { normalizeStatus } from "@utils/status";
 import { useAuth } from "@context/UseAuth";
 import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
 import { truncate } from "@utils/truncation";
+import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
 import { fetchIssueDetails } from "@api/services/issues.ts";
 
@@ -52,7 +53,7 @@ const IssuesList: React.FC = () => {
   const { data, isLoading, isError } = useIssues(params);
 
   const issues: Issue[] =
-    data?.content.map((issue) => ({
+    data?.content.map((issue: Issue) => ({
       id: issue.id,
       summary: truncate(stripHtml(issue.summary), 50),
       description: truncate(stripHtmlDescription(issue.description), 50),
@@ -79,8 +80,9 @@ const IssuesList: React.FC = () => {
     }
   };
 
-  const relativeZBox = { position: "relative", zIndex: 1 };
+  const { mutate: voteOnIssue } = useVoteOnIssue();
 
+  const relativeZBox = { position: "relative", zIndex: 1 };
   const pillSelectStyle = {
     borderRadius: "9999px",
     backgroundColor: "#f4f4f4",
@@ -121,6 +123,7 @@ const IssuesList: React.FC = () => {
         }}
       />
 
+      {/* Tabs */}
       <Box
         mb={3}
         sx={{ borderBottom: 1, borderColor: "divider", ...relativeZBox }}
@@ -153,6 +156,7 @@ const IssuesList: React.FC = () => {
         </Tabs>
       </Box>
 
+      {/* Filters */}
       <Box
         display="flex"
         justifyContent="space-between"
@@ -184,16 +188,21 @@ const IssuesList: React.FC = () => {
         </Box>
       </Box>
 
+      {/* Issue Cards */}
       <Box sx={relativeZBox}>
         {issues.map((issue) => (
           <IssueCard
             key={issue.id}
             issue={issue}
             onClickCard={() => void handleCardClick(issue)}
+            onClickVote={() =>
+              voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
+            }
           />
         ))}
       </Box>
 
+      {/* Issue details sidebar */}
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
@@ -216,6 +225,7 @@ const IssuesList: React.FC = () => {
         }}
       />
 
+      {/* Pagination */}
       <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
         <Pagination
           count={totalPages}

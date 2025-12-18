@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@api/queries/queryKeys";
 import { createIssue, type CreateIssueArgs } from "@api/services/issues";
-import { queryKeys } from "./queryKeys";
 
 export function useCreateIssue() {
   const queryClient = useQueryClient();
