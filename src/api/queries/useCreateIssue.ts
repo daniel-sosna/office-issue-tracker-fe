@@ -7,7 +7,7 @@ export function useCreateIssue() {
 
   return useMutation<void, Error, CreateIssueArgs>({
     mutationFn: ({ issue, files }: CreateIssueArgs) =>
-      createIssue(issue, files),
+      createIssue({ issue, files }),
 
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.issues() });

@@ -61,6 +61,7 @@ const IssuesList: React.FC = () => {
       officeId: issue.officeId,
       dateCreated: formatDate(issue.dateCreated),
       dateModified: issue.dateModified ?? null,
+      hasVoted: issue.hasVoted ?? false,
       votes: issue.votes ?? 0,
       comments: issue.comments ?? 0,
     })) ?? [];
