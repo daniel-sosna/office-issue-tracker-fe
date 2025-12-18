@@ -75,12 +75,12 @@ export default function IssueDetailsSidebar({
   const [form, setForm] = useState<{
     summary: string;
     description: string;
-    status: IssueStatusType | "";
+    status: IssueStatusType;
     officeId: string;
   }>({
     summary: "",
     description: "",
-    status: "",
+    status: "OPEN",
     officeId: "",
   });
 
