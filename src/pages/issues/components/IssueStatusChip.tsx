@@ -1,9 +1,9 @@
-import { IssueStatus, type IssueStatusType } from "@data/issues";
+import { type IssueStatusType, backendToFrontendStatusMap } from "@data/issues";
 import { Chip } from "@mui/material";
 import theme from "@styles/theme";
 
 interface StatusChipProps {
-  status: IssueStatusType;
+  status: IssueStatusType | keyof typeof backendToFrontendStatusMap;
 }
 
 const palette = theme.palette.status;
@@ -12,35 +12,42 @@ const statusStyles: Record<
   IssueStatusType,
   { backgroundColor: string; color: string }
 > = {
-  [IssueStatus.Open]: {
+  Open: {
     backgroundColor: palette.openBg,
     color: palette.mainText,
   },
-  [IssueStatus.InProgress]: {
+  "In Progress": {
     backgroundColor: palette.inProgressBg,
     color: palette.mainText,
   },
-  [IssueStatus.Resolved]: {
+  Resolved: {
     backgroundColor: palette.resolvedBg,
     color: palette.mutedText,
   },
-  [IssueStatus.Closed]: {
+  Closed: {
     backgroundColor: palette.closedBg,
     color: palette.mutedText,
   },
-  [IssueStatus.Pending]: {
+  Pending: {
     backgroundColor: palette.pendingBg,
     color: palette.mainText,
   },
-  [IssueStatus.Blocked]: {
+  Blocked: {
     backgroundColor: palette.blockedBg,
     color: palette.mainText,
   },
 };
 
 export function StatusChip({ status }: StatusChipProps) {
-  const displayStatus = status;
-  const { backgroundColor, color } = statusStyles[displayStatus];
+  const displayStatus: IssueStatusType =
+    backendToFrontendStatusMap[
+      status as keyof typeof backendToFrontendStatusMap
+    ] ?? (status as IssueStatusType);
+
+  const { backgroundColor, color } = statusStyles[displayStatus] ?? {
+    backgroundColor: palette.openBg,
+    color: palette.mainText,
+  };
 
   return (
     <Chip

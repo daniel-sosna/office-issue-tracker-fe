@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Autocomplete, TextField, Popper } from "@mui/material";
 import type { EmployeesDropdownProps } from "@data/issues";
-import { useFetchUsers } from "@hooks/useUsers";
+import { useUsers } from "@api/queries/useUsers";
 
 const MIN_INPUT_WIDTH = 190;
 
@@ -20,7 +20,7 @@ const EmployeesDropdown: React.FC<EmployeesDropdownProps> = ({
   setPage,
   disabled,
 }) => {
-  const { data: users = [] } = useFetchUsers();
+  const { data: users = [] } = useUsers();
   const [inputWidth, setInputWidth] = useState(MIN_INPUT_WIDTH);
 
   const options = [{ id: "", name: "All Employees" }, ...users];

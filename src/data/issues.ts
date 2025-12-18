@@ -58,9 +58,10 @@ export interface Issue {
   summary: string;
   description: string;
   status: IssueStatusType;
+  date: string;
+  hasVoted: boolean;
   votes: number;
   comments: number;
-  date: string;
   reportedBy?: string;
 }
 
@@ -78,7 +79,7 @@ export interface FetchIssuesParams {
   office?: string;
 }
 
-export interface IssuePageResponse {
+export interface IssuePage {
   content: Issue[];
   totalPages: number;
   totalElements: number;

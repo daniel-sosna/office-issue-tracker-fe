@@ -6,8 +6,8 @@ import { stripHtml, formatDate } from "@utils/formatters";
 
 interface IssueCardProps {
   issue: Issue;
-  onClickCard?: () => void;
-  onClickVote?: () => void;
+  onClickCard: () => void;
+  onClickVote: () => void;
 }
 
 export default function IssueCard({
@@ -15,6 +15,7 @@ export default function IssueCard({
   onClickCard,
   onClickVote,
 }: IssueCardProps) {
+  console.log(issue);
   return (
     <Card
       variant="outlined"
@@ -77,6 +78,7 @@ export default function IssueCard({
 
           {/* Vote section */}
           <VoteSection
+            hasVoted={issue.hasVoted}
             votes={issue.votes}
             comments={issue.comments}
             status={issue.status}

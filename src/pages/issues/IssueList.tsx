@@ -13,10 +13,12 @@ import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
-import { useIssues } from "@hooks/useIssues";
-import { useOffices } from "@hooks/useOffices";
 import { useAuth } from "@context/UseAuth";
 import EmployeesDropdown from "@components/EmployeesDropdown";
+import { useIssues } from "@api/queries/useIssues";
+import { useOffices } from "@api/queries/useOffices";
+import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
+import Loader from "@components/Loader";
 
 const tabLabels = [
   "All issues",
@@ -91,7 +93,7 @@ const IssuesList: React.FC = () => {
     office: selectedOffice,
   };
 
-  const { data, isLoading } = useIssues(params);
+  const { data, isLoading, error } = useIssues(params);
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssue({
@@ -101,6 +103,22 @@ const IssuesList: React.FC = () => {
       reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
     });
   };
+
+  const { mutate: voteOnIssue } = useVoteOnIssue();
+
+  const relativeZBox = { position: "relative", zIndex: 1 };
+
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (error) {
+    return (
+      <Box p={4} color="error.main">
+        Failed to load issues. Please try again later.
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -231,8 +249,9 @@ const IssuesList: React.FC = () => {
         </Box>
       </Box>
 
-      {/* Issue cards */}
-      <Box sx={{ position: "relative", zIndex: 1 }}>
+      {/* Issue Cards */}
+      {/* Issue Cards */}
+      <Box sx={relativeZBox}>
         {isLoading && <p>Loading issues…</p>}
         {!isLoading &&
           Array.isArray(data?.content) &&
@@ -241,6 +260,9 @@ const IssuesList: React.FC = () => {
               key={issue.id}
               issue={issue}
               onClickCard={() => handleCardClick(issue)}
+              onClickVote={() =>
+                voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
+              }
             />
           ))}
       </Box>
