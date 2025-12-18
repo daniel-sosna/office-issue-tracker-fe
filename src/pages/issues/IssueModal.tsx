@@ -10,6 +10,8 @@ import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
+import Tooltip from "@mui/material/Tooltip";
+import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import EditorToolbar from "@components/EditorToolbar";
 
@@ -319,7 +321,29 @@ export default function IssueModal({
                 fontSize: "14px",
               }}
             >
-              <Box>Attachments</Box>
+              <Box display="flex" alignItems="center" gap={0.8}>
+                <Box>Attachments</Box>
+
+                <Tooltip
+                  arrow
+                  placement="top"
+                  title={
+                    <Box sx={{ fontSize: "11px", lineHeight: 1.5 }}>
+                      <div>Allowed formats: PNG, JPG, JPEG, WEBP</div>
+                      <div>Max file size: 5 MB</div>
+                      <div>Up to 10 files</div>
+                    </Box>
+                  }
+                >
+                  <InfoOutlinedIcon
+                    sx={{
+                      fontSize: 16,
+                      cursor: "pointer",
+                      color: "text.disabled",
+                    }}
+                  />
+                </Tooltip>
+              </Box>
 
               {selectedFiles.length > 0 && (
                 <Box
