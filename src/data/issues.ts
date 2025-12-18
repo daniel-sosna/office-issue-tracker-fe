@@ -85,3 +85,13 @@ export interface IssuePageResponse {
   page: number;
   size: number;
 }
+
+export interface EmployeesDropdownProps {
+  selectedUser: string | undefined;
+  setSelectedUser: (id: string | undefined) => void;
+  setPage: (page: number) => void;
+  selectedTab: number;
+  setSelectedTab: (tab: number) => void;
+  currentUserId?: string;
+  disabled?: boolean;
+}

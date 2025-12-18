@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Tabs,
@@ -16,6 +16,7 @@ import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
 import { useIssues } from "@hooks/useIssues";
 import { useOffices } from "@hooks/useOffices";
 import { useAuth } from "@context/UseAuth";
+import EmployeesDropdown from "@components/EmployeesDropdown";
 
 const tabLabels = [
   "All issues",
@@ -58,6 +59,9 @@ const IssuesList: React.FC = () => {
   const [page, setPage] = useState<number>(1);
   const [selectedTab, setSelectedTab] = useState<number>(0);
   const [selectedSort, setSelectedSort] = useState<string>("latest");
+  const [selectedUser, setSelectedUser] = useState<string | undefined>(
+    undefined
+  );
   const [selectedOffice, setSelectedOffice] = useState<string | undefined>(
     undefined
   );
@@ -65,8 +69,18 @@ const IssuesList: React.FC = () => {
 
   const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
 
+  useEffect(() => {
+    if (selectedTab !== 5) {
+      setSelectedUser(undefined);
+    } else if (currentUserId) {
+      setSelectedUser(currentUserId);
+    }
+    setPage(1);
+  }, [selectedTab, currentUserId]);
+
   const statusParam = tabStatuses[selectedTab];
-  const reportedByParam = selectedTab === 5 ? currentUserId : undefined;
+  const reportedByParam =
+    selectedUser ?? (selectedTab === 5 ? currentUserId : undefined);
 
   const params: FetchIssuesParams = {
     page,
@@ -90,6 +104,7 @@ const IssuesList: React.FC = () => {
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
+      {/* Background image */}
       <Box
         component="img"
         src={backgroundImage}
@@ -119,10 +134,7 @@ const IssuesList: React.FC = () => {
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue: number) => {
-            setSelectedTab(newValue);
-            setPage(1);
-          }}
+          onChange={(_, newValue: number) => setSelectedTab(newValue)}
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
@@ -148,7 +160,7 @@ const IssuesList: React.FC = () => {
         </Tabs>
       </Box>
 
-      {/* Filters / Sort */}
+      {/* Filters */}
       <Box
         display="flex"
         justifyContent="space-between"
@@ -156,6 +168,7 @@ const IssuesList: React.FC = () => {
         sx={{ position: "relative", zIndex: 1 }}
       >
         <Box display="flex" gap={2}>
+          {/* Office filter */}
           <FormControl size="small" disabled={isOfficesLoading}>
             <Select
               value={selectedOffice ?? "all"}
@@ -179,18 +192,16 @@ const IssuesList: React.FC = () => {
             </Select>
           </FormControl>
 
-          <FormControl size="small" disabled>
-            <Select
-              value="allEmployees"
-              sx={{
-                minWidth: 140,
-                borderRadius: "9999px",
-                backgroundColor: "#f4f4f4",
-              }}
-            >
-              <MenuItem value="allEmployees">All employees</MenuItem>
-            </Select>
-          </FormControl>
+          {/* Employees dropdown */}
+          <EmployeesDropdown
+            selectedUser={selectedUser}
+            setSelectedUser={setSelectedUser}
+            setPage={setPage}
+            selectedTab={selectedTab}
+            setSelectedTab={setSelectedTab}
+            currentUserId={currentUserId}
+            disabled={selectedTab === 5}
+          />
         </Box>
 
         {/* Sort */}
