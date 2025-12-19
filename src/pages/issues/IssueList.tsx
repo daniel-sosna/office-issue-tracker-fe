@@ -30,20 +30,17 @@ const tabLabels = [
   "Reported by me",
 ] as const;
 
-const tabStatuses: (
-  | "OPEN"
-  | "IN_PROGRESS"
-  | "RESOLVED"
-  | "CLOSED"
-  | undefined
-)[] = [
-  undefined, // ALL
-  "OPEN",
-  "IN_PROGRESS",
-  "RESOLVED",
-  "CLOSED",
-  undefined, // REPORTED_BY_ME
-];
+const tabStatuses: Record<
+  IssueTab,
+  "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED" | undefined
+> = {
+  [IssueTab.ALL]: undefined,
+  [IssueTab.OPEN]: "OPEN",
+  [IssueTab.PLANNED]: "IN_PROGRESS",
+  [IssueTab.RESOLVED]: "RESOLVED",
+  [IssueTab.CLOSED]: "CLOSED",
+  [IssueTab.REPORTED_BY_ME]: undefined,
+};
 
 const sortMap: Record<
   string,
@@ -60,7 +57,7 @@ const IssuesList: React.FC = () => {
   const currentUserId = user?.id;
 
   const [page, setPage] = useState<number>(1);
-  const [selectedTab, setSelectedTab] = useState<number>(0);
+  const [selectedTab, setSelectedTab] = useState<IssueTab>(IssueTab.ALL);
   const [selectedSort, setSelectedSort] = useState<string>("latest");
   const [selectedUser, setSelectedUser] = useState<string | undefined>(
     undefined
@@ -149,7 +146,9 @@ const IssuesList: React.FC = () => {
       >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue: number) => setSelectedTab(newValue)}
+          onChange={(_, newValue: number) =>
+            setSelectedTab(newValue as IssueTab)
+          }
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
@@ -211,7 +210,7 @@ const IssuesList: React.FC = () => {
             setSelectedUser={setSelectedUser}
             setPage={setPage}
             selectedTab={selectedTab}
-            setSelectedTab={setSelectedTab}
+            setSelectedTab={(tab: number) => setSelectedTab(tab as IssueTab)}
             currentUserId={currentUserId}
             disabled={selectedTab === IssueTab.REPORTED_BY_ME}
           />
