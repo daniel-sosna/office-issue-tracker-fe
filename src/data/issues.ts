@@ -96,3 +96,14 @@ export interface EmployeesDropdownProps {
   currentUserId?: string;
   disabled?: boolean;
 }
+
+export type IssueTab = 0 | 1 | 2 | 3 | 4 | 5;
+
+export const IssueTab = {
+  ALL: 0,
+  OPEN: 1,
+  PLANNED: 2,
+  RESOLVED: 3,
+  CLOSED: 4,
+  REPORTED_BY_ME: 5,
+} as const;

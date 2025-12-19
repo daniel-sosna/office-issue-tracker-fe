@@ -15,7 +15,6 @@ export default function IssueCard({
   onClickCard,
   onClickVote,
 }: IssueCardProps) {
-  console.log(issue);
   return (
     <Card
       variant="outlined"

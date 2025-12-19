@@ -19,6 +19,7 @@ import { useIssues } from "@api/queries/useIssues";
 import { useOffices } from "@api/queries/useOffices";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
+import { IssueTab } from "@data/issues";
 
 const tabLabels = [
   "All issues",
@@ -36,12 +37,12 @@ const tabStatuses: (
   | "CLOSED"
   | undefined
 )[] = [
-  undefined, // 0: All issues
+  undefined, // ALL
   "OPEN",
   "IN_PROGRESS",
   "RESOLVED",
   "CLOSED",
-  undefined, // 5: Reported by me
+  undefined, // REPORTED_BY_ME
 ];
 
 const sortMap: Record<
@@ -72,17 +73,17 @@ const IssuesList: React.FC = () => {
   const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
 
   useEffect(() => {
-    if (selectedTab !== 5) {
-      setSelectedUser(undefined);
-    } else if (currentUserId) {
+    if (selectedTab === IssueTab.REPORTED_BY_ME && currentUserId) {
       setSelectedUser(currentUserId);
+    } else {
+      setSelectedUser(undefined);
     }
     setPage(1);
   }, [selectedTab, currentUserId]);
 
   const statusParam = tabStatuses[selectedTab];
   const reportedByParam =
-    selectedUser ?? (selectedTab === 5 ? currentUserId : undefined);
+    selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : undefined;
 
   const params: FetchIssuesParams = {
     page,
@@ -218,7 +219,7 @@ const IssuesList: React.FC = () => {
             selectedTab={selectedTab}
             setSelectedTab={setSelectedTab}
             currentUserId={currentUserId}
-            disabled={selectedTab === 5}
+            disabled={selectedTab === IssueTab.REPORTED_BY_ME}
           />
         </Box>
 
