@@ -80,8 +80,7 @@ const IssuesList: React.FC = () => {
 
   const statusParam = tabStatuses[selectedTab];
   const reportedByParam =
-    selectedUser ??
-    (selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : undefined);
+    selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : selectedUser;
 
   const params: FetchIssuesParams = {
     page,
