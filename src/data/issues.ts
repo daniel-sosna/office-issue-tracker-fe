@@ -3,7 +3,6 @@ export const IssueStatus = {
   InProgress: "In Progress",
   Resolved: "Resolved",
   Closed: "Closed",
-  Pending: "Pending",
   Blocked: "Blocked",
 } as const;
 
@@ -14,7 +13,6 @@ export type BackendIssueStatusType =
   | "IN_PROGRESS"
   | "RESOLVED"
   | "CLOSED"
-  | "PENDING"
   | "BLOCKED";
 
 export const backendToFrontendStatusMap: Record<
@@ -25,7 +23,6 @@ export const backendToFrontendStatusMap: Record<
   IN_PROGRESS: "In Progress",
   RESOLVED: "Resolved",
   CLOSED: "Closed",
-  PENDING: "Pending",
   BLOCKED: "Blocked",
 };
 
@@ -37,7 +34,6 @@ export const frontendToBackendStatusMap: Record<
   "In Progress": "IN_PROGRESS",
   Resolved: "RESOLVED",
   Closed: "CLOSED",
-  Pending: "PENDING",
   Blocked: "BLOCKED",
 };
 

@@ -28,10 +28,6 @@ const statusStyles: Record<
     backgroundColor: palette.closedBg,
     color: palette.mutedText,
   },
-  Pending: {
-    backgroundColor: palette.pendingBg,
-    color: palette.mainText,
-  },
   Blocked: {
     backgroundColor: palette.blockedBg,
     color: palette.mainText,
