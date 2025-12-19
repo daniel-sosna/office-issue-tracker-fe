@@ -244,10 +244,7 @@ const IssuesList: React.FC = () => {
 
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
-        {isLoading ? (
-          <Loader />
-        ) : (
-          Array.isArray(data?.content) &&
+        {Array.isArray(data?.content) &&
           data.content.map((issue: Issue) => (
             <IssueCard
               key={issue.id}
@@ -257,8 +254,7 @@ const IssuesList: React.FC = () => {
                 voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
               }
             />
-          ))
-        )}
+          ))}
       </Box>
 
       {/* Issue drawer */}
