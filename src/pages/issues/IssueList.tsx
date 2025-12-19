@@ -75,7 +75,7 @@ const IssuesList: React.FC = () => {
   useEffect(() => {
     if (selectedTab === IssueTab.REPORTED_BY_ME && currentUserId) {
       setSelectedUser(currentUserId);
-    } else {
+    } else if (selectedTab !== IssueTab.REPORTED_BY_ME) {
       setSelectedUser(undefined);
     }
     setPage(1);
@@ -83,7 +83,8 @@ const IssuesList: React.FC = () => {
 
   const statusParam = tabStatuses[selectedTab];
   const reportedByParam =
-    selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : undefined;
+    selectedUser ??
+    (selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : undefined);
 
   const params: FetchIssuesParams = {
     page,
@@ -95,6 +96,7 @@ const IssuesList: React.FC = () => {
   };
 
   const { data, isLoading, error } = useIssues(params);
+  const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssue({
@@ -105,21 +107,15 @@ const IssuesList: React.FC = () => {
     });
   };
 
-  const { mutate: voteOnIssue } = useVoteOnIssue();
-
   const relativeZBox = { position: "relative", zIndex: 1 };
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  if (error) {
+  if (isLoading) return <Loader />;
+  if (error)
     return (
       <Box p={4} color="error.main">
         Failed to load issues. Please try again later.
       </Box>
     );
-  }
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -187,7 +183,6 @@ const IssuesList: React.FC = () => {
         sx={{ position: "relative", zIndex: 1 }}
       >
         <Box display="flex" gap={2}>
-          {/* Office filter */}
           <FormControl size="small" disabled={isOfficesLoading}>
             <Select
               value={selectedOffice ?? "all"}
@@ -211,7 +206,6 @@ const IssuesList: React.FC = () => {
             </Select>
           </FormControl>
 
-          {/* Employees dropdown */}
           <EmployeesDropdown
             selectedUser={selectedUser}
             setSelectedUser={setSelectedUser}
@@ -223,7 +217,6 @@ const IssuesList: React.FC = () => {
           />
         </Box>
 
-        {/* Sort */}
         <Box display="flex" alignItems="center" gap={1}>
           <InputLabel sx={{ fontSize: 14, color: "text.secondary" }}>
             Sort by:
@@ -252,8 +245,9 @@ const IssuesList: React.FC = () => {
 
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
-        {isLoading && <p>Loading issues…</p>}
-        {!isLoading &&
+        {isLoading ? (
+          <Loader />
+        ) : (
           Array.isArray(data?.content) &&
           data.content.map((issue: Issue) => (
             <IssueCard
@@ -264,7 +258,8 @@ const IssuesList: React.FC = () => {
                 voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
               }
             />
-          ))}
+          ))
+        )}
       </Box>
 
       {/* Issue drawer */}

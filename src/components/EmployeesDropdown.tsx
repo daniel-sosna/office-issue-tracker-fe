@@ -14,6 +14,11 @@ const getTextWidthByChars = (
   return fullText.length * charWidth;
 };
 
+interface OptionType {
+  id: string;
+  name: string;
+}
+
 const EmployeesDropdown: React.FC<EmployeesDropdownProps> = ({
   selectedUser,
   setSelectedUser,
@@ -72,7 +77,7 @@ const EmployeesDropdown: React.FC<EmployeesDropdownProps> = ({
           backgroundColor: "#f4f4f4",
         },
       }}
-      renderOption={(props, option) => (
+      renderOption={(props, option: OptionType) => (
         <li
           {...props}
           style={{
