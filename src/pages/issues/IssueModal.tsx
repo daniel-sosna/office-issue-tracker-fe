@@ -92,7 +92,7 @@ export default function IssueModal({
       setOffice("");
       setDescription("");
       setErrorMessage("");
-      setAttachmentError(null);
+      setAttachmentError("");
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.url));
       setSelectedFiles([]);
       setIsDragging(false);

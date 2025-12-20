@@ -24,10 +24,10 @@ export interface IssueDetails extends Issue {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
-  attachments?: IssueAttachmentResponse[];
+  attachments: IssueAttachment[];
 }
 
-export interface IssueAttachmentResponse {
+export interface IssueAttachment {
   id: string;
   url: string;
   format: string;

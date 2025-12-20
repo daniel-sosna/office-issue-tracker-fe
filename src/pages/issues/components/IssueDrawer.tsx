@@ -11,7 +11,7 @@ import {
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueDetails, IssueAttachmentResponse } from "@data/issues";
+import type { IssueDetails, IssueAttachment } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import { formatDate, stripHtml } from "@utils/formatters";
 import AttachmentList from "./AttachmentList";
@@ -35,8 +35,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
 
   const { data: issueDetails, isError, error } = useIssueDetails(issue?.id);
 
-  const attachments: IssueAttachmentResponse[] | null =
-    issueDetails?.attachments ?? null;
+  const attachments: IssueAttachment[] = issueDetails?.attachments ?? [];
 
   const errorMessage = isError
     ? (error?.message ?? "Failed to fetch issue details")
@@ -174,7 +173,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
             {stripHtml(issue.description)}
           </Typography>
 
-          {attachments && attachments.length > 0 && (
+          {attachments.length > 0 && (
             <Box mt={2}>
               <Typography variant="body2" color="text.secondary" mb={1}>
                 Attachments
