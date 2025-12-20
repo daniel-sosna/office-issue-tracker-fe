@@ -1,5 +1,4 @@
-import { useState, useEffect, useRef } from "react";
-import type { DragEvent, ChangeEvent } from "react";
+import { useState, useEffect } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -9,17 +8,15 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
-import Tooltip from "@mui/material/Tooltip";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
 
 import EditorToolbar from "@components/EditorToolbar";
 
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import AttachmentList from "./components/AttachmentList";
 import { fetchOffices } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
+import AttachmentSection from "./components/AttachmentSection";
+import { validateFiles } from "@utils/attachments.validation";
 
 interface IssueFormData {
   summary: string;
@@ -39,11 +36,6 @@ interface Office {
   country: string;
 }
 
-interface FileWithURL {
-  file: File;
-  url: string;
-}
-
 export default function IssueModal({
   open,
   onClose,
@@ -54,8 +46,7 @@ export default function IssueModal({
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<FileWithURL[]>([]);
-  const [isDragging, setIsDragging] = useState(false);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState("");
 
   const editor = useEditor({
@@ -63,11 +54,6 @@ export default function IssueModal({
     content: "",
   });
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
-
-  const triggerFileInput = () => {
-    fileInputRef.current?.click();
-  };
   const { mutateAsync: createIssue, isPending } = useCreateIssue();
 
   useEffect(() => {
@@ -93,9 +79,8 @@ export default function IssueModal({
       setDescription("");
       setErrorMessage("");
       setAttachmentError("");
-      selectedFiles.forEach((file) => URL.revokeObjectURL(file.url));
+      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
-      setIsDragging(false);
     }
   }, [open, editor]);
 
@@ -117,49 +102,8 @@ export default function IssueModal({
   const isFormValid =
     summary.trim() !== "" && office !== "" && description !== "";
 
-  const handleFilesAdd = (files: FileList | null) => {
-    if (!files) {
-      return;
-    }
-
-    const MAX_SIZE_BYTES = 5 * 1024 * 1024;
-    const ALLOWED_TYPES = [
-      "image/png",
-      "image/jpeg",
-      "image/jpg",
-      "image/webp",
-    ];
-    const MAX_FILES = 10;
-
-    const newFiles: FileWithURL[] = [];
-    let errorMessage = "";
-
-    Array.from(files).forEach((file) => {
-      if (!ALLOWED_TYPES.includes(file.type)) {
-        errorMessage = `Unsupported file type: ${file.name}`;
-        return;
-      }
-
-      if (file.size > MAX_SIZE_BYTES) {
-        errorMessage = `File too large (max 5MB): ${file.name}`;
-        return;
-      }
-
-      const duplicate = selectedFiles.some(
-        (f) => f.file.name === file.name && f.file.size === file.size
-      );
-      if (duplicate) {
-        errorMessage = `File already added: ${file.name}`;
-        return;
-      }
-
-      newFiles.push({ file, url: URL.createObjectURL(file) });
-    });
-
-    if (selectedFiles.length + newFiles.length > MAX_FILES) {
-      errorMessage = `Cannot add more than ${MAX_FILES} files`;
-      newFiles.splice(MAX_FILES - selectedFiles.length);
-    }
+  const handleAddFiles = (files: FileList) => {
+    const { validFiles, errorMessage } = validateFiles(files, selectedFiles);
 
     if (errorMessage) {
       setAttachmentError(errorMessage);
@@ -167,32 +111,18 @@ export default function IssueModal({
       setAttachmentError("");
     }
 
-    setSelectedFiles((prev) => [...prev, ...newFiles]);
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
   };
 
-  const handleDrop = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragging(false);
-    handleFilesAdd(event.dataTransfer.files);
-  };
-
-  const handleDragOver = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    if (!isDragging) {
-      setIsDragging(true);
-    }
-  };
-
-  const handleDragLeave = (event: DragEvent<HTMLDivElement>) => {
-    event.preventDefault();
-    event.stopPropagation();
-    setIsDragging(false);
-  };
-
-  const handleFileInputChange = (event: ChangeEvent<HTMLInputElement>) => {
-    handleFilesAdd(event.target.files);
+  const handleDeleteFile = (id: string) => {
+    setSelectedFiles((prev) =>
+      prev.filter((f) => {
+        if (f.name + f.size === id) {
+          URL.revokeObjectURL(f.name);
+        }
+        return f.name + f.size !== id;
+      })
+    );
   };
 
   const handleSubmit = async (): Promise<void> => {
@@ -216,7 +146,7 @@ export default function IssueModal({
     try {
       await createIssue({
         issue: issuePayload,
-        files: selectedFiles.map((f) => f.file),
+        files: selectedFiles,
       });
 
       onSubmit({
@@ -358,162 +288,16 @@ export default function IssueModal({
             </TextField>
           </Box>
 
-          <Box>
-            <Box
-              mb={1}
-              sx={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                fontSize: "14px",
-              }}
-            >
-              <Box display="flex" alignItems="center" gap={0.8}>
-                <Box sx={{ color: "text.secondary" }}>Attachments</Box>
-
-                <Tooltip
-                  arrow
-                  placement="top"
-                  title={
-                    <Box sx={{ fontSize: "11px", lineHeight: 1.5 }}>
-                      <div>Allowed formats: PNG, JPG, JPEG, WEBP</div>
-                      <div>Max file size: 5 MB</div>
-                      <div>Up to 10 files</div>
-                    </Box>
-                  }
-                >
-                  <InfoOutlinedIcon
-                    sx={{
-                      fontSize: 16,
-                      cursor: "pointer",
-                      color: "text.disabled",
-                    }}
-                  />
-                </Tooltip>
-
-                {attachmentError && (
-                  <Tooltip title={attachmentError}>
-                    <Box
-                      sx={{
-                        maxWidth: "400px",
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        color: "error.main",
-                        fontSize: "12px",
-                        whiteSpace: "nowrap",
-                        cursor: "pointer",
-                      }}
-                    >
-                      {attachmentError}
-                    </Box>
-                  </Tooltip>
-                )}
-              </Box>
-
-              {selectedFiles.length > 0 && (
-                <Box
-                  sx={{
-                    fontSize: "13px",
-                    color: "primary.main",
-                    textDecoration: "underline",
-                    cursor: "pointer",
-                    fontWeight: "600",
-                  }}
-                  onClick={triggerFileInput}
-                >
-                  Upload File
-                </Box>
-              )}
-            </Box>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              multiple
-              style={{ display: "none" }}
-              onChange={handleFileInputChange}
-            />
-
-            {selectedFiles.length === 0 && (
-              <Box
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                sx={{
-                  border: "2px dashed",
-                  borderColor: isDragging ? "secondary.main" : "divider",
-                  borderRadius: 1,
-                  padding: 2,
-                  textAlign: "center",
-                  cursor: "pointer",
-                  backgroundColor: isDragging ? "action.hover" : "transparent",
-                  transition: "all 0.2s",
-                }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  triggerFileInput();
-                }}
-              >
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    py: 1.3,
-                    gap: 0.7,
-                    cursor: "pointer",
-                  }}
-                >
-                  <CloudUploadIcon
-                    sx={{ fontSize: 23, color: "text.secondary" }}
-                  />
-
-                  <Box sx={{ fontSize: "13px", color: "text.secondary" }}>
-                    Drop files to attach or{" "}
-                    <Box
-                      component="span"
-                      sx={{
-                        color: "primary.main",
-                        textDecoration: "underline",
-                        cursor: "pointer",
-                        fontWeight: "bold",
-                      }}
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        triggerFileInput();
-                      }}
-                    >
-                      browse
-                    </Box>
-                  </Box>
-                </Box>
-              </Box>
-            )}
-
-            <Box>
-              {selectedFiles.length > 0 && (
-                <AttachmentList
-                  attachments={selectedFiles.map((f) => ({
-                    id: f.file.name + f.file.size,
-                    name: f.file.name,
-                    url: f.url,
-                  }))}
-                  showDelete={true}
-                  onDelete={(id) => {
-                    setSelectedFiles((prev) =>
-                      prev.filter((f) => {
-                        const fileId = f.file.name + f.file.size;
-                        if (fileId === id) {
-                          URL.revokeObjectURL(f.url);
-                        }
-                        return fileId !== id;
-                      })
-                    );
-                  }}
-                />
-              )}
-            </Box>
-          </Box>
+          <AttachmentSection
+            attachments={selectedFiles.map((f) => ({
+              id: f.name + f.size,
+              name: f.name,
+              url: URL.createObjectURL(f),
+            }))}
+            onAddFiles={handleAddFiles}
+            onDelete={handleDeleteFile}
+            error={attachmentError}
+          />
         </Box>
       </DialogContent>
 
