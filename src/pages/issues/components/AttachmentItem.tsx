@@ -78,12 +78,12 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
         variant="rounded"
         sx={{ width: 48, height: 48, marginRight: "10px", borderRadius: 0.3 }}
       />
-      <Box sx={{ display: "flex", flexDirection: "column" }}>
+      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Typography
           variant="body1"
           sx={{
             fontWeight: "bold",
-            maxWidth: "200px",
+            maxWidth: "140px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",

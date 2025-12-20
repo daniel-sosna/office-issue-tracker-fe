@@ -56,6 +56,7 @@ export default function IssueModal({
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<FileWithURL[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [attachmentError, setAttachmentError] = useState("");
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -91,6 +92,7 @@ export default function IssueModal({
       setOffice("");
       setDescription("");
       setErrorMessage("");
+      setAttachmentError(null);
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.url));
       setSelectedFiles([]);
       setIsDragging(false);
@@ -120,19 +122,52 @@ export default function IssueModal({
       return;
     }
 
-    const newFiles: FileWithURL[] = Array.from(files).map((file) => ({
-      file,
-      url: URL.createObjectURL(file),
-    }));
+    const MAX_SIZE_BYTES = 5 * 1024 * 1024;
+    const ALLOWED_TYPES = [
+      "image/png",
+      "image/jpeg",
+      "image/jpg",
+      "image/webp",
+    ];
+    const MAX_FILES = 10;
 
-    setSelectedFiles((prev) => {
-      const existingKeys = new Set(prev.map((f) => f.file.name + f.file.size));
-      const filtered = newFiles.filter(
-        (f) => !existingKeys.has(f.file.name + f.file.size)
+    const newFiles: FileWithURL[] = [];
+    let errorMessage = "";
+
+    Array.from(files).forEach((file) => {
+      if (!ALLOWED_TYPES.includes(file.type)) {
+        errorMessage = `Unsupported file type: ${file.name}`;
+        return;
+      }
+
+      if (file.size > MAX_SIZE_BYTES) {
+        errorMessage = `File too large (max 5MB): ${file.name}`;
+        return;
+      }
+
+      const duplicate = selectedFiles.some(
+        (f) => f.file.name === file.name && f.file.size === file.size
       );
+      if (duplicate) {
+        errorMessage = `File already added: ${file.name}`;
+        return;
+      }
 
-      return [...prev, ...filtered];
+      newFiles.push({ file, url: URL.createObjectURL(file) });
     });
+
+    if (selectedFiles.length + newFiles.length > MAX_FILES) {
+      errorMessage = `Cannot add more than ${MAX_FILES} files`;
+      newFiles.splice(MAX_FILES - selectedFiles.length);
+    }
+
+    if (errorMessage) {
+      setAttachmentError(errorMessage);
+    } else {
+      setAttachmentError("");
+    }
+
+    setSelectedFiles((prev) => [...prev, ...newFiles]);
   };
 
   const handleDrop = (event: DragEvent<HTMLDivElement>) => {
@@ -190,8 +225,21 @@ export default function IssueModal({
         office,
       });
       onClose();
-    } catch {
-      setErrorMessage("An error occurred while submitting the issue");
+    } catch (error: unknown) {
+      let backendMessage = "An error occurred while submitting the issue";
+
+      if (error instanceof Error) {
+        backendMessage = error.message ?? backendMessage;
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error
+      ) {
+        const errObj = error as { response?: { data?: { message?: string } } };
+        backendMessage = errObj.response?.data?.message ?? backendMessage;
+      }
+
+      setErrorMessage(backendMessage);
     }
   };
 
@@ -317,12 +365,11 @@ export default function IssueModal({
                 display: "flex",
                 justifyContent: "space-between",
                 alignItems: "center",
-                color: "text.secondary",
                 fontSize: "14px",
               }}
             >
               <Box display="flex" alignItems="center" gap={0.8}>
-                <Box>Attachments</Box>
+                <Box sx={{ color: "text.secondary" }}>Attachments</Box>
 
                 <Tooltip
                   arrow
@@ -343,6 +390,24 @@ export default function IssueModal({
                     }}
                   />
                 </Tooltip>
+
+                {attachmentError && (
+                  <Tooltip title={attachmentError}>
+                    <Box
+                      sx={{
+                        maxWidth: "400px",
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        color: "error.main",
+                        fontSize: "12px",
+                        whiteSpace: "nowrap",
+                        cursor: "pointer",
+                      }}
+                    >
+                      {attachmentError}
+                    </Box>
+                  </Tooltip>
+                )}
               </Box>
 
               {selectedFiles.length > 0 && (
