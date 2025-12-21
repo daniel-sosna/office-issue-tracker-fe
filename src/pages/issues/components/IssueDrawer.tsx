@@ -5,6 +5,7 @@ import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import type { IssueDetails } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import { formatDate, stripHtml } from "@utils/formatters";
+import CommentsSection from "@pages/comments/components/CommentsSection";
 
 interface Props {
   issue: IssueDetails | null;
@@ -134,7 +135,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
       >
         <Tab label="Details" sx={{ textTransform: "none" }} />
         <Tab
-          disabled={true}
+          disabled={false}
           label={`Comments (${issue.comments})`}
           sx={{ textTransform: "none" }}
         />
@@ -157,9 +158,7 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
       )}
 
       {selectedTab === TabIndex.Comments && (
-        <Typography variant="body1" color="text.primary">
-          Comments section is under construction.
-        </Typography>
+        <CommentsSection issueId={issue.id} />
       )}
 
       {selectedTab === TabIndex.Activity && (

@@ -1,0 +1,23 @@
+import { Box, Divider } from "@mui/material";
+import CommentList from "./CommentList";
+import CommentInput from "./CommentInput";
+import { useComments } from "@api/queries/useComments";
+import { useCreateComment } from "@api/queries/useCreateComment";
+
+export default function CommentsSection({ issueId }: { issueId: string }) {
+  const { data: comments = [] } = useComments(issueId);
+  const createComment = useCreateComment(issueId);
+
+  return (
+    <Box>
+      <CommentList comments={comments} />
+
+      <Divider sx={{ my: 2 }} />
+
+      <CommentInput
+        loading={createComment.isPending}
+        onSubmit={(text) => createComment.mutate(text)}
+      />
+    </Box>
+  );
+}
