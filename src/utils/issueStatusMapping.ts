@@ -1,7 +1,7 @@
 export const backendToFrontendStatus: Record<string, string> = {
-  OPEN: "OPEN",
-  IN_PROGRESS: "IN_PROGRESS",
-  RESOLVED: "RESOLVED",
-  BLOCKED: "BLOCKED",
-  CLOSED: "CLOSED",
+  OPEN: "Open",
+  IN_PROGRESS: "In Progress",
+  RESOLVED: "Resolved",
+  BLOCKED: "Blocked",
+  CLOSED: "Closed",
 } as const;

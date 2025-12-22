@@ -18,7 +18,7 @@ export interface Issue {
   dateCreated: string;
   dateModified?: string | null;
   hasVoted: boolean;
-  votes?: number | null;
+  votes: number | null;
   comments?: number | null;
 }
 

@@ -27,6 +27,7 @@ import {
 } from "@api/services/issues.ts";
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
 import { useOffices } from "@api/queries/useOffices.ts";
+import theme from "@styles/theme.ts";
 
 interface Props {
   issue: IssueDetails | null;
@@ -361,7 +362,7 @@ export default function IssueDetailsSidebar({
                 >
                   <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
                   <Typography variant="body2" color="text.primary">
-                    {issue.votes}
+                    {issue.votes ?? 0}
                   </Typography>
                 </Box>
               </Box>
@@ -441,10 +442,7 @@ export default function IssueDetailsSidebar({
               {!editingDescription && (
                 <Box
                   sx={{
-                    border: "1px solid #eee",
-                    borderRadius: 1,
                     padding: 2,
-                    backgroundColor: "#fafafa",
                     minHeight: "60px",
                     display: "flex",
                     justifyContent: "space-between",
@@ -524,6 +522,7 @@ export default function IssueDetailsSidebar({
                 sx={{
                   borderRadius: "999px",
                   paddingX: 3,
+                  backgroundColor: theme.palette.status.blockedBg,
                 }}
                 disabled={deleting}
               >
