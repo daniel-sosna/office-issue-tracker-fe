@@ -10,9 +10,14 @@ import CommentsSection from "@pages/comments/components/CommentsSection";
 interface Props {
   issue: IssueDetails | null;
   onClose: () => void;
+  onCommentCreated: () => void;
 }
 
-export default function IssueDetailsSidebar({ issue, onClose }: Props) {
+export default function IssueDetailsSidebar({
+  issue,
+  onClose,
+  onCommentCreated,
+}: Props) {
   const TabIndex = {
     Details: 0,
     Comments: 1,
@@ -158,7 +163,10 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
       )}
 
       {selectedTab === TabIndex.Comments && (
-        <CommentsSection issueId={issue.id} />
+        <CommentsSection
+          issueId={issue.id}
+          onCommentCreated={onCommentCreated}
+        />
       )}
 
       {selectedTab === TabIndex.Activity && (

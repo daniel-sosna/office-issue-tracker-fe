@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createComment } from "@api/services/comments";
 import { queryKeys } from "@api/queries/queryKeys";
 
-export function useCreateComment(issueId: string) {
+export function useCreateComment(issueId: string, onIncrement?: () => void) {
   const queryClient = useQueryClient();
 
   return useMutation({
@@ -10,12 +10,10 @@ export function useCreateComment(issueId: string) {
       createComment(issueId, { commentText }),
 
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.comments(issueId),
-      });
+      onIncrement?.();
 
       void queryClient.invalidateQueries({
-        queryKey: ["issue", issueId],
+        queryKey: queryKeys.comments(issueId),
       });
 
       void queryClient.invalidateQueries({

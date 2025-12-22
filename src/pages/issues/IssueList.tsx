@@ -177,6 +177,11 @@ const IssuesList: React.FC = () => {
       <IssueDrawer
         issue={selectedIssue}
         onClose={() => setSelectedIssue(null)}
+        onCommentCreated={() =>
+          setSelectedIssue((prev) =>
+            prev ? { ...prev, comments: prev.comments + 1 } : prev
+          )
+        }
       />
 
       {/* Pagination */}
