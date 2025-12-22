@@ -13,6 +13,14 @@ export function useCreateComment(issueId: string) {
       void queryClient.invalidateQueries({
         queryKey: queryKeys.comments(issueId),
       });
+
+      void queryClient.invalidateQueries({
+        queryKey: ["issue", issueId],
+      });
+
+      void queryClient.invalidateQueries({
+        queryKey: ["issues"],
+      });
     },
   });
 }
