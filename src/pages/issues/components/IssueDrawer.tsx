@@ -25,14 +25,9 @@ import {
   updateIssueStatus,
   updateIssueOffice,
 } from "@api/services/issues.ts";
-import { fetchOffices } from "@api/services/offices";
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
+import { useOffices } from "@api/queries/useOffices.ts";
 
-interface Office {
-  id: string;
-  title: string;
-  country: string;
-}
 interface Props {
   issue: IssueDetails | null;
   onClose: () => void;
@@ -60,7 +55,7 @@ export default function IssueDetailsSidebar({
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [deleting, setDeleting] = useState(false);
-  const [offices, setOffices] = useState<Office[]>([]);
+  const { data: offices = [], isError: officesError } = useOffices();
   const [editingOffice, setEditingOffice] = useState(false);
   const [editingSummary, setEditingSummary] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
@@ -85,17 +80,10 @@ export default function IssueDetailsSidebar({
   });
 
   useEffect(() => {
-    const loadOffices = async () => {
-      try {
-        const data = await fetchOffices();
-        setOffices(data);
-      } catch {
-        setErrorMessage("Failed to load offices.");
-      }
-    };
-
-    void loadOffices();
-  }, []);
+    if (officesError) {
+      setErrorMessage("Failed to load offices.");
+    }
+  }, [officesError]);
 
   useEffect(() => {
     if (issue) {

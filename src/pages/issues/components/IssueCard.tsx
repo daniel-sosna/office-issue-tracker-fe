@@ -79,8 +79,8 @@ export default function IssueCard({
           {/* Vote section */}
           <VoteSection
             hasVoted={issue.hasVoted}
-            votes={issue.votes}
-            comments={issue.comments}
+            votes={issue.votes ?? 0}
+            comments={issue.comments ?? 0}
             status={issue.status}
             onVote={onClickVote}
           />
