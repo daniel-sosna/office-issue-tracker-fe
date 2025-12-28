@@ -14,17 +14,14 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
+import type { Issue, FetchIssuesParams } from "@data/issues";
 import { useIssues } from "@api/queries/useIssues";
-import { queryKeys } from "@api/queries/queryKeys";
-import { useQueryClient } from "@tanstack/react-query";
 import { normalizeStatus } from "@utils/status";
 import { useAuth } from "@context/UseAuth";
 import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
 import { truncate } from "@utils/truncation";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
-import { fetchIssueDetails } from "@api/services/issues.ts";
 
 const tabLabels = [
   "All issues",
@@ -40,10 +37,9 @@ const size = 10;
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
-  const queryClient = useQueryClient();
 
   const params: FetchIssuesParams = {
     page,
@@ -61,7 +57,6 @@ const IssuesList: React.FC = () => {
       createdBy: issue.createdBy,
       officeId: issue.officeId,
       dateCreated: formatDate(issue.dateCreated),
-      dateModified: issue.dateModified ?? null,
       hasVoted: issue.hasVoted ?? false,
       votes: issue.votes ?? 0,
       comments: issue.comments ?? 0,
@@ -69,15 +64,8 @@ const IssuesList: React.FC = () => {
 
   const totalPages = data?.totalPages ?? 1;
 
-  const handleCardClick = async (issue: Issue) => {
-    try {
-      const details = await fetchIssueDetails(issue.id);
-      setSelectedIssue(details);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load issue details."
-      );
-    }
+  const handleCardClick = (issue: Issue) => {
+    setSelectedIssueId(issue.id);
   };
 
   const { mutate: voteOnIssue } = useVoteOnIssue();
@@ -204,25 +192,9 @@ const IssuesList: React.FC = () => {
 
       {/* Issue details sidebar */}
       <IssueDrawer
-        issue={selectedIssue}
-        onClose={() => setSelectedIssue(null)}
-        issueOwner={
-          selectedIssue !== null &&
-          selectedIssue.reportedByEmail === user?.email
-        }
+        issueId={selectedIssueId}
+        onClose={() => setSelectedIssueId(null)}
         admin={user?.role === "ADMIN"}
-        onIssueUpdated={(updated) => {
-          setSelectedIssue(updated);
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues(),
-          });
-        }}
-        onIssueDeleted={() => {
-          setSelectedIssue(null);
-          void queryClient.invalidateQueries({
-            queryKey: queryKeys.issues(),
-          });
-        }}
       />
 
       {/* Pagination */}

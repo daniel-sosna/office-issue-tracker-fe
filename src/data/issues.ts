@@ -16,14 +16,14 @@ export interface Issue {
   createdBy: string;
   officeId: string;
   dateCreated: string;
-  dateModified?: string | null;
   hasVoted: boolean;
-  votes: number | null;
-  comments?: number | null;
+  votes: number;
+  comments: number;
 }
 
 export interface IssueDetails extends Issue {
   office: string;
+  dateModified: string | null;
   reportedBy: string;
   reportedByAvatar: string;
   reportedByEmail: string;

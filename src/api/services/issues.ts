@@ -49,6 +49,7 @@ function normalizeIssue(i: BackendIssueDTO): Issue {
     dateCreated: i.dateCreated,
     hasVoted: i.hasVoted,
     votes: i.voteCount,
+    comments: i.commentCount ?? 0,
   };
 }
 
@@ -78,7 +79,6 @@ export async function fetchIssueDetails(
   return {
     ...normalizeIssue(data.issue),
     dateModified: data.issue.dateModified,
-    comments: data.issue.commentCount ?? 0,
     office: data.officeName,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,

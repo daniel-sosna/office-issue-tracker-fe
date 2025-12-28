@@ -15,7 +15,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueDetails, IssueStatusType } from "@data/issues";
+import type { IssueStatusType } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -28,23 +28,21 @@ import {
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
 import { useOffices } from "@api/queries/useOffices.ts";
 import theme from "@styles/theme.ts";
+import { useIssueDetails } from "@api/queries/useIssueDetails.ts";
+import { useAuth } from "@context/UseAuth";
+import { useQueryClient } from "@tanstack/react-query";
+import { queryKeys } from "@api/queries/queryKeys";
 
 interface Props {
-  issue: IssueDetails | null;
+  issueId: string | null;
   onClose: () => void;
-  issueOwner: boolean;
   admin: boolean;
-  onIssueUpdated: (updated: IssueDetails) => void;
-  onIssueDeleted: (deletedId: string) => void;
 }
 
 export default function IssueDetailsSidebar({
-  issue,
+  issueId,
   onClose,
-  issueOwner,
   admin,
-  onIssueUpdated,
-  onIssueDeleted,
 }: Props) {
   const TabIndex = {
     Details: 0,
@@ -56,7 +54,11 @@ export default function IssueDetailsSidebar({
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [deleting, setDeleting] = useState(false);
+  const { data: issue } = useIssueDetails(issueId);
   const { data: offices = [], isError: officesError } = useOffices();
+  const { user } = useAuth();
+  const issueOwner = issue && issue.reportedByEmail === user?.email;
+  const queryClient = useQueryClient();
   const [editingOffice, setEditingOffice] = useState(false);
   const [editingSummary, setEditingSummary] = useState(false);
   const [editingDescription, setEditingDescription] = useState(false);
@@ -144,7 +146,10 @@ export default function IssueDetailsSidebar({
         await updateIssueOffice(issue.id, form.officeId);
       }
 
-      onIssueUpdated(issue);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.issues(),
+      });
+
       setEditingOffice(false);
       setEditingSummary(false);
       setEditingDescription(false);
@@ -183,7 +188,9 @@ export default function IssueDetailsSidebar({
 
       await softDeleteIssue(issue.id);
 
-      onIssueDeleted(issue.id);
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.issues(),
+      });
 
       onClose();
     } catch {
@@ -232,13 +239,17 @@ export default function IssueDetailsSidebar({
                     maxWidth: "100%",
                   }}
                 >
-                  {issue.summary}
+                  {form.summary}
                 </Typography>
 
                 {issueOwner && (
                   <IconButton
                     size="small"
-                    onClick={() => setEditingSummary(true)}
+                    onClick={() => {
+                      setEditingSummary(true);
+                      setEditingDescription(false);
+                      setEditingOffice(false);
+                    }}
                   >
                     <EditIcon fontSize="small" />
                   </IconButton>
@@ -316,11 +327,14 @@ export default function IssueDetailsSidebar({
               <Box>
                 {!editingStatus && (
                   <Box display="flex" alignItems="center" gap={1}>
-                    <StatusChip status={issue.status} />
+                    <StatusChip status={form.status} />
                     {admin && (
                       <IconButton
                         size="small"
-                        onClick={() => setEditingStatus(true)}
+                        onClick={() => {
+                          setEditingStatus(true);
+                          setEditingOffice(false);
+                        }}
                       >
                         <EditIcon fontSize="small" />
                       </IconButton>
@@ -374,24 +388,43 @@ export default function IssueDetailsSidebar({
               <Box display="flex" alignItems="center" gap={1}>
                 {!editingOffice && (
                   <>
-                    <Typography>{issue.office}</Typography>
-                    {(issueOwner || admin) && (
-                      <IconButton
-                        size="small"
-                        onClick={() => setEditingOffice(true)}
-                        sx={{ padding: "4px" }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    )}
+                    <Typography>
+                      {(() => {
+                        const selectedOffice = offices.find(
+                          (o) =>
+                            o.id === form.officeId || o.id === issue.officeId
+                        );
+                        return selectedOffice
+                          ? `${selectedOffice.title}, ${selectedOffice.country}`
+                          : issue.office;
+                      })()}
+                    </Typography>
+                    {
+                      // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                      (issueOwner || admin) && (
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setEditingOffice(true);
+                            setEditingSummary(false);
+                            setEditingStatus(false);
+                            setEditingDescription(false);
+                          }}
+                          sx={{ padding: "4px" }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      )
+                    }
                   </>
                 )}
 
-                {editingOffice && (issueOwner || admin) && (
-                  <>
+                {
+                  // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+                  editingOffice && (issueOwner || admin) && (
                     <Select
                       size="small"
-                      value={form.officeId}
+                      value={form.officeId || issue.officeId}
                       onChange={(e) =>
                         setForm((prev) => ({
                           ...prev,
@@ -406,8 +439,8 @@ export default function IssueDetailsSidebar({
                         </MenuItem>
                       ))}
                     </Select>
-                  </>
-                )}
+                  )
+                }
               </Box>
             </Box>
           </Box>
@@ -459,13 +492,17 @@ export default function IssueDetailsSidebar({
                       maxWidth: "auto",
                     }}
                   >
-                    {stripHtmlDescription(issue.description)}
+                    {form.description}
                   </Typography>
 
                   {issueOwner && (
                     <IconButton
                       size="small"
-                      onClick={() => setEditingDescription(true)}
+                      onClick={() => {
+                        setEditingDescription(true);
+                        setEditingSummary(false);
+                        setEditingOffice(false);
+                      }}
                       sx={{ ml: 1 }}
                     >
                       <EditIcon fontSize="small" />
@@ -514,52 +551,58 @@ export default function IssueDetailsSidebar({
           mt={4}
         >
           <Box>
-            {(issueOwner || admin) && (
-              <Button
-                variant="outlined"
-                size="medium"
-                onClick={() => void handleDelete()}
-                sx={{
-                  borderRadius: "999px",
-                  paddingX: 3,
-                  backgroundColor: theme.palette.status.blockedBg,
-                }}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : "Delete"}
-              </Button>
-            )}
-          </Box>
-
-          <Box display="flex" gap={2}>
-            {(issueOwner || admin) && (
-              <>
+            {
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              (issueOwner || admin) && (
                 <Button
                   variant="outlined"
                   size="medium"
-                  onClick={handleCancel}
+                  onClick={() => void handleDelete()}
                   sx={{
                     borderRadius: "999px",
                     paddingX: 3,
+                    backgroundColor: theme.palette.status.blockedBg,
                   }}
+                  disabled={deleting}
                 >
-                  Cancel
+                  {deleting ? "Deleting..." : "Delete"}
                 </Button>
+              )
+            }
+          </Box>
 
-                <Button
-                  variant="contained"
-                  size="medium"
-                  color="secondary"
-                  onClick={() => void handleSave()}
-                  sx={{
-                    borderRadius: "999px",
-                    paddingX: 3,
-                  }}
-                >
-                  Save
-                </Button>
-              </>
-            )}
+          <Box display="flex" gap={2}>
+            {
+              // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
+              (issueOwner || admin) && (
+                <>
+                  <Button
+                    variant="outlined"
+                    size="medium"
+                    onClick={handleCancel}
+                    sx={{
+                      borderRadius: "999px",
+                      paddingX: 3,
+                    }}
+                  >
+                    Cancel
+                  </Button>
+
+                  <Button
+                    variant="contained"
+                    size="medium"
+                    color="secondary"
+                    onClick={() => void handleSave()}
+                    sx={{
+                      borderRadius: "999px",
+                      paddingX: 3,
+                    }}
+                  >
+                    Save
+                  </Button>
+                </>
+              )
+            }
             <Snackbar
               open={saveSuccess}
               autoHideDuration={3000}
