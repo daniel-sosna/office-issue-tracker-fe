@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -59,10 +59,9 @@ export default function IssueDetailsSidebar({
   const { user } = useAuth();
   const issueOwner = issue && issue.reportedByEmail === user?.email;
   const queryClient = useQueryClient();
-  const [editingOffice, setEditingOffice] = useState(false);
-  const [editingSummary, setEditingSummary] = useState(false);
-  const [editingDescription, setEditingDescription] = useState(false);
-  const [editingStatus, setEditingStatus] = useState(false);
+  const [editingField, setEditingField] = useState<
+    null | "summary" | "description" | "office" | "status"
+  >(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     summary?: string;
@@ -81,6 +80,38 @@ export default function IssueDetailsSidebar({
     status: "OPEN",
     officeId: "",
   });
+
+  const summaryRef = useRef<HTMLDivElement>(null);
+  const descriptionRef = useRef<HTMLDivElement>(null);
+  const statusRef = useRef<HTMLDivElement>(null);
+  const officeRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (!editingField) return;
+
+      const target = event.target as HTMLElement;
+
+      if (target.closest(".MuiMenu-paper")) {
+        return;
+      }
+
+      const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
+        summary: summaryRef,
+        description: descriptionRef,
+        status: statusRef,
+        office: officeRef,
+      };
+
+      const activeRef = refs[editingField];
+      if (activeRef?.current && !activeRef.current.contains(target)) {
+        setEditingField(null);
+      }
+    }
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [editingField]);
 
   useEffect(() => {
     if (officesError) {
@@ -150,10 +181,7 @@ export default function IssueDetailsSidebar({
         queryKey: queryKeys.issues(),
       });
 
-      setEditingOffice(false);
-      setEditingSummary(false);
-      setEditingDescription(false);
-      setEditingStatus(false);
+      setEditingField(null);
       setSaveSuccess(true);
 
       onClose();
@@ -170,10 +198,7 @@ export default function IssueDetailsSidebar({
       status: issue.status,
       officeId: issue.officeId,
     });
-    setEditingOffice(false);
-    setEditingSummary(false);
-    setEditingDescription(false);
-    setEditingStatus(false);
+    setEditingField(null);
     onClose();
   }
 
@@ -217,13 +242,14 @@ export default function IssueDetailsSidebar({
       >
         <Box sx={{ flex: 1, overflowY: "auto" }}>
           <Box
+            ref={summaryRef}
             display="flex"
             justifyContent="space-between"
             alignItems="center"
             mt={3}
             mb={1}
           >
-            {!editingSummary && (
+            {editingField !== "summary" && (
               <>
                 <Typography
                   variant="h4"
@@ -246,9 +272,7 @@ export default function IssueDetailsSidebar({
                   <IconButton
                     size="small"
                     onClick={() => {
-                      setEditingSummary(true);
-                      setEditingDescription(false);
-                      setEditingOffice(false);
+                      setEditingField("summary");
                     }}
                   >
                     <EditIcon fontSize="small" />
@@ -257,7 +281,7 @@ export default function IssueDetailsSidebar({
               </>
             )}
 
-            {editingSummary && issueOwner && (
+            {editingField === "summary" && issueOwner && (
               <TextField
                 variant="standard"
                 fullWidth
@@ -324,40 +348,44 @@ export default function IssueDetailsSidebar({
               <Box>
                 <Typography variant="body2">Status</Typography>
               </Box>
-              <Box>
-                {!editingStatus && (
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <StatusChip status={form.status} />
-                    {admin && (
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setEditingStatus(true);
-                          setEditingOffice(false);
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    )}
-                  </Box>
-                )}
+              <Box ref={statusRef}>
+                <Box>
+                  {editingField !== "status" && (
+                    <Box display="flex" alignItems="center" gap={1}>
+                      <StatusChip status={form.status} />
+                      {admin && (
+                        <IconButton
+                          size="small"
+                          onClick={() => {
+                            setEditingField("status");
+                          }}
+                        >
+                          <EditIcon fontSize="small" />
+                        </IconButton>
+                      )}
+                    </Box>
+                  )}
 
-                {editingStatus && admin && (
-                  <Select
-                    size="small"
-                    value={form.status}
-                    onChange={(e) =>
-                      setForm((prev) => ({ ...prev, status: e.target.value }))
-                    }
-                    sx={{ minWidth: 160 }}
-                  >
-                    <MenuItem value="OPEN">Open</MenuItem>
-                    <MenuItem value="IN_PROGRESS">In progress</MenuItem>
-                    <MenuItem value="BLOCKED">Blocked</MenuItem>
-                    <MenuItem value="RESOLVED">Resolved</MenuItem>
-                    <MenuItem value="CLOSED">Closed</MenuItem>
-                  </Select>
-                )}
+                  {editingField === "status" && admin && (
+                    <Select
+                      size="small"
+                      value={form.status}
+                      onChange={(e) => {
+                        setForm((prev) => ({
+                          ...prev,
+                          status: e.target.value,
+                        }));
+                      }}
+                      sx={{ minWidth: 160 }}
+                    >
+                      <MenuItem value="OPEN">Open</MenuItem>
+                      <MenuItem value="IN_PROGRESS">In progress</MenuItem>
+                      <MenuItem value="BLOCKED">Blocked</MenuItem>
+                      <MenuItem value="RESOLVED">Resolved</MenuItem>
+                      <MenuItem value="CLOSED">Closed</MenuItem>
+                    </Select>
+                  )}
+                </Box>
               </Box>
 
               <Box>
@@ -385,8 +413,8 @@ export default function IssueDetailsSidebar({
                 <Typography variant="body2">Office</Typography>
               </Box>
 
-              <Box display="flex" alignItems="center" gap={1}>
-                {!editingOffice && (
+              <Box ref={officeRef} display="flex" alignItems="center" gap={1}>
+                {editingField !== "office" && (
                   <>
                     <Typography>
                       {(() => {
@@ -405,10 +433,7 @@ export default function IssueDetailsSidebar({
                         <IconButton
                           size="small"
                           onClick={() => {
-                            setEditingOffice(true);
-                            setEditingSummary(false);
-                            setEditingStatus(false);
-                            setEditingDescription(false);
+                            setEditingField("office");
                           }}
                           sx={{ padding: "4px" }}
                         >
@@ -421,7 +446,7 @@ export default function IssueDetailsSidebar({
 
                 {
                   // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                  editingOffice && (issueOwner || admin) && (
+                  editingField === "office" && (issueOwner || admin) && (
                     <Select
                       size="small"
                       value={form.officeId || issue.officeId}
@@ -468,11 +493,11 @@ export default function IssueDetailsSidebar({
           </Tabs>
 
           {selectedTab === TabIndex.Details && (
-            <Box>
+            <Box ref={descriptionRef}>
               <Typography variant="body2" color="text.secondary" mb={1}>
                 Description
               </Typography>
-              {!editingDescription && (
+              {editingField !== "description" && (
                 <Box
                   sx={{
                     padding: 2,
@@ -499,9 +524,7 @@ export default function IssueDetailsSidebar({
                     <IconButton
                       size="small"
                       onClick={() => {
-                        setEditingDescription(true);
-                        setEditingSummary(false);
-                        setEditingOffice(false);
+                        setEditingField("description");
                       }}
                       sx={{ ml: 1 }}
                     >
@@ -510,7 +533,7 @@ export default function IssueDetailsSidebar({
                   )}
                 </Box>
               )}
-              {editingDescription && issueOwner && (
+              {editingField === "description" && issueOwner && (
                 <TextField
                   multiline
                   fullWidth
