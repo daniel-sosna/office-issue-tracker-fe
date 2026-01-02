@@ -35,6 +35,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 
 interface Props {
   issueId: string | null;
+  voteCount: number | null;
   onClose: () => void;
   admin: boolean;
   onSaved: () => void;
@@ -43,6 +44,7 @@ interface Props {
 
 export default function IssueDetailsSidebar({
   issueId,
+  voteCount,
   onClose,
   admin,
   onSaved,
@@ -406,7 +408,7 @@ export default function IssueDetailsSidebar({
                 >
                   <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
                   <Typography variant="body2" color="text.primary">
-                    {issue.votes ?? 0}
+                    {voteCount}
                   </Typography>
                 </Box>
               </Box>

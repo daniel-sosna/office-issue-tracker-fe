@@ -38,6 +38,9 @@ const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
+  const [selectedIssueVoteCount, setSelectedIssueVoteCount] = useState<
+    number | null
+  >(null);
   const { user } = useAuth();
 
   const [snackbar, setSnackbar] = useState<{
@@ -73,6 +76,7 @@ const IssuesList: React.FC = () => {
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssueId(issue.id);
+    setSelectedIssueVoteCount(issue.votes);
   };
 
   const { mutate: voteOnIssue } = useVoteOnIssue();
@@ -200,6 +204,7 @@ const IssuesList: React.FC = () => {
       {/* Issue details sidebar */}
       <IssueDrawer
         issueId={selectedIssueId}
+        voteCount={selectedIssueVoteCount}
         onClose={() => setSelectedIssueId(null)}
         admin={user?.role === "ADMIN"}
         onSaved={() =>
