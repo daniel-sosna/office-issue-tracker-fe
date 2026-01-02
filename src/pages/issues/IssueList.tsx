@@ -54,8 +54,6 @@ const IssuesList: React.FC = () => {
       summary: truncate(stripHtml(issue.summary), 50),
       description: truncate(stripHtmlDescription(issue.description), 50),
       status: normalizeStatus(issue.status),
-      createdBy: issue.createdBy,
-      officeId: issue.officeId,
       dateCreated: formatDate(issue.dateCreated),
       hasVoted: issue.hasVoted ?? false,
       votes: issue.votes ?? 0,

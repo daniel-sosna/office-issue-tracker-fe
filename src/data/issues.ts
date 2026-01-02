@@ -13,8 +13,6 @@ export interface Issue {
   summary: string;
   description: string;
   status: IssueStatusType;
-  createdBy: string;
-  officeId: string;
   dateCreated: string;
   hasVoted: boolean;
   votes: number;
@@ -22,6 +20,7 @@ export interface Issue {
 }
 
 export interface IssueDetails extends Issue {
+  officeId: string;
   office: string;
   dateModified: string | null;
   reportedBy: string;
