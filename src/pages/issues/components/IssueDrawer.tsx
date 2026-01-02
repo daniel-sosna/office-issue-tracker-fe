@@ -90,12 +90,17 @@ export default function IssueDetailsSidebar({
   const descriptionRef = useRef<HTMLDivElement>(null);
   const statusRef = useRef<HTMLDivElement>(null);
   const officeRef = useRef<HTMLDivElement>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (!editingField) return;
 
       const target = event.target as HTMLElement;
+
+      if (actionsRef.current?.contains(target)) {
+        return;
+      }
 
       if (target.closest(".MuiMenu-paper")) {
         return;
@@ -158,7 +163,9 @@ export default function IssueDetailsSidebar({
 
   async function handleSave() {
     if (!issue) return;
-    if (!validateForm()) return;
+    if (!validateForm()) {
+      return;
+    }
 
     try {
       if (issueOwner) {
@@ -185,7 +192,6 @@ export default function IssueDetailsSidebar({
       await queryClient.invalidateQueries({
         queryKey: queryKeys.issues(),
       });
-
       setEditingField(null);
       onSaved();
       onClose();
@@ -598,7 +604,7 @@ export default function IssueDetailsSidebar({
             }
           </Box>
 
-          <Box display="flex" gap={2}>
+          <Box ref={actionsRef} display="flex" gap={2}>
             {
               // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
               (issueOwner || admin) && (
