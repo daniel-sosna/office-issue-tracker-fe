@@ -37,12 +37,16 @@ interface Props {
   issueId: string | null;
   onClose: () => void;
   admin: boolean;
+  onSaved: () => void;
+  onError: (message: string) => void;
 }
 
 export default function IssueDetailsSidebar({
   issueId,
   onClose,
   admin,
+  onSaved,
+  onError,
 }: Props) {
   const TabIndex = {
     Details: 0,
@@ -62,7 +66,6 @@ export default function IssueDetailsSidebar({
   const [editingField, setEditingField] = useState<
     null | "summary" | "description" | "office" | "status"
   >(null);
-  const [saveSuccess, setSaveSuccess] = useState(false);
   const [errors, setErrors] = useState<{
     summary?: string;
     description?: string;
@@ -182,11 +185,10 @@ export default function IssueDetailsSidebar({
       });
 
       setEditingField(null);
-      setSaveSuccess(true);
-
+      onSaved();
       onClose();
     } catch {
-      setErrorMessage("Failed to save the issue.");
+      onError("Failed to save the Issue.");
     }
   }
 
@@ -626,20 +628,6 @@ export default function IssueDetailsSidebar({
                 </>
               )
             }
-            <Snackbar
-              open={saveSuccess}
-              autoHideDuration={3000}
-              onClose={() => setSaveSuccess(false)}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            >
-              <Alert
-                onClose={() => setSaveSuccess(false)}
-                severity="success"
-                sx={{ width: "100%" }}
-              >
-                Issue saved successfully!
-              </Alert>
-            </Snackbar>
             <Snackbar
               open={!!errorMessage}
               autoHideDuration={4000}

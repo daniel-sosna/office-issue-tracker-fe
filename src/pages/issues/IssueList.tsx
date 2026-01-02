@@ -38,8 +38,17 @@ const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
   const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const { user } = useAuth();
+
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const params: FetchIssuesParams = {
     page,
@@ -193,6 +202,20 @@ const IssuesList: React.FC = () => {
         issueId={selectedIssueId}
         onClose={() => setSelectedIssueId(null)}
         admin={user?.role === "ADMIN"}
+        onSaved={() =>
+          setSnackbar({
+            open: true,
+            message: "Issue saved successfully!",
+            severity: "success",
+          })
+        }
+        onError={(message) =>
+          setSnackbar({
+            open: true,
+            message,
+            severity: "error",
+          })
+        }
       />
 
       {/* Pagination */}
@@ -215,18 +238,12 @@ const IssuesList: React.FC = () => {
       </Box>
 
       <Snackbar
-        open={!!error}
-        autoHideDuration={4000}
-        onClose={() => setError(null)}
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
         anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        <Alert
-          severity="error"
-          onClose={() => setError(null)}
-          sx={{ width: "100%" }}
-        >
-          {error}
-        </Alert>
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
       </Snackbar>
     </Box>
   );
