@@ -44,6 +44,11 @@ export default function IssueModal({
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [errors, setErrors] = useState<{
+    summary?: string;
+    description?: string;
+    office?: string;
+  }>({});
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -92,14 +97,33 @@ export default function IssueModal({
     };
   }, [editor]);
 
-  const isFormValid =
-    summary.trim() !== "" && office !== "" && description !== "";
+  function validateForm() {
+    const newErrors: typeof errors = {};
+
+    if (!summary || summary.trim().length === 0) {
+      newErrors.summary = "Summary is required";
+    } else if (summary.trim().length < 3) {
+      newErrors.summary = "Summary must be at least 3 characters";
+    } else if (summary.length > 200) {
+      newErrors.summary = "Summary must be less than 200 characters";
+    }
+
+    if (!description || description.trim().length === 0) {
+      newErrors.description = "Description is required";
+    } else if (description.length > 2000) {
+      newErrors.description = "Description must be less than 2000 characters";
+    }
+
+    if (!office) {
+      newErrors.office = "Office is required";
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
 
   const handleSubmit = async (): Promise<void> => {
-    if (!isFormValid) {
-      setErrorMessage("Please fill in all required fields");
-      return;
-    }
+    if (!validateForm()) return;
 
     const selectedOffice = offices.find((o) => o.title === office);
     if (!selectedOffice) {
@@ -126,6 +150,11 @@ export default function IssueModal({
       setErrorMessage("An error occurred while submitting the issue");
     }
   };
+  const handleClose = () => {
+    setErrors({});
+    setErrorMessage("");
+    onClose();
+  };
 
   return (
     <Dialog
@@ -148,7 +177,7 @@ export default function IssueModal({
         Report Issue
       </DialogTitle>
       <IconButton
-        onClick={onClose}
+        onClick={() => void handleClose()}
         size="small"
         sx={{
           position: "absolute",
@@ -178,6 +207,8 @@ export default function IssueModal({
               fullWidth
               size="small"
               autoFocus
+              error={!!errors.summary}
+              helperText={errors.summary}
             />
           </Box>
 
@@ -197,6 +228,8 @@ export default function IssueModal({
                 transition: "border 0.2s",
                 outline: editor?.isFocused ? "2px solid black" : "none",
                 outlineOffset: -1,
+                borderColor: errors.description ? "error.main" : "divider",
+                borderRadius: 1,
               }}
               onClick={() => editor?.chain().focus().run()}
             >
@@ -220,6 +253,11 @@ export default function IssueModal({
                 )}
               </Box>
             </Box>
+            {errors.description && (
+              <Box color="error.main" fontSize={12} mt={0.5}>
+                {errors.description}
+              </Box>
+            )}
           </Box>
 
           <Box>
@@ -232,6 +270,8 @@ export default function IssueModal({
               onChange={(e) => setOffice(e.target.value)}
               variant="outlined"
               size="small"
+              error={!!errors.office}
+              helperText={errors.office}
               sx={{ width: "45%" }}
             >
               {offices.map((o) => (
@@ -257,7 +297,7 @@ export default function IssueModal({
       >
         <Button
           variant="outlined"
-          onClick={onClose}
+          onClick={() => void handleClose()}
           sx={{
             borderRadius: "999px",
             paddingX: 3,
@@ -269,7 +309,7 @@ export default function IssueModal({
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={!isFormValid}
+          disabled={isPending}
           sx={{
             borderRadius: "999px",
             paddingX: 3,
