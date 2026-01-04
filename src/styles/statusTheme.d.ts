@@ -7,7 +7,6 @@ declare module "@mui/material/styles" {
       inProgressBg: string;
       resolvedBg: string;
       closedBg: string;
-      pendingBg: string;
       blockedBg: string;
       mainText: string;
       mutedText: string;
@@ -20,7 +19,6 @@ declare module "@mui/material/styles" {
       inProgressBg?: string;
       resolvedBg?: string;
       closedBg?: string;
-      pendingBg?: string;
       blockedBg?: string;
       mainText?: string;
       mutedText?: string;

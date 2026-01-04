@@ -3,7 +3,6 @@ export const IssueStatus = {
   InProgress: "IN_PROGRESS",
   Resolved: "RESOLVED",
   Closed: "CLOSED",
-  Pending: "PENDING",
   Blocked: "BLOCKED",
 } as const;
 
