@@ -9,7 +9,6 @@ export function useCreateIssue() {
     mutationFn: async (vars) => {
       return await createIssue(vars);
     },
-
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
     },
