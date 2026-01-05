@@ -4,6 +4,7 @@ import {
   type IssueStatusType,
   type IssuePage,
   IssueStatus,
+  type IssueAttachment,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
@@ -52,6 +53,7 @@ interface IssueDetailsResponse {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
+  attachments?: IssueAttachment[];
 }
 
 function mapIssueStatus(apiStatus: string): IssueStatusType {
@@ -89,6 +91,7 @@ export const fetchIssueDetails = async (
     office: data.office,
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
+    attachments: data.attachments ?? [],
   };
 };
 

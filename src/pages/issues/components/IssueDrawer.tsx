@@ -1,10 +1,21 @@
 import { useState } from "react";
-import { Box, Typography, Divider, Avatar, Tabs, Tab } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Divider,
+  Avatar,
+  Tabs,
+  Tab,
+  Snackbar,
+  Alert,
+} from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueDetails } from "@data/issues";
+import type { IssueDetails, IssueAttachment } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import { formatDate, stripHtml } from "@utils/formatters";
+import AttachmentList from "./AttachmentList";
+import { useIssueDetails } from "@api/queries/useIssueDetails";
 
 interface Props {
   issue: IssueDetails | null;
@@ -21,6 +32,14 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
+
+  const { data: issueDetails, isError, error } = useIssueDetails(issue?.id);
+
+  const attachments: IssueAttachment[] = issueDetails?.attachments ?? [];
+
+  const errorMessage = isError
+    ? (error?.message ?? "Failed to fetch issue details")
+    : null;
 
   if (!issue) {
     return (
@@ -153,6 +172,22 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           <Typography variant="body1" color="text.primary">
             {stripHtml(issue.description)}
           </Typography>
+
+          {attachments.length > 0 && (
+            <Box mt={2}>
+              <Typography variant="body2" color="text.secondary" mb={1}>
+                Attachments
+              </Typography>
+
+              <AttachmentList
+                attachments={attachments.map((attachment) => ({
+                  id: attachment.id,
+                  name: attachment.originalFilename,
+                  url: attachment.url,
+                }))}
+              />
+            </Box>
+          )}
         </Box>
       )}
 
@@ -167,6 +202,16 @@ export default function IssueDetailsSidebar({ issue, onClose }: Props) {
           Activity log is under construction.
         </Typography>
       )}
+
+      <Snackbar
+        open={isError}
+        autoHideDuration={4000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert severity="error" sx={{ width: "100%" }}>
+          {errorMessage}
+        </Alert>
+      </Snackbar>
     </RightDrawer>
   );
 }
