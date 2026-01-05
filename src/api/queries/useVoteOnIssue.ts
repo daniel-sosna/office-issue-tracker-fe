@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";
 import { voteOnIssue, type VoteOnIssueArgs } from "@api/services/votes";
-import type { IssuePageResponse } from "@data/issues";
+import type { IssuePage } from "@data/issues";
 
 export function useVoteOnIssue() {
   const queryClient = useQueryClient();
@@ -13,7 +13,7 @@ export function useVoteOnIssue() {
       await queryClient.cancelQueries({ queryKey: queryKeys.issues() });
 
       // Optimistically update the cache
-      queryClient.setQueriesData<IssuePageResponse>(
+      queryClient.setQueriesData<IssuePage>(
         { queryKey: queryKeys.issues() },
         (old) => {
           if (!old) return old;
@@ -24,9 +24,7 @@ export function useVoteOnIssue() {
                 ? {
                     ...issue,
                     hasVoted: vote,
-                    votes: vote
-                      ? (issue.votes ?? 0) + 1
-                      : (issue.votes ?? 0) - 1,
+                    votes: vote ? issue.votes + 1 : issue.votes - 1,
                   }
                 : issue
             ),

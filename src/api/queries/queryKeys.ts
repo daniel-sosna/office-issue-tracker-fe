@@ -1,4 +1,4 @@
-import type { FetchIssuesParams } from "@data/issues.ts";
+import type { FetchIssuesParams } from "@data/issues";
 
 export const queryKeys = {
   issues: (params?: FetchIssuesParams) =>

@@ -6,8 +6,9 @@ export function useCreateIssue() {
   const queryClient = useQueryClient();
 
   return useMutation<void, Error, CreateIssueArgs>({
-    mutationFn: ({ issue, files }: CreateIssueArgs) =>
-      createIssue({ issue, files }),
+    mutationFn: async (vars) => {
+      return await createIssue(vars);
+    },
 
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: queryKeys.issues() });

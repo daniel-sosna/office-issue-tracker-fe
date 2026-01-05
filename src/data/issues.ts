@@ -37,7 +37,7 @@ export interface FetchIssuesParams {
   officeId?: string;
 }
 
-export interface IssuePageResponse {
+export interface IssuePage {
   content: Issue[];
   totalPages: number;
   totalElements: number;

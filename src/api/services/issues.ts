@@ -3,7 +3,7 @@ import type {
   IssueDetails,
   IssueStatusType,
   FetchIssuesParams,
-  IssuePageResponse,
+  IssuePage,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
@@ -53,7 +53,7 @@ function normalizeIssue(i: BackendIssueDTO): Issue {
 
 export async function fetchIssues(
   params: FetchIssuesParams
-): Promise<IssuePageResponse> {
+): Promise<IssuePage> {
   const { data } = await api.get<IssuePageResponseRaw>(ENDPOINTS.ISSUES, {
     params,
   });
