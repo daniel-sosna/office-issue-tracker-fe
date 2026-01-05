@@ -23,7 +23,7 @@ const statusStyles: Record<
   },
   [IssueStatus.Resolved]: {
     backgroundColor: palette.resolvedBg,
-    color: palette.mutedText,
+    color: palette.mainText,
   },
   [IssueStatus.Closed]: {
     backgroundColor: palette.closedBg,
@@ -48,7 +48,6 @@ export function StatusChip({ status }: StatusChipProps) {
       size="small"
       sx={{
         minWidth: 90,
-        textTransform: "capitalize",
         backgroundColor,
         color,
         fontWeight: 500,

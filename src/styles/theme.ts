@@ -11,14 +11,13 @@ const theme = createTheme({
     text: { primary: "#000048", secondary: "#5f6368" },
     status: {
       openBg: "#CFE7D7",
-      inProgressBg: "#DAE9FF",
-      resolvedBg: "#EDEFF1",
+      inProgressBg: "#FFF7DA",
+      resolvedBg: "#DAE9FF",
       closedBg: "#EDEFF1",
-      pendingBg: "#FFF7DA",
       blockedBg: "#FFDAE3",
 
       mainText: "secondary.main",
-      mutedText: "#999999",
+      mutedText: "#4A4A4A",
     },
     vote: {
       active: "#78ECE8",
