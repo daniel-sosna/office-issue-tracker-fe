@@ -142,5 +142,5 @@ export async function updateIssueOffice(
 }
 
 export async function softDeleteIssue(issueId: string): Promise<void> {
-  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/delete`);
+  await api.delete(`${ENDPOINTS.ISSUES}/${issueId}`);
 }
