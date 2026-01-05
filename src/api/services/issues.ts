@@ -111,7 +111,7 @@ export async function createIssue({
 
 export async function updateIssue(
   issueId: string,
-  data: { summary: string; description: string; officeId: string },
+  data: { summary?: string; description?: string; officeId?: string },
   files?: File[],
   deleteAttachmentIds?: string[]
 ): Promise<void> {
@@ -132,13 +132,6 @@ export async function updateIssueStatus(
   status: IssueStatusType
 ): Promise<void> {
   await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/status`, { status });
-}
-
-export async function updateIssueOffice(
-  issueId: string,
-  officeId: string
-): Promise<void> {
-  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/office`, { officeId });
 }
 
 export async function softDeleteIssue(issueId: string): Promise<void> {

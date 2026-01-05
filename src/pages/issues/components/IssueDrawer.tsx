@@ -23,7 +23,6 @@ import {
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
-  updateIssueOffice,
 } from "@api/services/issues.ts";
 import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
 import { useOffices } from "@api/queries/useOffices.ts";
@@ -186,7 +185,7 @@ export default function IssueDetailsSidebar({
         form.officeId &&
         form.officeId !== issue.officeId
       ) {
-        await updateIssueOffice(issue.id, form.officeId);
+        await updateIssue(issue.id, { officeId: form.officeId });
       }
 
       await queryClient.invalidateQueries({
