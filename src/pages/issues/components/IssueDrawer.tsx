@@ -59,7 +59,7 @@ export default function IssueDetailsSidebar({
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [deleting, setDeleting] = useState(false);
-  const { data: issue } = useIssueDetails(issueId);
+  const { data: issue } = useIssueDetails(issueId ?? undefined);
   const { data: offices = [], isError: officesError } = useOffices();
   const { user } = useAuth();
   const issueOwner = issue && issue.reportedByEmail === user?.email;
@@ -251,7 +251,7 @@ export default function IssueDetailsSidebar({
   }
 
   return (
-    <RightDrawer open={true} onClose={handleCancel}>
+    <RightDrawer open={!!issueId} onClose={handleCancel}>
       <Box
         sx={{ display: "flex", flexDirection: "column", minHeight: "92.5vh" }}
       >

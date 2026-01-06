@@ -29,15 +29,6 @@ export interface IssueDetails extends Issue {
   attachments: IssueAttachment[];
 }
 
-export interface FetchIssuesParams {
-  page: number;
-  size: number;
-  status?: IssueStatusType;
-  reportedBy?: string;
-  sort?: "latest" | "oldest" | "mostVotes";
-  officeId?: string;
-}
-
 export interface IssueAttachment {
   id: string;
   url: string;

@@ -2,7 +2,6 @@ import {
   type Issue,
   type IssueDetails,
   type IssueStatusType,
-  type FetchIssuesParams,
   type IssuePage,
   type IssueAttachment,
 } from "@data/issues";
@@ -40,6 +39,15 @@ interface IssueDetailsResponse {
   attachments?: IssueAttachment[];
 }
 
+export interface FetchIssuePageArgs {
+  page: number;
+  size: number;
+  status?: IssueStatusType;
+  reportedBy?: string;
+  sort?: "latest" | "oldest" | "mostVotes";
+  officeId?: string;
+}
+
 function normalizeIssue(i: IssueResponse): Issue {
   return {
     id: i.id,
@@ -54,7 +62,7 @@ function normalizeIssue(i: IssueResponse): Issue {
 }
 
 export async function fetchIssues(
-  params: FetchIssuesParams
+  params: FetchIssuePageArgs
 ): Promise<IssuePage> {
   const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
     params,
