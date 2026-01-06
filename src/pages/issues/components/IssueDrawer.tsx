@@ -23,11 +23,11 @@ import {
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
-} from "@api/services/issues.ts";
-import { stripHtmlDescription, formatDate } from "@utils/formatters.ts";
-import { useOffices } from "@api/queries/useOffices.ts";
-import theme from "@styles/theme.ts";
-import { useIssueDetails } from "@api/queries/useIssueDetails.ts";
+} from "@api/services/issues";
+import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import { useOffices } from "@api/queries/useOffices";
+import theme from "@styles/theme";
+import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useAuth } from "@context/UseAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";

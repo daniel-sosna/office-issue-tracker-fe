@@ -16,13 +16,10 @@ import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue } from "@data/issues";
 import { useIssues } from "@api/queries/useIssues";
-import { normalizeStatus } from "@utils/status";
 import { useAuth } from "@context/UseAuth";
-import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
-import { truncate } from "@utils/truncation";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
-import type { FetchIssuePageArgs } from "@api/services/issues.ts";
+import type { FetchIssuePageArgs } from "@api/services/issues";
 
 const tabLabels = [
   "All issues",
@@ -61,17 +58,7 @@ const IssuesList: React.FC = () => {
 
   const { data, isLoading, isError } = useIssues(params);
 
-  const issues: Issue[] =
-    data?.content.map((issue: Issue) => ({
-      id: issue.id,
-      summary: truncate(stripHtml(issue.summary), 50),
-      description: truncate(stripHtmlDescription(issue.description), 50),
-      status: normalizeStatus(issue.status),
-      dateCreated: formatDate(issue.dateCreated),
-      hasVoted: issue.hasVoted ?? false,
-      votes: issue.votes ?? 0,
-      comments: issue.comments ?? 0,
-    })) ?? [];
+  const issues = data?.content ?? [];
 
   const totalPages = data?.totalPages ?? 1;
 

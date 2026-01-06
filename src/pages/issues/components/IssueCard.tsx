@@ -2,7 +2,8 @@ import { Card, CardContent, Box, Typography } from "@mui/material";
 import type { Issue } from "@data/issues";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { VoteSection } from "@pages/issues/components/VoteSection";
-import { stripHtmlDescription } from "@utils/formatters.ts";
+import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
+import { truncate } from "@utils/truncation.ts";
 
 interface IssueCardProps {
   issue: Issue;
@@ -15,6 +16,10 @@ export default function IssueCard({
   onClickCard,
   onClickVote,
 }: IssueCardProps) {
+  const summary = truncate(stripHtml(issue.summary), 50);
+  const description = truncate(stripHtmlDescription(issue.description), 50);
+  const dateCreated = formatDate(issue.dateCreated);
+
   return (
     <Card
       variant="outlined"
@@ -45,7 +50,7 @@ export default function IssueCard({
           {/* Issue summary */}
           <Box flex="1 1 50%">
             <Typography variant="subtitle1" fontWeight={500}>
-              {issue.summary}
+              {summary}
             </Typography>
             <Typography
               variant="body2"
@@ -59,7 +64,7 @@ export default function IssueCard({
               }}
               noWrap
             >
-              {stripHtmlDescription(issue.description)}
+              {description}
             </Typography>
             <Typography
               variant="caption"
@@ -67,7 +72,7 @@ export default function IssueCard({
               mt={0.5}
               display="block"
             >
-              {issue.dateCreated}
+              {dateCreated}
             </Typography>
           </Box>
 
@@ -79,8 +84,8 @@ export default function IssueCard({
           {/* Vote section */}
           <VoteSection
             hasVoted={issue.hasVoted}
-            votes={issue.votes ?? 0}
-            comments={issue.comments ?? 0}
+            votes={issue.votes}
+            comments={issue.comments}
             status={issue.status}
             onVote={onClickVote}
           />
