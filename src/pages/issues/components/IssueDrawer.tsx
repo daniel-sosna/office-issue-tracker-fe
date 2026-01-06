@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
   Box,
   Typography,
@@ -91,8 +91,8 @@ export default function IssueDetailsSidebar({
   const officeRef = useRef<HTMLDivElement>(null);
   const actionsRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
+  const handleClickOutside = useCallback(
+    (event: MouseEvent) => {
       if (!editingField) return;
 
       const target = event.target as HTMLElement;
@@ -116,11 +116,14 @@ export default function IssueDetailsSidebar({
       if (activeRef?.current && !activeRef.current.contains(target)) {
         setEditingField(null);
       }
-    }
+    },
+    [editingField]
+  );
 
+  useEffect(() => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [editingField]);
+  }, [handleClickOutside]);
 
   useEffect(() => {
     if (officesError) {
@@ -157,7 +160,10 @@ export default function IssueDetailsSidebar({
     }
 
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+
+    const isValid = Object.keys(newErrors).length === 0;
+    setErrors(newErrors);
+    return isValid;
   }
 
   async function handleSave() {

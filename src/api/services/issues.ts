@@ -8,7 +8,7 @@ import type {
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-interface BackendIssueDTO {
+interface IssueResponse {
   id: string;
   summary: string;
   description: string;
@@ -22,8 +22,8 @@ interface BackendIssueDTO {
   commentCount: number | null;
 }
 
-interface IssuePageResponseRaw {
-  content: BackendIssueDTO[];
+interface IssuePageResponse {
+  content: IssueResponse[];
   totalPages: number;
   totalElements: number;
   page: number;
@@ -31,14 +31,14 @@ interface IssuePageResponseRaw {
 }
 
 interface IssueDetailsResponse {
-  issue: BackendIssueDTO;
+  issue: IssueResponse;
   officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
   reportedByEmail: string;
 }
 
-function normalizeIssue(i: BackendIssueDTO): Issue {
+function normalizeIssue(i: IssueResponse): Issue {
   return {
     id: i.id,
     summary: i.summary,
@@ -54,7 +54,7 @@ function normalizeIssue(i: BackendIssueDTO): Issue {
 export async function fetchIssues(
   params: FetchIssuesParams
 ): Promise<IssuePage> {
-  const { data } = await api.get<IssuePageResponseRaw>(ENDPOINTS.ISSUES, {
+  const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
     params,
   });
 
