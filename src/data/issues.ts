@@ -26,6 +26,7 @@ export interface IssueDetails extends Issue {
   reportedBy: string;
   reportedByAvatar: string;
   reportedByEmail: string;
+  attachments: IssueAttachment[];
 }
 
 export interface FetchIssuesParams {
@@ -35,6 +36,14 @@ export interface FetchIssuesParams {
   reportedBy?: string;
   sort?: "latest" | "oldest" | "mostVotes";
   officeId?: string;
+}
+
+export interface IssueAttachment {
+  id: string;
+  url: string;
+  format: string;
+  originalFilename: string;
+  fileSize: number;
 }
 
 export interface IssuePage {

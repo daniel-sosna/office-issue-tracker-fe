@@ -1,9 +1,10 @@
-import type {
-  Issue,
-  IssueDetails,
-  IssueStatusType,
-  FetchIssuesParams,
-  IssuePage,
+import {
+  type Issue,
+  type IssueDetails,
+  type IssueStatusType,
+  type FetchIssuesParams,
+  type IssuePage,
+  type IssueAttachment,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
@@ -36,6 +37,7 @@ interface IssueDetailsResponse {
   reportedBy: string;
   reportedByAvatar: string;
   reportedByEmail: string;
+  attachments?: IssueAttachment[];
 }
 
 function normalizeIssue(i: IssueResponse): Issue {
@@ -82,6 +84,7 @@ export async function fetchIssueDetails(
     reportedBy: data.reportedBy,
     reportedByAvatar: data.reportedByAvatar,
     reportedByEmail: data.reportedByEmail,
+    attachments: data.attachments ?? [],
   };
 }
 

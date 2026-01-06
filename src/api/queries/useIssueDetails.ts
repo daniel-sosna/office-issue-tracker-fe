@@ -1,11 +1,16 @@
 import { useQuery } from "@tanstack/react-query";
-import { fetchIssueDetails } from "@api/services/issues.ts";
-import { queryKeys } from "@api/queries/queryKeys.ts";
+import { fetchIssueDetails } from "@api/services/issues";
+import type { IssueDetails } from "@data/issues";
+import { queryKeys } from "./queryKeys";
 
-export function useIssueDetails(issueId: string | null) {
-  return useQuery({
-    queryKey: issueId ? queryKeys.issueDetails(issueId) : [],
-    queryFn: () => fetchIssueDetails(issueId!),
+export function useIssueDetails(issueId: string | undefined) {
+  return useQuery<IssueDetails, Error>({
     enabled: !!issueId,
+    queryKey: issueId
+      ? queryKeys.issueDetails(issueId)
+      : ["issueDetails", "none"],
+    queryFn: () => fetchIssueDetails(issueId ?? ""),
+    placeholderData: (prev) => prev,
+    staleTime: 1000 * 60 * 5,
   });
 }

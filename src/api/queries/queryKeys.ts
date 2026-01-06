@@ -1,8 +1,8 @@
-import type { FetchIssuesParams } from "@data/issues";
+import type { FetchIssuePageArgs } from "@api/services/issues";
 
 export const queryKeys = {
-  issues: (params?: FetchIssuesParams) =>
+  issues: (params?: FetchIssuePageArgs) =>
     params ? (["issues", params] as const) : (["issues"] as const),
   offices: () => ["offices"],
-  issueDetails: (issueId: string) => ["issueDetails", issueId],
+  issueDetails: (issueId: string) => ["issueDetails", issueId] as const,
 };
