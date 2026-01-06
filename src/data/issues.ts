@@ -22,7 +22,6 @@ export interface Issue {
 export interface IssueDetails extends Issue {
   officeId: string;
   office: string;
-  dateModified: string | null;
   reportedBy: string;
   reportedByAvatar: string;
   reportedByEmail: string;

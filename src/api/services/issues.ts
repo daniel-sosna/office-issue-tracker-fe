@@ -16,10 +16,9 @@ interface IssueResponse {
   createdBy: string;
   officeId: string;
   dateCreated: string;
-  dateModified: string | null;
   hasVoted: boolean;
   voteCount: number;
-  commentCount: number | null;
+  commentCount?: number;
 }
 
 interface IssuePageResponse {
@@ -36,7 +35,7 @@ interface IssueDetailsResponse {
   reportedBy: string;
   reportedByAvatar: string;
   reportedByEmail: string;
-  attachments?: IssueAttachment[];
+  attachments: IssueAttachment[];
 }
 
 export interface FetchIssuePageArgs {
@@ -48,16 +47,11 @@ export interface FetchIssuePageArgs {
   officeId?: string;
 }
 
-function normalizeIssue(i: IssueResponse): Issue {
+function normalizeIssue(issue: IssueResponse): Issue {
   return {
-    id: i.id,
-    summary: i.summary,
-    description: i.description,
-    status: i.status,
-    dateCreated: i.dateCreated,
-    hasVoted: i.hasVoted,
-    votes: i.voteCount,
-    comments: i.commentCount ?? 0,
+    ...issue,
+    votes: issue.voteCount,
+    comments: issue.commentCount ?? 0,
   };
 }
 
@@ -69,11 +63,8 @@ export async function fetchIssues(
   });
 
   return {
-    content: (data.content ?? []).map(normalizeIssue),
-    totalPages: data.totalPages,
-    totalElements: data.totalElements,
-    page: data.page,
-    size: data.size,
+    ...data,
+    content: data.content.map(normalizeIssue),
   };
 }
 
@@ -85,14 +76,10 @@ export async function fetchIssueDetails(
   );
 
   return {
+    ...data,
     ...normalizeIssue(data.issue),
     officeId: data.issue.officeId,
     office: data.officeName,
-    dateModified: data.issue.dateModified,
-    reportedBy: data.reportedBy,
-    reportedByAvatar: data.reportedByAvatar,
-    reportedByEmail: data.reportedByEmail,
-    attachments: data.attachments ?? [],
   };
 }
 
