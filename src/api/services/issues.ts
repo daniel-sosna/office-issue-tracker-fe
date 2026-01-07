@@ -33,6 +33,7 @@ interface IssuePageResponse {
 
 interface IssueDetailsResponse {
   issue: IssueBaseResponse;
+  officeId: string;
   officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
@@ -86,7 +87,6 @@ export async function fetchIssueDetails(
       voteCount: stats.votes,
       commentCount: stats.comments,
     }),
-    officeId: "",
     office: data.officeName,
   };
 }

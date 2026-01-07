@@ -3,7 +3,7 @@ import type { Issue } from "@data/issues";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { VoteSection } from "@pages/issues/components/VoteSection";
 import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
-import { truncate } from "@utils/truncation.ts";
+import { truncate } from "@utils/truncation";
 
 interface IssueCardProps {
   issue: Issue;

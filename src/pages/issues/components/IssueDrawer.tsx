@@ -414,7 +414,9 @@ export default function IssueDetailsSidebar({
                     px: 1,
                     py: 0.25,
                     borderRadius: 16,
-                    backgroundColor: "#f4f4f4",
+                    backgroundColor: issueStats.hasVoted
+                      ? "vote.activeBg"
+                      : "#f4f4f4",
                   }}
                 >
                   <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
