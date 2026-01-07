@@ -35,7 +35,7 @@ import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useAuth } from "@context/UseAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";
-import AttachmentList from "@pages/issues/components/AttachmentList.tsx";
+import AttachmentList from "@pages/issues/components/AttachmentList";
 
 interface Props {
   issueId?: string;
