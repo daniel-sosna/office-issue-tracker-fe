@@ -200,7 +200,7 @@ const IssuesList: React.FC = () => {
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
         onClose={() => setSelectedIssueId(undefined)}
-        admin={user?.role === "ADMIN"}
+        user={user!}
         onSaved={() =>
           setSnackbar({
             open: true,

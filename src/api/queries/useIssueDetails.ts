@@ -13,7 +13,23 @@ export function useIssueDetails(
       ? queryKeys.issueDetails(issueId)
       : ["issueDetails", "none"],
     queryFn: () => fetchIssueDetails(issueId ?? "", stats),
-    placeholderData: (prev) => prev,
+    placeholderData: () => {
+      if (!issueId) return undefined;
+      return {
+        ...stats,
+        id: issueId,
+        summary: "Loading...",
+        description: "Loading...",
+        status: "CLOSED",
+        dateCreated: "2025-01-01 00:00:00.00000 +00:00",
+        officeId: "",
+        office: "Loading...",
+        reportedBy: "Loading...",
+        reportedByAvatar: "",
+        reportedByEmail: "",
+        attachments: [],
+      } as IssueDetails;
+    },
     staleTime: 1000 * 60 * 5,
   });
 }

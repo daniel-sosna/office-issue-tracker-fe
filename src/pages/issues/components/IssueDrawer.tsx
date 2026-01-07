@@ -30,16 +30,16 @@ import { stripHtmlDescription, formatDate } from "@utils/formatters";
 import { useOffices } from "@api/queries/useOffices";
 import theme from "@styles/theme";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
-import { useAuth } from "@context/UseAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";
 import AttachmentList from "@pages/issues/components/AttachmentList";
+import type { User } from "@context/AuthContext";
 
 interface Props {
   issueId?: string;
   issueStats?: IssueStats;
+  user: User;
   onClose: () => void;
-  admin: boolean;
   onSaved: () => void;
   onError: (message: string) => void;
 }
@@ -47,8 +47,8 @@ interface Props {
 export default function IssueDetailsSidebar({
   issueId,
   issueStats = { hasVoted: false, votes: 0, comments: 0 },
+  user,
   onClose,
-  admin,
   onSaved,
   onError,
 }: Props) {
@@ -57,17 +57,11 @@ export default function IssueDetailsSidebar({
     Comments: 1,
     Activity: 2,
   } as const;
-
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
+  const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const { data: issue } = useIssueDetails(issueId, issueStats);
-  const { data: offices = [], isError: officesError } = useOffices();
-  const { user } = useAuth();
-  const issueOwner = issue && issue.reportedByEmail === user?.email;
-  const attachments: IssueAttachment[] = issue?.attachments ?? [];
-  const queryClient = useQueryClient();
   const [editingField, setEditingField] = useState<
     null | "summary" | "description" | "office" | "status"
   >(null);
@@ -87,6 +81,29 @@ export default function IssueDetailsSidebar({
     status: "OPEN",
     officeId: "",
   });
+
+  const { data: issue, isError: issueDetailsError } = useIssueDetails(
+    issueId,
+    issueStats
+  );
+  const { data: offices = [], isError: officesError } = useOffices();
+  const queryClient = useQueryClient();
+
+  const admin = user.role === "ADMIN";
+  const issueOwner = issue?.reportedByEmail === user.email;
+  const attachments: IssueAttachment[] = issue?.attachments ?? [];
+
+  useEffect(() => {
+    if (issueDetailsError) {
+      onError("Failed to load issue details.");
+    }
+  }, [issueDetailsError, onError]);
+
+  useEffect(() => {
+    if (officesError) {
+      onError("Failed to load offices.");
+    }
+  }, [officesError, onError]);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -127,10 +144,6 @@ export default function IssueDetailsSidebar({
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [handleClickOutside]);
-
-  if (officesError) {
-    onError("Failed to load offices.");
-  }
 
   useEffect(() => {
     if (issue) {
@@ -174,6 +187,8 @@ export default function IssueDetailsSidebar({
     }
 
     try {
+      setSaving(true);
+
       if (issueOwner) {
         const payload = {
           summary: form.summary,
@@ -203,6 +218,8 @@ export default function IssueDetailsSidebar({
       onClose();
     } catch {
       onError("Failed to save the Issue.");
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -441,45 +458,39 @@ export default function IssueDetailsSidebar({
                         : issue.office;
                     })()}
                   </Typography>
-                  {
-                    // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                    (issueOwner || admin) && (
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setEditingField("office");
-                        }}
-                        sx={{ padding: "4px" }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
-                    )
-                  }
+                  {(issueOwner || admin) && (
+                    <IconButton
+                      size="small"
+                      onClick={() => {
+                        setEditingField("office");
+                      }}
+                      sx={{ padding: "4px" }}
+                    >
+                      <EditIcon fontSize="small" />
+                    </IconButton>
+                  )}
                 </>
               )}
 
-              {
-                // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing
-                editingField === "office" && (issueOwner || admin) && (
-                  <Select
-                    size="small"
-                    value={form.officeId || issue.officeId}
-                    onChange={(e) =>
-                      setForm((prev) => ({
-                        ...prev,
-                        officeId: e.target.value,
-                      }))
-                    }
-                    sx={{ minWidth: 160 }}
-                  >
-                    {offices.map((o) => (
-                      <MenuItem key={o.id} value={o.id}>
-                        {o.title}, {o.country}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                )
-              }
+              {editingField === "office" && (issueOwner || admin) && (
+                <Select
+                  size="small"
+                  value={form.officeId || issue.officeId}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      officeId: e.target.value,
+                    }))
+                  }
+                  sx={{ minWidth: 160 }}
+                >
+                  {offices.map((o) => (
+                    <MenuItem key={o.id} value={o.id}>
+                      {o.title}, {o.country}
+                    </MenuItem>
+                  ))}
+                </Select>
+              )}
             </Box>
           </Box>
         </Box>
@@ -594,7 +605,7 @@ export default function IssueDetailsSidebar({
         )}
       </Box>
 
-      {(admin || issueOwner) && (
+      {(issueOwner || admin) && (
         <Box>
           <Divider sx={{ my: 2 }} />
 
@@ -641,8 +652,9 @@ export default function IssueDetailsSidebar({
                   borderRadius: "999px",
                   paddingX: 3,
                 }}
+                disabled={saving}
               >
-                Save
+                {saving ? "Saving..." : "Save"}
               </Button>
             </Box>
           </Box>
