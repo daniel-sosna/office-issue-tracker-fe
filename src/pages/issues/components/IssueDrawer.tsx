@@ -179,24 +179,24 @@ export default function IssueDetailsSidebar({
           description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
           officeId: form.officeId || issue.officeId,
         };
-
         await updateIssue(issue.id, payload);
       }
-
-      if (admin && form.status !== issue.status) {
-        await updateIssueStatus(issue.id, form.status);
-      }
-      if (
-        (issueOwner || admin) &&
-        form.officeId &&
-        form.officeId !== issue.officeId
-      ) {
-        await updateIssue(issue.id, { officeId: form.officeId });
+      if (admin) {
+        if (form.status !== issue.status) {
+          await updateIssueStatus(issue.id, form.status);
+        }
+        if (!issueOwner && form.officeId !== issue.officeId) {
+          await updateIssue(issue.id, { officeId: form.officeId });
+        }
       }
 
       await queryClient.invalidateQueries({
         queryKey: queryKeys.issues(),
       });
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.issueDetails(issue.id),
+      });
+
       setEditingField(null);
       onSaved();
       onClose();
