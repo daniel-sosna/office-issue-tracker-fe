@@ -8,15 +8,18 @@ export const IssueStatus = {
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
 
-export interface Issue {
+export interface IssueStats {
+  hasVoted: boolean;
+  votes: number;
+  comments: number;
+}
+
+export interface Issue extends IssueStats {
   id: string;
   summary: string;
   description: string;
   status: IssueStatusType;
   dateCreated: string;
-  hasVoted: boolean;
-  votes: number;
-  comments: number;
 }
 
 export interface IssueDetails extends Issue {

@@ -14,7 +14,7 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue } from "@data/issues";
+import type { Issue, IssueStats } from "@data/issues";
 import { useIssues } from "@api/queries/useIssues";
 import { useAuth } from "@context/UseAuth";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
@@ -35,10 +35,12 @@ const size = 10;
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [selectedIssueId, setSelectedIssueId] = useState<string | null>(null);
-  const [selectedIssueVoteCount, setSelectedIssueVoteCount] = useState<
-    number | null
-  >(null);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedIssueStats, setSelectedIssueStats] = useState<
+    IssueStats | undefined
+  >(undefined);
   const { user } = useAuth();
 
   const [snackbar, setSnackbar] = useState<{
@@ -64,7 +66,11 @@ const IssuesList: React.FC = () => {
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssueId(issue.id);
-    setSelectedIssueVoteCount(issue.votes);
+    setSelectedIssueStats({
+      hasVoted: issue.hasVoted,
+      votes: issue.votes,
+      comments: issue.comments,
+    });
   };
 
   const { mutate: voteOnIssue } = useVoteOnIssue();
@@ -192,8 +198,8 @@ const IssuesList: React.FC = () => {
       {/* Issue details sidebar */}
       <IssueDrawer
         issueId={selectedIssueId}
-        voteCount={selectedIssueVoteCount}
-        onClose={() => setSelectedIssueId(null)}
+        issueStats={selectedIssueStats}
+        onClose={() => setSelectedIssueId(undefined)}
         admin={user?.role === "ADMIN"}
         onSaved={() =>
           setSnackbar({

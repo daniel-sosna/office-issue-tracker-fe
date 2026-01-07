@@ -4,18 +4,20 @@ import {
   type IssueStatusType,
   type IssuePage,
   type IssueAttachment,
+  type IssueStats,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-interface IssueResponse {
+interface IssueBaseResponse {
   id: string;
   summary: string;
   description: string;
   status: IssueStatusType;
-  createdBy: string;
-  officeId: string;
   dateCreated: string;
+}
+
+interface IssueResponse extends IssueBaseResponse {
   hasVoted: boolean;
   voteCount: number;
   commentCount?: number;
@@ -30,7 +32,7 @@ interface IssuePageResponse {
 }
 
 interface IssueDetailsResponse {
-  issue: IssueResponse;
+  issue: IssueBaseResponse;
   officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
@@ -69,7 +71,8 @@ export async function fetchIssues(
 }
 
 export async function fetchIssueDetails(
-  issueId: string
+  issueId: string,
+  stats: IssueStats
 ): Promise<IssueDetails> {
   const { data } = await api.get<IssueDetailsResponse>(
     ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
@@ -77,8 +80,13 @@ export async function fetchIssueDetails(
 
   return {
     ...data,
-    ...normalizeIssue(data.issue),
-    officeId: data.issue.officeId,
+    ...normalizeIssue({
+      ...data.issue,
+      hasVoted: stats.hasVoted,
+      voteCount: stats.votes,
+      commentCount: stats.comments,
+    }),
+    officeId: "",
     office: data.officeName,
   };
 }

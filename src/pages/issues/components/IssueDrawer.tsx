@@ -15,7 +15,7 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueStatusType } from "@data/issues";
+import type { IssueStats, IssueStatusType } from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -33,8 +33,8 @@ import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";
 
 interface Props {
-  issueId: string | null;
-  voteCount: number | null;
+  issueId?: string;
+  issueStats?: IssueStats;
   onClose: () => void;
   admin: boolean;
   onSaved: () => void;
@@ -43,7 +43,7 @@ interface Props {
 
 export default function IssueDetailsSidebar({
   issueId,
-  voteCount,
+  issueStats = { hasVoted: false, votes: 0, comments: 0 },
   onClose,
   admin,
   onSaved,
@@ -59,7 +59,7 @@ export default function IssueDetailsSidebar({
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [deleting, setDeleting] = useState(false);
-  const { data: issue } = useIssueDetails(issueId ?? undefined);
+  const { data: issue } = useIssueDetails(issueId, issueStats);
   const { data: offices = [], isError: officesError } = useOffices();
   const { user } = useAuth();
   const issueOwner = issue && issue.reportedByEmail === user?.email;
@@ -419,7 +419,7 @@ export default function IssueDetailsSidebar({
                 >
                   <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
                   <Typography variant="body2" color="text.primary">
-                    {voteCount}
+                    {issueStats.votes}
                   </Typography>
                 </Box>
               </Box>
