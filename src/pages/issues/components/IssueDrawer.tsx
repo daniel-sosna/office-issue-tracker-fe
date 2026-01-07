@@ -15,7 +15,11 @@ import {
 import EditIcon from "@mui/icons-material/Edit";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type { IssueStats, IssueStatusType } from "@data/issues";
+import type {
+  IssueAttachment,
+  IssueStats,
+  IssueStatusType,
+} from "@data/issues";
 import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
@@ -31,6 +35,7 @@ import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useAuth } from "@context/UseAuth";
 import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";
+import AttachmentList from "@pages/issues/components/AttachmentList.tsx";
 
 interface Props {
   issueId?: string;
@@ -63,6 +68,7 @@ export default function IssueDetailsSidebar({
   const { data: offices = [], isError: officesError } = useOffices();
   const { user } = useAuth();
   const issueOwner = issue && issue.reportedByEmail === user?.email;
+  const attachments: IssueAttachment[] = issue?.attachments ?? [];
   const queryClient = useQueryClient();
   const [editingField, setEditingField] = useState<
     null | "summary" | "description" | "office" | "status"
@@ -565,6 +571,21 @@ export default function IssueDetailsSidebar({
                   error={!!errors.description}
                   helperText={errors.description}
                 />
+              )}
+              {attachments.length > 0 && (
+                <Box mt={2}>
+                  <Typography variant="body2" color="text.secondary" mb={1}>
+                    Attachments
+                  </Typography>
+
+                  <AttachmentList
+                    attachments={attachments.map((attachment) => ({
+                      id: attachment.id,
+                      name: attachment.originalFilename,
+                      url: attachment.url,
+                    }))}
+                  />
+                </Box>
               )}
             </Box>
           )}
