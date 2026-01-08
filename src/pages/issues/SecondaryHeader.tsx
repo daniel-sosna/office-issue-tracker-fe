@@ -16,11 +16,11 @@ const SecondaryHeader: React.FC = () => {
     >
       <Box>
         <Typography variant="h5">
-          Welcome to the Office Issue Registration System
+          Welcome to the Office Issues Dashboard
         </Typography>
         <Typography color="text.secondary" mt={1}>
-          Discover, report, and vote for office issues that require our
-          attention and fix
+          Report, vote, and comment on issues in the office that require our
+          attention and fixing
         </Typography>
       </Box>
 

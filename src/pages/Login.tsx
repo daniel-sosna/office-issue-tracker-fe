@@ -40,9 +40,12 @@ export const Login = () => {
       }}
     >
       <Stack spacing={4} alignItems="center">
-        <Typography variant="h5">
-          Welcome to Defect Registration System
-        </Typography>
+        <Stack spacing={1} alignItems="center">
+          <Typography variant="h4">Welcome to Office Issues</Typography>
+          <Typography>
+            Report office defects, gather feedback, and track resolution status
+          </Typography>
+        </Stack>
 
         <Button
           variant="outlined"
@@ -59,7 +62,6 @@ export const Login = () => {
           sx={{
             bgcolor: "background.paper",
             borderColor: "divider",
-            textTransform: "none",
             px: 3,
             py: 1.25,
             borderRadius: 2,
