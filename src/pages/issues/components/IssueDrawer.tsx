@@ -8,6 +8,10 @@ import {
   Tab,
   MenuItem,
   Select,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import TextField from "@mui/material/TextField";
@@ -58,6 +62,7 @@ export default function IssueDetailsSidebar({
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
   const [errors, setErrors] = useState<{
@@ -223,10 +228,7 @@ export default function IssueDetailsSidebar({
 
   const handleDelete = async () => {
     if (!issue) return;
-    const deleteConfirmation = window.confirm(
-      "Are you sure you want to delete this issue? This action cannot be undone."
-    );
-    if (!deleteConfirmation) return;
+
     try {
       setDeleting(true);
 
@@ -240,6 +242,7 @@ export default function IssueDetailsSidebar({
     } catch {
       onError("Failed to delete the issue.");
     } finally {
+      setDeleteDialogOpen(false);
       setDeleting(false);
     }
   };
@@ -553,7 +556,7 @@ export default function IssueDetailsSidebar({
                 variant="outlined"
                 size="medium"
                 color="error"
-                onClick={() => void handleDelete()}
+                onClick={() => setDeleteDialogOpen(true)}
                 sx={{
                   borderRadius: "999px",
                   paddingX: 3,
@@ -594,6 +597,32 @@ export default function IssueDetailsSidebar({
           </Box>
         </Box>
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
+        <DialogContent>
+          <Typography id="delete-dialog-description">
+            Are you sure you want to delete this issue? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => void handleDelete()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </RightDrawer>
   );
 }
