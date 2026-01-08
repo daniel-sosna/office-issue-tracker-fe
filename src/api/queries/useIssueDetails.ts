@@ -3,10 +3,7 @@ import { fetchIssueDetails } from "@api/services/issues";
 import type { IssueDetails, IssueStats } from "@data/issues";
 import { queryKeys } from "./queryKeys";
 
-export function useIssueDetails(
-  issueId?: string,
-  stats: IssueStats = { hasVoted: false, votes: 0, comments: 0 }
-) {
+export function useIssueDetails(issueId: string, stats: IssueStats) {
   return useQuery<IssueDetails, Error>({
     enabled: !!issueId,
     queryKey: issueId

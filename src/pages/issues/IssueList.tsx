@@ -64,11 +64,7 @@ const IssuesList: React.FC = () => {
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssueId(issue.id);
-    setSelectedIssueStats({
-      hasVoted: issue.hasVoted,
-      votes: issue.votes,
-      comments: issue.comments,
-    });
+    setSelectedIssueStats({ ...issue });
   };
 
   const { mutate: voteOnIssue } = useVoteOnIssue();

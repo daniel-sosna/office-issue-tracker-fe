@@ -45,7 +45,7 @@ interface Props {
 
 export default function IssueDetailsSidebar({
   issueId,
-  issueStats = { hasVoted: false, votes: 0, comments: 0 },
+  issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
   onSaved,
   onError,
@@ -79,7 +79,7 @@ export default function IssueDetailsSidebar({
   });
 
   const { data: issue, isError: issueDetailsError } = useIssueDetails(
-    issueId,
+    issueId ?? "",
     issueStats
   );
   const { data: offices = [], isError: officesError } = useOffices();

@@ -73,7 +73,6 @@ export async function fetchIssues(
 
 export async function fetchIssueDetails(
   issueId: string,
-  isOwner: boolean,
   stats: IssueStats
 ): Promise<IssueDetails> {
   const { data } = await api.get<IssueDetailsResponse>(
@@ -84,8 +83,7 @@ export async function fetchIssueDetails(
     ...data,
     ...normalizeIssue({
       ...data.issue,
-      isOwner,
-      hasVoted: stats.hasVoted,
+      ...stats,
       voteCount: stats.votes,
       commentCount: stats.comments,
     }),
