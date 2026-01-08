@@ -263,9 +263,7 @@ export default function IssueDetailsSidebar({
           ref={summaryRef}
           display="flex"
           justifyContent="space-between"
-          alignItems="center"
-          mt={2}
-          mb={1}
+          mt={1}
         >
           {editingField !== "summary" && (
             <>
@@ -275,12 +273,10 @@ export default function IssueDetailsSidebar({
                   fontSize: "22px",
                   fontWeight: 400,
                   lineHeight: "1.3",
-                  display: "-webkit-box",
                   WebkitLineClamp: 3,
                   WebkitBoxOrient: "vertical",
                   overflow: "hidden",
                   textOverflow: "ellipsis",
-                  maxWidth: "100%",
                 }}
               >
                 {form.summary}
@@ -316,149 +312,135 @@ export default function IssueDetailsSidebar({
 
         <Divider sx={{ my: 2 }} />
 
-        <Box mb={2}>
-          <Box
-            display="grid"
-            gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
-            gap={2}
-            alignItems="center"
-          >
-            <Box>
-              <Typography variant="body2">Reported by</Typography>
-            </Box>
-            <Box display="flex" alignItems="center" gap={1}>
-              <Box
-                sx={{
-                  borderRadius: 16,
-                  p: "4px 12px 4px 5px",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  backgroundColor: "#f4f4f4",
-                }}
-              >
-                <Avatar
-                  alt={issue.reportedBy}
-                  src={issue.reportedByAvatar}
-                  sx={{ width: 20, height: 20, mr: 1 }}
-                />
-                <Typography variant="body1" color="text.primary">
-                  {issue.reportedBy}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box>
-              <Typography variant="body2">Reported</Typography>
-            </Box>
-            <Box>
-              <Typography variant="body2" color="text.primary">
-                {formatDate(issue.dateCreated)}
+        <Box
+          display="grid"
+          gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
+          gap={2}
+          alignItems="center"
+          mb={2}
+        >
+          <Typography variant="body2">Reported by</Typography>
+          <Box>
+            <Box
+              sx={{
+                borderRadius: 16,
+                p: "4px 12px 4px 5px",
+                display: "inline-flex",
+                alignItems: "center",
+                backgroundColor: "#f4f4f4",
+              }}
+            >
+              <Avatar
+                alt={issue.reportedBy}
+                src={issue.reportedByAvatar}
+                sx={{ width: 20, height: 20, mr: 1 }}
+              />
+              <Typography variant="body1" color="text.primary">
+                {issue.reportedBy}
               </Typography>
             </Box>
+          </Box>
 
-            <Box>
-              <Typography variant="body2">Status</Typography>
-            </Box>
-            <Box ref={statusRef}>
-              <Box>
-                {editingField !== "status" && (
-                  <Box display="flex" alignItems="center" gap={1}>
-                    <StatusChip status={form.status} />
-                    {admin && (
-                      <EditButton onClick={() => setEditingField("status")} />
-                    )}
-                  </Box>
-                )}
+          <Typography variant="body2">Reported</Typography>
+          <Box>
+            <Typography variant="body2" color="text.primary">
+              {formatDate(issue.dateCreated)}
+            </Typography>
+          </Box>
 
-                {editingField === "status" && admin && (
-                  <Select
-                    size="small"
-                    value={form.status}
-                    onChange={(e) => {
-                      setForm((prev) => ({
-                        ...prev,
-                        status: e.target.value as IssueStatusType,
-                      }));
-                    }}
-                    sx={{ minWidth: 160 }}
-                  >
-                    {(Object.values(IssueStatus) as IssueStatusType[]).map(
-                      (status) => (
-                        <MenuItem key={status} value={status}>
-                          <StatusChip status={status} />
-                        </MenuItem>
-                      )
-                    )}
-                  </Select>
+          <Typography variant="body2">Status</Typography>
+          <Box ref={statusRef}>
+            {editingField !== "status" && (
+              <Box display="flex" alignItems="center" gap={1}>
+                <StatusChip status={form.status} />
+                {admin && (
+                  <EditButton onClick={() => setEditingField("status")} />
                 )}
               </Box>
-            </Box>
+            )}
 
-            <Box>
-              <Typography variant="body2">Upvotes</Typography>
-            </Box>
-            <Box>
-              <Box
-                sx={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  px: 1,
-                  py: 0.25,
-                  borderRadius: 16,
-                  backgroundColor: issueStats.hasVoted
-                    ? "vote.activeBg"
-                    : "#f4f4f4",
+            {editingField === "status" && admin && (
+              <Select
+                size="small"
+                value={form.status}
+                onChange={(e) => {
+                  setForm((prev) => ({
+                    ...prev,
+                    status: e.target.value as IssueStatusType,
+                  }));
                 }}
               >
-                <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
-                <Typography variant="body2" color="text.primary">
-                  {issueStats.votes}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box>
-              <Typography variant="body2">Office</Typography>
-            </Box>
-            <Box ref={officeRef} display="flex" alignItems="center" gap={1}>
-              {editingField !== "office" && (
-                <Box display="flex" alignItems="center" gap={1}>
-                  <Typography>
-                    {(() => {
-                      const selectedOffice = offices.find(
-                        (o) => o.id === form.officeId
-                      );
-                      return selectedOffice
-                        ? `${selectedOffice.title}, ${selectedOffice.country}`
-                        : issue.office;
-                    })()}
-                  </Typography>
-                  {(issueOwner || admin) && (
-                    <EditButton onClick={() => setEditingField("office")} />
-                  )}
-                </Box>
-              )}
-
-              {editingField === "office" && (issueOwner || admin) && (
-                <Select
-                  size="small"
-                  value={form.officeId || issue.officeId}
-                  onChange={(e) =>
-                    setForm((prev) => ({
-                      ...prev,
-                      officeId: e.target.value,
-                    }))
-                  }
-                  sx={{ minWidth: 160 }}
-                >
-                  {offices.map((o) => (
-                    <MenuItem key={o.id} value={o.id}>
-                      {o.title}, {o.country}
+                {(Object.values(IssueStatus) as IssueStatusType[]).map(
+                  (status) => (
+                    <MenuItem key={status} value={status}>
+                      <StatusChip status={status} />
                     </MenuItem>
-                  ))}
-                </Select>
-              )}
+                  )
+                )}
+              </Select>
+            )}
+          </Box>
+
+          <Typography variant="body2">Upvotes</Typography>
+          <Box>
+            <Box
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                px: 1,
+                py: 0.25,
+                borderRadius: 16,
+                backgroundColor: issueStats.hasVoted
+                  ? "vote.activeBg"
+                  : "#f4f4f4",
+              }}
+            >
+              <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
+              <Typography variant="body2" color="text.primary">
+                {issueStats.votes}
+              </Typography>
             </Box>
+          </Box>
+
+          <Typography variant="body2">Office</Typography>
+          <Box ref={officeRef}>
+            {editingField !== "office" && (
+              <Box display="flex" alignItems="center" gap={1}>
+                <Typography>
+                  {(() => {
+                    const selectedOffice = offices.find(
+                      (o) => o.id === form.officeId
+                    );
+                    return selectedOffice
+                      ? `${selectedOffice.title}, ${selectedOffice.country}`
+                      : issue.office;
+                  })()}
+                </Typography>
+                {(issueOwner || admin) && (
+                  <EditButton onClick={() => setEditingField("office")} />
+                )}
+              </Box>
+            )}
+
+            {editingField === "office" && (issueOwner || admin) && (
+              <Select
+                size="small"
+                value={form.officeId || issue.officeId}
+                onChange={(e) =>
+                  setForm((prev) => ({
+                    ...prev,
+                    officeId: e.target.value,
+                  }))
+                }
+                sx={{ minWidth: 160 }}
+              >
+                {offices.map((o) => (
+                  <MenuItem key={o.id} value={o.id}>
+                    {o.title}, {o.country}
+                  </MenuItem>
+                ))}
+              </Select>
+            )}
           </Box>
         </Box>
 
@@ -486,13 +468,13 @@ export default function IssueDetailsSidebar({
 
         {selectedTab === TabIndex.Details && (
           <Box ref={descriptionRef}>
-            <Typography variant="body2" color="text.secondary" mb={1}>
+            <Typography variant="body2" color="text.secondary">
               Description
             </Typography>
             {editingField !== "description" && (
               <Box
                 sx={{
-                  padding: 2,
+                  padding: 1,
                   minHeight: "60px",
                   display: "flex",
                   justifyContent: "space-between",
@@ -533,6 +515,7 @@ export default function IssueDetailsSidebar({
                 helperText={errors.description}
               />
             )}
+
             {attachments.length > 0 && (
               <Box mt={2}>
                 <Typography variant="body2" color="text.secondary" mb={1}>
