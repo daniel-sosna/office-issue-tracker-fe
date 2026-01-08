@@ -23,15 +23,11 @@ const statusStyles: Record<
   },
   [IssueStatus.Resolved]: {
     backgroundColor: palette.resolvedBg,
-    color: palette.mutedText,
+    color: palette.mainText,
   },
   [IssueStatus.Closed]: {
     backgroundColor: palette.closedBg,
     color: palette.mutedText,
-  },
-  [IssueStatus.Pending]: {
-    backgroundColor: palette.pendingBg,
-    color: palette.mainText,
   },
   [IssueStatus.Blocked]: {
     backgroundColor: palette.blockedBg,
@@ -40,9 +36,11 @@ const statusStyles: Record<
 };
 
 export function StatusChip({ status }: StatusChipProps) {
-  const displayStatus = backendToFrontendStatus[status.toUpperCase()] ?? "Open";
-  const { backgroundColor, color } =
-    statusStyles[displayStatus as IssueStatusType];
+  const displayStatus = backendToFrontendStatus[status] ?? "Unknown";
+  const { backgroundColor, color } = statusStyles[status] ?? {
+    backgroundColor: palette.openBg,
+    color: palette.mainText,
+  };
 
   return (
     <Chip
@@ -50,7 +48,6 @@ export function StatusChip({ status }: StatusChipProps) {
       size="small"
       sx={{
         minWidth: 90,
-        textTransform: "capitalize",
         backgroundColor,
         color,
         fontWeight: 500,

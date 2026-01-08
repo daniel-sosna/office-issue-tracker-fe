@@ -19,7 +19,7 @@ import {
   Alert,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
-import { fetchCountries, fetchOffices } from "@api/offices";
+import { fetchCountries, fetchOffices } from "@api/services/offices";
 
 interface Office {
   id: string;

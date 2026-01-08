@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Box,
   Tabs,
@@ -8,67 +8,72 @@ import {
   MenuItem,
   Pagination,
   InputLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails } from "@data/issues";
-import { fetchIssues } from "@api/issues";
+import type { Issue, IssueStats } from "@data/issues";
+import { useIssues } from "@api/queries/useIssues";
+import { useAuth } from "@context/UseAuth";
+import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
+import Loader from "@components/Loader";
+import type { FetchIssuePageArgs } from "@api/services/issues";
 
 const tabLabels = [
   "All issues",
   "Open",
-  "Planned",
+  "In Progress",
   "Resolved",
   "Closed",
   "Reported by me",
 ];
 
+const size = 10;
+
 const IssuesList: React.FC = () => {
   const [page, setPage] = useState(1);
   const [selectedTab, setSelectedTab] = useState(0);
-  const [paginatedIssues, setIssues] = useState<Issue[]>([]);
-  const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
-  const size = 10;
+  const [selectedIssueId, setSelectedIssueId] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedIssueStats, setSelectedIssueStats] = useState<
+    IssueStats | undefined
+  >(undefined);
+  const { user } = useAuth();
 
-  useEffect(() => {
-    const getIssues = async () => {
-      setLoading(true);
-      try {
-        const data = await fetchIssues(page, size);
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
-        const normalized: Issue[] = (data.content ?? []).map((issue) => ({
-          id: issue.id,
-          title: issue.summary,
-          description: issue.description,
-          status: issue.status,
-          votes: issue.votes ?? 0,
-          comments: issue.comments ?? 0,
-          date: issue.date,
-        }));
+  const params: FetchIssuePageArgs = {
+    page,
+    size,
+  };
 
-        setIssues(normalized);
-        setTotalPages(data.totalPages ?? 1);
-      } catch (error) {
-        console.error("Failed to fetch issues:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
+  const { data, isLoading, isError } = useIssues(params);
 
-    void getIssues();
-  }, [page]);
+  const issues = data?.content ?? [];
+
+  const totalPages = data?.totalPages ?? 1;
 
   const handleCardClick = (issue: Issue) => {
-    setSelectedIssue({
-      ...issue,
-      office: "Vilnius, Lithuania",
-      reportedBy: "John Doe",
-      reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
+    setSelectedIssueId(issue.id);
+    setSelectedIssueStats({
+      hasVoted: issue.hasVoted,
+      votes: issue.votes,
+      comments: issue.comments,
     });
   };
+
+  const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const relativeZBox = { position: "relative", zIndex: 1 };
   const pillSelectStyle = {
@@ -80,7 +85,17 @@ const IssuesList: React.FC = () => {
     "& fieldset": { borderRadius: "9999px" },
   };
 
-  if (loading) return <Box p={4}>Loading issues...</Box>;
+  if (isLoading) {
+    return <Loader />;
+  }
+
+  if (isError) {
+    return (
+      <Box p={4}>
+        <Alert severity="error">Failed to load issues.</Alert>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
@@ -168,19 +183,38 @@ const IssuesList: React.FC = () => {
 
       {/* Issue Cards */}
       <Box sx={relativeZBox}>
-        {paginatedIssues.map((issue) => (
+        {issues.map((issue) => (
           <IssueCard
             key={issue.id}
             issue={issue}
-            onClickCard={() => handleCardClick(issue)}
+            onClickCard={() => void handleCardClick(issue)}
+            onClickVote={() =>
+              voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
+            }
           />
         ))}
       </Box>
 
       {/* Issue details sidebar */}
       <IssueDrawer
-        issue={selectedIssue}
-        onClose={() => setSelectedIssue(null)}
+        issueId={selectedIssueId}
+        issueStats={selectedIssueStats}
+        onClose={() => setSelectedIssueId(undefined)}
+        user={user!}
+        onSaved={() =>
+          setSnackbar({
+            open: true,
+            message: "Issue saved successfully!",
+            severity: "success",
+          })
+        }
+        onError={(message) =>
+          setSnackbar({
+            open: true,
+            message,
+            severity: "error",
+          })
+        }
       />
 
       {/* Pagination */}
@@ -201,6 +235,15 @@ const IssuesList: React.FC = () => {
           }}
         />
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
 };
