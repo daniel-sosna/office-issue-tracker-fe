@@ -2,27 +2,32 @@ export const IssueStatus = {
   Open: "OPEN",
   InProgress: "IN_PROGRESS",
   Resolved: "RESOLVED",
-  Closed: "CLOSED",
   Blocked: "BLOCKED",
+  Closed: "CLOSED",
 } as const;
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
 
-export interface Issue {
-  id: string;
-  title: string;
-  description: string;
-  status: IssueStatusType;
-  date: string;
+export interface IssueStats {
   hasVoted: boolean;
   votes: number;
   comments: number;
 }
 
+export interface Issue extends IssueStats {
+  id: string;
+  summary: string;
+  description: string;
+  status: IssueStatusType;
+  dateCreated: string;
+}
+
 export interface IssueDetails extends Issue {
+  officeId: string;
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
+  reportedByEmail: string;
   attachments: IssueAttachment[];
 }
 

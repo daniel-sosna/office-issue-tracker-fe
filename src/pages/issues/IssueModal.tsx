@@ -36,11 +36,7 @@ interface Office {
   country: string;
 }
 
-export default function IssueModal({
-  open,
-  onClose,
-  onSubmit,
-}: IssueModalProps) {
+export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [summary, setSummary] = useState("");
   const [office, setOffice] = useState("");
   const [description, setDescription] = useState("");
@@ -48,13 +44,12 @@ export default function IssueModal({
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [attachmentError, setAttachmentError] = useState("");
+  const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
 
   const editor = useEditor({
     extensions: [StarterKit],
     content: "",
   });
-
-  const { mutateAsync: createIssue, isPending } = useCreateIssue();
 
   useEffect(() => {
     if (!open) return;
@@ -137,23 +132,18 @@ export default function IssueModal({
       return;
     }
 
-    const issuePayload = {
-      summary,
-      description: editor?.getHTML() ?? "",
-      officeId: selectedOffice.id,
-    };
-
     try {
-      await createIssue({
+      const issuePayload = {
+        summary,
+        description: editor?.getHTML() ?? "",
+        officeId: selectedOffice.id,
+      };
+
+      await createIssueMutation({
         issue: issuePayload,
         files: selectedFiles,
       });
 
-      onSubmit({
-        summary,
-        description: editor?.getHTML() ?? "",
-        office,
-      });
       onClose();
     } catch (error: unknown) {
       let backendMessage = "An error occurred while submitting the issue";
