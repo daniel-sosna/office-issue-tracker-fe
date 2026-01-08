@@ -8,32 +8,32 @@ import {
   Tab,
   MenuItem,
   Select,
-  IconButton,
 } from "@mui/material";
-import EditIcon from "@mui/icons-material/Edit";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import type {
-  IssueAttachment,
-  IssueStats,
-  IssueStatusType,
-} from "@data/issues";
-import RightDrawer from "@components/RightDrawer";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
+import theme from "@styles/theme";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
 } from "@api/services/issues";
-import { stripHtmlDescription, formatDate } from "@utils/formatters";
-import { useOffices } from "@api/queries/useOffices";
-import theme from "@styles/theme";
-import { useIssueDetails } from "@api/queries/useIssueDetails";
-import { useQueryClient } from "@tanstack/react-query";
 import { queryKeys } from "@api/queries/queryKeys";
-import AttachmentList from "@pages/issues/components/AttachmentList";
+import { useIssueDetails } from "@api/queries/useIssueDetails";
+import { useOffices } from "@api/queries/useOffices";
+import RightDrawer from "@components/RightDrawer";
 import type { User } from "@context/AuthContext";
+import {
+  IssueStatus,
+  type IssueAttachment,
+  type IssueStats,
+  type IssueStatusType,
+} from "@data/issues";
+import AttachmentList from "@pages/issues/components/AttachmentList";
+import { StatusChip } from "@pages/issues/components/IssueStatusChip";
+import { EditButton } from "./EditButton";
+import { stripHtmlDescription, formatDate } from "@utils/formatters";
 
 interface Props {
   issueId?: string;
@@ -55,16 +55,14 @@ export default function IssueDetailsSidebar({
   const TabIndex = {
     Details: 0,
     Comments: 1,
-    Activity: 2,
   } as const;
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
-  const [editingField, setEditingField] = useState<
-    null | "summary" | "description" | "office" | "status"
-  >(null);
+  type EditingField = "summary" | "description" | "office" | "status";
+  const [editingField, setEditingField] = useState<EditingField | null>(null);
   const [errors, setErrors] = useState<{
     summary?: string;
     description?: string;
@@ -125,7 +123,10 @@ export default function IssueDetailsSidebar({
         return;
       }
 
-      const refs: Record<string, React.RefObject<HTMLDivElement | null>> = {
+      const refs: Record<
+        EditingField,
+        React.RefObject<HTMLDivElement | null>
+      > = {
         summary: summaryRef,
         description: descriptionRef,
         status: statusRef,
@@ -147,11 +148,12 @@ export default function IssueDetailsSidebar({
 
   useEffect(() => {
     if (issue) {
+      setEditingField(null);
       setForm({
         summary: issue.summary,
         description: stripHtmlDescription(issue.description),
         status: issue.status,
-        officeId: issue.officeId || "",
+        officeId: issue.officeId,
       });
     }
   }, [issue]);
@@ -176,7 +178,6 @@ export default function IssueDetailsSidebar({
     setErrors(newErrors);
 
     const isValid = Object.keys(newErrors).length === 0;
-    setErrors(newErrors);
     return isValid;
   }
 
@@ -213,7 +214,6 @@ export default function IssueDetailsSidebar({
         queryKey: queryKeys.issueDetails(issue.id),
       });
 
-      setEditingField(null);
       onSaved();
       onClose();
     } catch {
@@ -221,18 +221,6 @@ export default function IssueDetailsSidebar({
     } finally {
       setSaving(false);
     }
-  }
-
-  function handleCancel() {
-    if (!issue) return;
-    setForm({
-      summary: issue.summary,
-      description: stripHtmlDescription(issue.description),
-      status: issue.status,
-      officeId: issue.officeId,
-    });
-    setEditingField(null);
-    onClose();
   }
 
   const handleDelete = async () => {
@@ -269,7 +257,7 @@ export default function IssueDetailsSidebar({
   }
 
   return (
-    <RightDrawer open={!!issueId} onClose={handleCancel}>
+    <RightDrawer open={!!issueId} onClose={onClose}>
       <Box sx={{ flex: 1, overflowY: "auto" }}>
         <Box
           ref={summaryRef}
@@ -299,14 +287,7 @@ export default function IssueDetailsSidebar({
               </Typography>
 
               {issueOwner && (
-                <IconButton
-                  size="small"
-                  onClick={() => {
-                    setEditingField("summary");
-                  }}
-                >
-                  <EditIcon fontSize="small" />
-                </IconButton>
+                <EditButton onClick={() => setEditingField("summary")} />
               )}
             </>
           )}
@@ -356,8 +337,8 @@ export default function IssueDetailsSidebar({
                 }}
               >
                 <Avatar
-                  alt={issue.reportedBy ?? "Unknown user"}
-                  src={issue.reportedByAvatar || undefined}
+                  alt={issue.reportedBy}
+                  src={issue.reportedByAvatar}
                   sx={{ width: 20, height: 20, mr: 1 }}
                 />
                 <Typography variant="body1" color="text.primary">
@@ -384,14 +365,7 @@ export default function IssueDetailsSidebar({
                   <Box display="flex" alignItems="center" gap={1}>
                     <StatusChip status={form.status} />
                     {admin && (
-                      <IconButton
-                        size="small"
-                        onClick={() => {
-                          setEditingField("status");
-                        }}
-                      >
-                        <EditIcon fontSize="small" />
-                      </IconButton>
+                      <EditButton onClick={() => setEditingField("status")} />
                     )}
                   </Box>
                 )}
@@ -403,16 +377,18 @@ export default function IssueDetailsSidebar({
                     onChange={(e) => {
                       setForm((prev) => ({
                         ...prev,
-                        status: e.target.value,
+                        status: e.target.value as IssueStatusType,
                       }));
                     }}
                     sx={{ minWidth: 160 }}
                   >
-                    <MenuItem value="OPEN">Open</MenuItem>
-                    <MenuItem value="IN_PROGRESS">In progress</MenuItem>
-                    <MenuItem value="BLOCKED">Blocked</MenuItem>
-                    <MenuItem value="RESOLVED">Resolved</MenuItem>
-                    <MenuItem value="CLOSED">Closed</MenuItem>
+                    {(Object.values(IssueStatus) as IssueStatusType[]).map(
+                      (status) => (
+                        <MenuItem key={status} value={status}>
+                          <StatusChip status={status} />
+                        </MenuItem>
+                      )
+                    )}
                   </Select>
                 )}
               </Box>
@@ -444,14 +420,13 @@ export default function IssueDetailsSidebar({
             <Box>
               <Typography variant="body2">Office</Typography>
             </Box>
-
             <Box ref={officeRef} display="flex" alignItems="center" gap={1}>
               {editingField !== "office" && (
-                <>
+                <Box display="flex" alignItems="center" gap={1}>
                   <Typography>
                     {(() => {
                       const selectedOffice = offices.find(
-                        (o) => o.id === form.officeId || o.id === issue.officeId
+                        (o) => o.id === form.officeId
                       );
                       return selectedOffice
                         ? `${selectedOffice.title}, ${selectedOffice.country}`
@@ -459,17 +434,9 @@ export default function IssueDetailsSidebar({
                     })()}
                   </Typography>
                   {(issueOwner || admin) && (
-                    <IconButton
-                      size="small"
-                      onClick={() => {
-                        setEditingField("office");
-                      }}
-                      sx={{ padding: "4px" }}
-                    >
-                      <EditIcon fontSize="small" />
-                    </IconButton>
+                    <EditButton onClick={() => setEditingField("office")} />
                   )}
-                </>
+                </Box>
               )}
 
               {editingField === "office" && (issueOwner || admin) && (
@@ -511,7 +478,7 @@ export default function IssueDetailsSidebar({
         >
           <Tab label="Details" sx={{ textTransform: "none" }} />
           <Tab
-            disabled={true}
+            disabled
             label={`Comments (${issue.comments})`}
             sx={{ textTransform: "none" }}
           />
@@ -546,15 +513,7 @@ export default function IssueDetailsSidebar({
                 </Typography>
 
                 {issueOwner && (
-                  <IconButton
-                    size="small"
-                    onClick={() => {
-                      setEditingField("description");
-                    }}
-                    sx={{ ml: 1 }}
-                  >
-                    <EditIcon fontSize="small" />
-                  </IconButton>
+                  <EditButton onClick={() => setEditingField("description")} />
                 )}
               </Box>
             )}
@@ -597,12 +556,6 @@ export default function IssueDetailsSidebar({
             Comments section is under construction.
           </Typography>
         )}
-
-        {selectedTab === TabIndex.Activity && (
-          <Typography variant="body1" color="text.primary">
-            Activity log is under construction.
-          </Typography>
-        )}
       </Box>
 
       {(issueOwner || admin) && (
@@ -634,7 +587,7 @@ export default function IssueDetailsSidebar({
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={handleCancel}
+                onClick={onClose}
                 sx={{
                   borderRadius: "999px",
                   paddingX: 3,
