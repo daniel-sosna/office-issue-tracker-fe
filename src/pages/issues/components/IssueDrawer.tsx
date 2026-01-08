@@ -23,7 +23,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useOffices } from "@api/queries/useOffices";
 import RightDrawer from "@components/RightDrawer";
-import type { User } from "@context/AuthContext";
+import { useAuth } from "@context/UseAuth";
 import {
   IssueStatus,
   type IssueAttachment,
@@ -38,7 +38,6 @@ import { stripHtmlDescription, formatDate } from "@utils/formatters";
 interface Props {
   issueId?: string;
   issueStats?: IssueStats;
-  user: User;
   onClose: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
@@ -47,7 +46,6 @@ interface Props {
 export default function IssueDetailsSidebar({
   issueId,
   issueStats = { hasVoted: false, votes: 0, comments: 0 },
-  user,
   onClose,
   onSaved,
   onError,
@@ -87,8 +85,9 @@ export default function IssueDetailsSidebar({
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
-  const admin = user.role === "ADMIN";
-  const issueOwner = issue?.reportedByEmail === user.email;
+  const { user } = useAuth();
+  const admin = user?.role === "ADMIN";
+  const issueOwner = issue?.isOwner ?? false;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
 
   useEffect(() => {

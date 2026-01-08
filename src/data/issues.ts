@@ -20,6 +20,7 @@ export interface Issue extends IssueStats {
   description: string;
   status: IssueStatusType;
   dateCreated: string;
+  isOwner: boolean;
 }
 
 export interface IssueDetails extends Issue {
@@ -27,7 +28,6 @@ export interface IssueDetails extends Issue {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
-  reportedByEmail: string;
   attachments: IssueAttachment[];
 }
 

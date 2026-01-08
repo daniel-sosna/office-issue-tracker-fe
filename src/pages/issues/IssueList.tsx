@@ -16,7 +16,6 @@ import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import type { Issue, IssueStats } from "@data/issues";
 import { useIssues } from "@api/queries/useIssues";
-import { useAuth } from "@context/UseAuth";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
 import type { FetchIssuePageArgs } from "@api/services/issues";
@@ -41,7 +40,6 @@ const IssuesList: React.FC = () => {
   const [selectedIssueStats, setSelectedIssueStats] = useState<
     IssueStats | undefined
   >(undefined);
-  const { user } = useAuth();
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -200,7 +198,6 @@ const IssuesList: React.FC = () => {
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
         onClose={() => setSelectedIssueId(undefined)}
-        user={user!}
         onSaved={() =>
           setSnackbar({
             open: true,
