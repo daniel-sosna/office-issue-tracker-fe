@@ -12,7 +12,6 @@ import {
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import theme from "@styles/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   softDeleteIssue,
@@ -553,11 +552,11 @@ export default function IssueDetailsSidebar({
               <Button
                 variant="outlined"
                 size="medium"
+                color="error"
                 onClick={() => void handleDelete()}
                 sx={{
                   borderRadius: "999px",
                   paddingX: 3,
-                  backgroundColor: theme.palette.status.blockedBg,
                 }}
                 disabled={deleting}
               >

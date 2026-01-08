@@ -4,14 +4,16 @@ import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import { IssueStatus, type IssueStatusType } from "@data/issues";
 
 export interface VoteSectionProps {
+  status: IssueStatusType;
+  isOwner: boolean;
   hasVoted: boolean;
   votes: number;
   comments: number;
-  status: IssueStatusType;
   onVote: () => void;
 }
 
 export function VoteSection({
+  isOwner,
   hasVoted,
   votes,
   comments,
@@ -44,40 +46,57 @@ export function VoteSection({
         </Box>
       </Box>
 
-      {/* Vote button */}
-      <Box sx={{ minWidth: 80, textAlign: "center" }}>
-        <Button
-          variant="outlined"
-          size="small"
-          color="secondary"
-          onClick={(e) => {
-            e.stopPropagation();
-            onVote();
-          }}
-          disabled={isClosedOrResolved}
-          startIcon={
-            <ArrowUpwardIcon fontSize="medium" sx={{ color: "primary.main" }} />
-          }
-          sx={{
-            borderRadius: "9999px",
-            textTransform: "none",
-            visibility: isClosedOrResolved ? "hidden" : "visible",
-            borderColor: hasVoted ? "vote.active" : "vote.inactive",
-            backgroundColor: hasVoted ? "vote.activeBg" : "vote.inactiveBg",
-            "&:hover": {
-              borderColor: hasVoted
-                ? "vote.hover.active"
-                : "vote.hover.inactive",
-              backgroundColor: hasVoted
-                ? "vote.hover.activeBg"
-                : "vote.hover.inactiveBg",
-              boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-              transform: "translateY(-0.5px)",
-            },
-          }}
-        >
-          {hasVoted ? "Voted" : "Vote"}
-        </Button>
+      {/* Edit/Vote button */}
+      <Box sx={{ minWidth: 100, textAlign: "center" }}>
+        {!isClosedOrResolved &&
+          (isOwner ? (
+            <Button
+              variant="outlined"
+              size="small"
+              color="secondary"
+              sx={{
+                borderRadius: "9999px",
+                borderColor: "vote.inactive",
+                backgroundColor: "vote.inactiveBg",
+                "&:hover": {
+                  borderColor: "vote.hover.inactive",
+                  backgroundColor: "vote.hover.inactiveBg",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+                  transform: "translateY(-0.5px)",
+                },
+              }}
+            >
+              Edit
+            </Button>
+          ) : (
+            <Button
+              variant="outlined"
+              size="small"
+              color="secondary"
+              onClick={(e) => {
+                e.stopPropagation();
+                onVote();
+              }}
+              startIcon={<ArrowUpwardIcon sx={{ color: "secondary.main" }} />}
+              sx={{
+                borderRadius: "9999px",
+                borderColor: hasVoted ? "vote.active" : "vote.inactive",
+                backgroundColor: hasVoted ? "vote.activeBg" : "vote.inactiveBg",
+                "&:hover": {
+                  borderColor: hasVoted
+                    ? "vote.hover.active"
+                    : "vote.hover.inactive",
+                  backgroundColor: hasVoted
+                    ? "vote.hover.activeBg"
+                    : "vote.hover.inactiveBg",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
+                  transform: "translateY(-0.5px)",
+                },
+              }}
+            >
+              {hasVoted ? "Voted" : "Vote"}
+            </Button>
+          ))}
       </Box>
     </Box>
   );

@@ -82,13 +82,7 @@ export default function IssueCard({
           </Box>
 
           {/* Vote section */}
-          <VoteSection
-            hasVoted={issue.hasVoted}
-            votes={issue.votes}
-            comments={issue.comments}
-            status={issue.status}
-            onVote={onClickVote}
-          />
+          <VoteSection {...issue} onVote={onClickVote} />
         </Box>
       </CardContent>
     </Card>
