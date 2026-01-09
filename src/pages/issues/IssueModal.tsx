@@ -123,11 +123,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     return undefined;
   }
 
-  function validateOffice(value: string): string | undefined {
-    if (!value) return "Office is required";
-    return undefined;
-  }
-
   const handleAddFiles = (files: FileList) => {
     const { validFiles, errorMessage } = validateFiles(files, selectedFiles);
 
@@ -157,7 +152,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     const newErrors = {
       summary: validateSummary(summary),
       description: validateDescription(description),
-      office: validateOffice(office),
     };
 
     setErrors(newErrors);
@@ -285,7 +279,11 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 borderRadius: 1,
                 overflow: "hidden",
                 transition: "border 0.2s",
-                outline: editor?.isFocused ? "2px solid black" : "none",
+                outline: errors.description
+                  ? "1px solid red"
+                  : editor?.isFocused
+                    ? "2px solid black"
+                    : "none",
                 outlineOffset: -1,
               }}
               onClick={() => editor?.chain().focus().run()}
@@ -325,16 +323,9 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               onChange={(e) => {
                 const value = e.target.value;
                 setOffice(value);
-
-                setErrors((prev) => ({
-                  ...prev,
-                  office: validateOffice(value),
-                }));
               }}
               variant="outlined"
               size="small"
-              error={hasSubmitted && !!errors.office}
-              helperText={hasSubmitted && errors.office ? errors.office : " "}
               sx={{ width: "45%" }}
             >
               {offices.map((o) => (
