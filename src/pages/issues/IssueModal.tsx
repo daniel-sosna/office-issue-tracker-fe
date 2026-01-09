@@ -23,6 +23,11 @@ interface IssueFormData {
   description: string;
   office: string;
 }
+interface IssueFormErrors {
+  summary?: string;
+  description?: string;
+  office?: string;
+}
 
 interface IssueModalProps {
   open: boolean;
@@ -46,11 +51,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [attachmentError, setAttachmentError] = useState("");
   const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
-  const [errors, setErrors] = useState<{
-    summary?: string;
-    description?: string;
-    office?: string;
-  }>({});
+  const [errors, setErrors] = useState<IssueFormErrors>({});
 
   const editor = useEditor({
     extensions: [StarterKit],
