@@ -43,6 +43,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [attachmentError, setAttachmentError] = useState("");
   const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
   const [errors, setErrors] = useState<{
@@ -79,10 +80,14 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setDescription("");
       setErrorMessage("");
       setAttachmentError("");
-      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
+      setErrors({});
+      setHasSubmitted(false);
       setSelectedFiles([]);
     }
   }, [open, editor]);
+
+  const isFormComplete =
+    summary.trim() !== "" && description.trim() !== "" && office !== "";
 
   useEffect(() => {
     if (!editor) return;
@@ -90,8 +95,12 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     const updateListener = () => {
       const text = editor.getText().trim();
       setDescription(text);
-    };
 
+      setErrors((prev) => ({
+        ...prev,
+        description: validateDescription(text),
+      }));
+    };
     editor.on("update", updateListener);
 
     return () => {
@@ -99,29 +108,23 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     };
   }, [editor]);
 
-  function validateForm() {
-    const newErrors: typeof errors = {};
+  function validateSummary(value: string): string | undefined {
+    if (!value.trim()) return "Summary is required";
+    if (value.trim().length < 3) return "Summary must be at least 3 characters";
+    if (value.length > 200) return "Summary must be less than 200 characters";
+    return undefined;
+  }
 
-    if (!summary || summary.trim().length === 0) {
-      newErrors.summary = "Summary is required";
-    } else if (summary.trim().length < 3) {
-      newErrors.summary = "Summary must be at least 3 characters";
-    } else if (summary.length > 200) {
-      newErrors.summary = "Summary must be less than 200 characters";
-    }
+  function validateDescription(value: string): string | undefined {
+    if (!value.trim()) return "Description is required";
+    if (value.length > 2000)
+      return "Description must be less than 2000 characters";
+    return undefined;
+  }
 
-    if (!description || description.trim().length === 0) {
-      newErrors.description = "Description is required";
-    } else if (description.length > 2000) {
-      newErrors.description = "Description must be less than 2000 characters";
-    }
-
-    if (!office) {
-      newErrors.office = "Office is required";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
+  function validateOffice(value: string): string | undefined {
+    if (!value) return "Office is required";
+    return undefined;
   }
 
   const handleAddFiles = (files: FileList) => {
@@ -148,7 +151,19 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   };
 
   const handleSubmit = async (): Promise<void> => {
-    if (!validateForm()) return;
+    setHasSubmitted(true);
+
+    const newErrors = {
+      summary: validateSummary(summary),
+      description: validateDescription(description),
+      office: validateOffice(office),
+    };
+
+    setErrors(newErrors);
+
+    if (Object.values(newErrors).some(Boolean)) {
+      return;
+    }
 
     const selectedOffice = offices.find((o) => o.title === office);
     if (!selectedOffice) {
@@ -238,13 +253,20 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </Box>
             <TextField
               value={summary}
-              onChange={(e) => setSummary(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSummary(value);
+                setErrors((prev) => ({
+                  ...prev,
+                  summary: validateSummary(value),
+                }));
+              }}
               variant="outlined"
               fullWidth
               size="small"
               autoFocus
-              error={!!errors.summary}
-              helperText={errors.summary}
+              error={hasSubmitted && !!errors.summary}
+              helperText={hasSubmitted && errors.summary ? errors.summary : " "}
             />
           </Box>
 
@@ -287,11 +309,9 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 )}
               </Box>
             </Box>
-            {errors.description && (
-              <Box color="error.main" fontSize={12} mt={0.5}>
-                {errors.description}
-              </Box>
-            )}
+            <Box mt={0.5} minHeight="18px" fontSize={12} color="error.main">
+              {hasSubmitted && errors.description ? errors.description : " "}
+            </Box>
           </Box>
 
           <Box>
@@ -301,11 +321,19 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             <TextField
               select
               value={office}
-              onChange={(e) => setOffice(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setOffice(value);
+
+                setErrors((prev) => ({
+                  ...prev,
+                  office: validateOffice(value),
+                }));
+              }}
               variant="outlined"
               size="small"
-              error={!!errors.office}
-              helperText={errors.office}
+              error={hasSubmitted && !!errors.office}
+              helperText={hasSubmitted && errors.office ? errors.office : " "}
               sx={{ width: "45%" }}
             >
               {offices.map((o) => (
@@ -354,7 +382,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={isPending}
+          disabled={!isFormComplete || isPending}
           sx={{
             borderRadius: "999px",
             paddingX: 3,
