@@ -544,7 +544,7 @@ export default function IssueDetailsSidebar({
         )}
       </Box>
 
-      {(issueOwner || admin) && (
+      {(issueOwner || admin) && selectedTab === TabIndex.Details && (
         <Box>
           <Divider sx={{ my: 2 }} />
 
