@@ -15,6 +15,8 @@ import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
+import AttachmentSection from "./components/AttachmentSection";
+import { validateFiles } from "@utils/attachments.validation";
 
 interface IssueFormData {
   summary: string;
@@ -34,16 +36,15 @@ interface Office {
   country: string;
 }
 
-export default function IssueModal({
-  open,
-  onClose,
-  onSubmit,
-}: IssueModalProps) {
+export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [summary, setSummary] = useState("");
   const [office, setOffice] = useState("");
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [attachmentError, setAttachmentError] = useState("");
+  const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
   const [errors, setErrors] = useState<{
     summary?: string;
     description?: string;
@@ -54,8 +55,6 @@ export default function IssueModal({
     extensions: [StarterKit],
     content: "",
   });
-
-  const { mutateAsync: createIssue, isPending } = useCreateIssue();
 
   useEffect(() => {
     if (!open) return;
@@ -79,6 +78,9 @@ export default function IssueModal({
       setOffice("");
       setDescription("");
       setErrorMessage("");
+      setAttachmentError("");
+      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
+      setSelectedFiles([]);
     }
   }, [open, editor]);
 
@@ -122,6 +124,29 @@ export default function IssueModal({
     return Object.keys(newErrors).length === 0;
   }
 
+  const handleAddFiles = (files: FileList) => {
+    const { validFiles, errorMessage } = validateFiles(files, selectedFiles);
+
+    if (errorMessage) {
+      setAttachmentError(errorMessage);
+    } else {
+      setAttachmentError("");
+    }
+
+    setSelectedFiles((prev) => [...prev, ...validFiles]);
+  };
+
+  const handleDeleteFile = (id: string) => {
+    setSelectedFiles((prev) =>
+      prev.filter((f) => {
+        if (f.name + f.size === id) {
+          URL.revokeObjectURL(f.name);
+        }
+        return f.name + f.size !== id;
+      })
+    );
+  };
+
   const handleSubmit = async (): Promise<void> => {
     if (!validateForm()) return;
 
@@ -132,22 +157,33 @@ export default function IssueModal({
     }
 
     try {
-      await createIssue({
-        issue: {
-          summary,
-          description: editor?.getHTML() ?? "",
-          officeId: selectedOffice.id,
-        },
-      });
-
-      onSubmit({
+      const issuePayload = {
         summary,
         description: editor?.getHTML() ?? "",
-        office,
+        officeId: selectedOffice.id,
+      };
+
+      await createIssueMutation({
+        issue: issuePayload,
+        files: selectedFiles,
       });
+
       onClose();
-    } catch {
-      setErrorMessage("An error occurred while submitting the issue");
+    } catch (error: unknown) {
+      let backendMessage = "An error occurred while submitting the issue";
+
+      if (error instanceof Error) {
+        backendMessage = error.message ?? backendMessage;
+      } else if (
+        typeof error === "object" &&
+        error !== null &&
+        "response" in error
+      ) {
+        const errObj = error as { response?: { data?: { message?: string } } };
+        backendMessage = errObj.response?.data?.message ?? backendMessage;
+      }
+
+      setErrorMessage(backendMessage);
     }
   };
   const handleClose = () => {
@@ -228,8 +264,6 @@ export default function IssueModal({
                 transition: "border 0.2s",
                 outline: editor?.isFocused ? "2px solid black" : "none",
                 outlineOffset: -1,
-                borderColor: errors.description ? "error.main" : "divider",
-                borderRadius: 1,
               }}
               onClick={() => editor?.chain().focus().run()}
             >
@@ -281,6 +315,17 @@ export default function IssueModal({
               ))}
             </TextField>
           </Box>
+
+          <AttachmentSection
+            attachments={selectedFiles.map((f) => ({
+              id: f.name + f.size,
+              name: f.name,
+              url: URL.createObjectURL(f),
+            }))}
+            onAddFiles={handleAddFiles}
+            onDelete={handleDeleteFile}
+            error={attachmentError}
+          />
         </Box>
       </DialogContent>
 

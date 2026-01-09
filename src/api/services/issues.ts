@@ -3,40 +3,24 @@ import {
   type IssueDetails,
   type IssueStatusType,
   type IssuePage,
-  IssueStatus,
+  type IssueAttachment,
+  type IssueStats,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-interface CreateIssuePayload {
-  summary: string;
-  description: string;
-  officeId: string;
-}
-
-export interface CreateIssueArgs {
-  issue: CreateIssuePayload;
-  files?: File[];
-}
-
-export interface FetchIssuePageArgs {
-  page: number;
-  size: number;
-  status?: string;
-  reportedBy?: string;
-  sort?: string;
-  office?: string;
-}
-
-interface IssueResponse {
+interface IssueBaseResponse {
   id: string;
   summary: string;
   description: string;
-  status: string;
-  date: string;
+  status: IssueStatusType;
+  dateCreated: string;
+}
+
+interface IssueResponse extends IssueBaseResponse {
   hasVoted: boolean;
   voteCount: number;
-  commentCount: number | null;
+  commentCount?: number;
 }
 
 interface IssuePageResponse {
@@ -48,91 +32,114 @@ interface IssuePageResponse {
 }
 
 interface IssueDetailsResponse {
-  issue: IssueResponse;
-  office: string;
+  issue: IssueBaseResponse;
+  officeId: string;
+  officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
+  reportedByEmail: string;
+  attachments: IssueAttachment[];
 }
 
-function mapIssueStatus(apiStatus: string): IssueStatusType {
-  const map: Record<string, IssueStatusType> = {
-    OPEN: IssueStatus.Open,
-    IN_PROGRESS: IssueStatus.InProgress,
-    RESOLVED: IssueStatus.Resolved,
-    CLOSED: IssueStatus.Closed,
-    BLOCKED: IssueStatus.Blocked,
-  };
-
-  return map[apiStatus] ?? IssueStatus.Open;
+export interface FetchIssuePageArgs {
+  page: number;
+  size: number;
+  status?: IssueStatusType;
+  reportedBy?: string;
+  sort?: "latest" | "oldest" | "mostVotes";
+  officeId?: string;
 }
 
-export const fetchIssueDetails = async (
-  issueId: string
-): Promise<IssueDetails> => {
-  const { data } = await api.get<IssueDetailsResponse>(
-    ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
-  );
-
-  const issue: Issue = {
-    id: data.issue.id,
-    title: data.issue.summary,
-    description: data.issue.description,
-    status: mapIssueStatus(data.issue.status),
-    hasVoted: data.issue.hasVoted,
-    votes: data.issue.voteCount,
-    comments: data.issue.commentCount ?? 0,
-    date: data.issue.date,
-  };
-
+function normalizeIssue(issue: IssueResponse): Issue {
   return {
     ...issue,
-    office: data.office,
-    reportedBy: data.reportedBy,
-    reportedByAvatar: data.reportedByAvatar,
+    votes: issue.voteCount,
+    comments: issue.commentCount ?? 0,
   };
-};
+}
 
-export const createIssue = async ({
-  issue,
-  files,
-}: CreateIssueArgs): Promise<void> => {
-  const formData = new FormData();
-
-  formData.append(
-    "issue",
-    new Blob([JSON.stringify(issue)], { type: "application/json" })
-  );
-
-  (files ?? []).forEach((file) => {
-    formData.append("files", file);
-  });
-
-  await api.post(ENDPOINTS.ISSUES, formData);
-};
-
-export const fetchIssues = async (
+export async function fetchIssues(
   params: FetchIssuePageArgs
-): Promise<IssuePage> => {
+): Promise<IssuePage> {
   const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
     params,
   });
 
-  const content: Issue[] = (data.content ?? []).map((issue) => ({
-    id: issue.id,
-    title: issue.summary,
-    description: issue.description,
-    status: mapIssueStatus(issue.status),
-    hasVoted: issue.hasVoted,
-    votes: issue.voteCount,
-    comments: issue.commentCount ?? 0,
-    date: issue.date,
-  }));
+  return {
+    ...data,
+    content: data.content.map(normalizeIssue),
+  };
+}
+
+export async function fetchIssueDetails(
+  issueId: string,
+  stats: IssueStats
+): Promise<IssueDetails> {
+  const { data } = await api.get<IssueDetailsResponse>(
+    ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
+  );
 
   return {
-    content,
-    totalPages: data.totalPages,
-    totalElements: data.totalElements,
-    page: data.page,
-    size: data.size,
+    ...data,
+    ...normalizeIssue({
+      ...data.issue,
+      hasVoted: stats.hasVoted,
+      voteCount: stats.votes,
+      commentCount: stats.comments,
+    }),
+    office: data.officeName,
   };
-};
+}
+
+export interface CreateIssuePayload {
+  summary: string;
+  description: string;
+  officeId: string;
+}
+
+export interface CreateIssueArgs {
+  issue: CreateIssuePayload;
+  files?: File[];
+}
+
+export async function createIssue({
+  issue,
+  files,
+}: CreateIssueArgs): Promise<void> {
+  const formData = new FormData();
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(issue)], { type: "application/json" })
+  );
+  (files ?? []).forEach((file) => formData.append("files", file));
+  await api.post(ENDPOINTS.ISSUES, formData);
+}
+
+export async function updateIssue(
+  issueId: string,
+  data: { summary?: string; description?: string; officeId?: string },
+  files?: File[],
+  deleteAttachmentIds?: string[]
+): Promise<void> {
+  const formData = new FormData();
+  formData.append(
+    "issue",
+    new Blob([JSON.stringify(data)], { type: "application/json" })
+  );
+  (files ?? []).forEach((f) => formData.append("files", f));
+  (deleteAttachmentIds ?? []).forEach((id) =>
+    formData.append("deleteAttachmentIds", id)
+  );
+  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}`, formData);
+}
+
+export async function updateIssueStatus(
+  issueId: string,
+  status: IssueStatusType
+): Promise<void> {
+  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/status`, { status });
+}
+
+export async function softDeleteIssue(issueId: string): Promise<void> {
+  await api.delete(`${ENDPOINTS.ISSUES}/${issueId}`);
+}
