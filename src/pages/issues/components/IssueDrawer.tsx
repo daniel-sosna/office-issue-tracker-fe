@@ -95,6 +95,10 @@ export default function IssueDetailsSidebar({
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
 
   useEffect(() => {
+    setSelectedTab(TabIndex.Details);
+  }, [issueId]);
+
+  useEffect(() => {
     if (issueDetailsError) {
       onError("Failed to load issue details.");
     }
