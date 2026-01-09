@@ -6,13 +6,12 @@ import { useCreateComment } from "@api/queries/useCreateComment";
 
 export default function CommentsSection({
   issueId,
-  onCommentCreated,
 }: {
   issueId: string;
   onCommentCreated: () => void;
 }) {
   const { data: comments = [] } = useComments(issueId);
-  const createComment = useCreateComment(issueId, onCommentCreated);
+  const createComment = useCreateComment(issueId);
 
   return (
     <Box>
