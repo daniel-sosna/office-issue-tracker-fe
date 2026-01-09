@@ -1,4 +1,3 @@
-import React from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
   Box,
@@ -11,14 +10,11 @@ import {
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
 
-type SidebarVariant = "unauthenticated" | "authenticated";
-
 interface SidebarProps {
-  variant?: SidebarVariant;
+  isAuthenticated: boolean;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ variant = "unauthenticated" }) => {
-  const isAuthenticated = variant === "authenticated";
+const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
   const location = useLocation();
   const navigate = useNavigate();
 

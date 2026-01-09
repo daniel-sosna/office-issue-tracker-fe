@@ -316,7 +316,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={!isFormValid}
+          disabled={!isFormValid || isPending}
           sx={{
             borderRadius: "999px",
             paddingX: 3,

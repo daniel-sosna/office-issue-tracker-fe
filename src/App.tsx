@@ -8,19 +8,36 @@ import { Login } from "@pages/Login";
 import { IssueHome } from "@pages/issues/Issues";
 import { ErrorPage } from "@pages/error/ErrorPage";
 import { NotFoundPage } from "@pages/error/NotFoundPage";
+import { TermsOfService } from "@pages/legal/TermsOfService";
+import { PrivacyPolicy } from "@pages/legal/PrivacyPolicy";
+import { Support } from "@pages/support/Support";
 import { RequireAuth } from "@components/RequireAuth";
 import BaseLayout from "@layouts/MainLayout";
 
 const router = createBrowserRouter([
   {
-    path: "/login",
-    element: <BaseLayout variant="unauthenticated" />,
+    element: <BaseLayout />,
     errorElement: <ErrorPage />,
-    handle: { pageTitle: "Login" },
     children: [
       {
-        index: true,
+        path: "/login",
         element: <Login />,
+        handle: { pageTitle: "Login" },
+      },
+      {
+        path: "/terms",
+        element: <TermsOfService />,
+        handle: { pageTitle: "Terms of Service" },
+      },
+      {
+        path: "/support",
+        element: <Support />,
+        handle: { pageTitle: "Support" },
+      },
+      {
+        path: "/privacy",
+        element: <PrivacyPolicy />,
+        handle: { pageTitle: "Privacy Policy" },
       },
     ],
   },
@@ -29,7 +46,7 @@ const router = createBrowserRouter([
     children: [
       {
         path: "/",
-        element: <BaseLayout variant="authenticated" />,
+        element: <BaseLayout />,
         errorElement: <ErrorPage />,
         children: [
           {

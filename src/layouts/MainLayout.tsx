@@ -4,17 +4,13 @@ import { Box } from "@mui/material";
 import PrimaryHeader from "@components/Header";
 import Sidebar from "@components/Sidebar";
 import Footer from "@components/Footer";
+import { useAuth } from "@context/UseAuth";
 
 const DEFAULT_APP_TITLE = "Office Issue Tracker";
 
-interface BaseLayoutProps {
-  variant: "authenticated" | "unauthenticated";
-}
-
-const BaseLayout = ({ variant }: BaseLayoutProps) => {
-  const showHeader = variant === "authenticated";
-
+const BaseLayout: React.FC = () => {
   const matches = useMatches();
+  const { isAuthenticated } = useAuth();
   const routeTitle = useMemo(() => {
     for (let i = matches.length - 1; i >= 0; i--) {
       const match = matches[i] as { handle?: { pageTitle: string } };
@@ -38,10 +34,10 @@ const BaseLayout = ({ variant }: BaseLayoutProps) => {
         backgroundColor: "#ffffff",
       }}
     >
-      <Sidebar variant={variant} />
+      <Sidebar isAuthenticated={isAuthenticated} />
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
-        {showHeader && <PrimaryHeader />}
+        {isAuthenticated && <PrimaryHeader />}
         <Box
           sx={{
             flex: 1,
@@ -50,7 +46,7 @@ const BaseLayout = ({ variant }: BaseLayoutProps) => {
         >
           <Outlet />
         </Box>
-        <Footer variant={variant} />
+        <Footer isAuthenticated={isAuthenticated} />
       </Box>
     </Box>
   );
