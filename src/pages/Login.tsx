@@ -41,7 +41,7 @@ export const Login = () => {
     >
       <Stack spacing={4} alignItems="center">
         <Stack spacing={1} alignItems="center">
-          <Typography variant="h4">Welcome to Office Issues</Typography>
+          <Typography variant="h4">Welcome to Office Issue Tracker</Typography>
           <Typography>
             Report office defects, gather feedback, and track resolution status
           </Typography>

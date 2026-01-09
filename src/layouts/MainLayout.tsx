@@ -1,18 +1,34 @@
+import { useMemo, useEffect } from "react";
+import { Outlet, useMatches } from "react-router-dom";
 import { Box } from "@mui/material";
 import PrimaryHeader from "@components/Header";
 import Sidebar from "@components/Sidebar";
 import Footer from "@components/Footer";
-import { Outlet } from "react-router-dom";
-import React from "react";
 
-type Variant = "authenticated" | "unauthenticated";
+const DEFAULT_APP_TITLE = "Office Issue Tracker";
 
 interface BaseLayoutProps {
-  variant: Variant;
+  variant: "authenticated" | "unauthenticated";
 }
 
-const BaseLayout: React.FC<BaseLayoutProps> = ({ variant }) => {
+const BaseLayout = ({ variant }: BaseLayoutProps) => {
   const showHeader = variant === "authenticated";
+
+  const matches = useMatches();
+  const routeTitle = useMemo(() => {
+    for (let i = matches.length - 1; i >= 0; i--) {
+      const match = matches[i] as { handle?: { pageTitle: string } };
+      if (match.handle) return match.handle.pageTitle;
+    }
+  }, [matches]);
+
+  const title = routeTitle
+    ? `${routeTitle} | ${DEFAULT_APP_TITLE}`
+    : DEFAULT_APP_TITLE;
+
+  useEffect(() => {
+    document.title = title;
+  }, [title]);
 
   return (
     <Box

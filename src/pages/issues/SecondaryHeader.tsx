@@ -16,7 +16,7 @@ const SecondaryHeader: React.FC = () => {
     >
       <Box>
         <Typography variant="h5">
-          Welcome to the Office Issues Dashboard
+          Welcome to the Office Issue Tracker dashboard
         </Typography>
         <Typography color="text.secondary" mt={1}>
           Report, vote, and comment on issues in the office that require our

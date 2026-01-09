@@ -16,6 +16,7 @@ const router = createBrowserRouter([
     path: "/login",
     element: <BaseLayout variant="unauthenticated" />,
     errorElement: <ErrorPage />,
+    handle: { pageTitle: "Login" },
     children: [
       {
         index: true,
@@ -42,10 +43,12 @@ const router = createBrowserRouter([
           {
             path: "profile",
             element: <Profile />,
+            handle: { pageTitle: "Profile" },
           },
           {
             path: "*",
             element: <NotFoundPage />,
+            handle: { pageTitle: "Not Found" },
           },
         ],
       },
