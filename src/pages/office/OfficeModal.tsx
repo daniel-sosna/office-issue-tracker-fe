@@ -74,20 +74,6 @@ export default function ManageOfficesModal({
     void loadOffices();
   }, [open]);
 
-  const formatCountryLabel = (value: string) => {
-    if (!value) {
-      return "";
-    }
-
-    if (value === "USA") {
-      return value;
-    }
-
-    const toLowerCase = value.toLowerCase();
-
-    return toLowerCase.charAt(0).toUpperCase() + toLowerCase.slice(1);
-  };
-
   return (
     <>
       <Snackbar
@@ -210,9 +196,7 @@ export default function ManageOfficesModal({
                       input={<OutlinedInput />}
                       IconComponent={ExpandMoreIcon}
                       renderValue={(selected) =>
-                        selected === ""
-                          ? "Select"
-                          : formatCountryLabel(selected)
+                        selected === "" ? "Select" : selected
                       }
                       sx={{
                         backgroundColor: "#fff",
@@ -229,7 +213,7 @@ export default function ManageOfficesModal({
                     >
                       {allCountries.map((country) => (
                         <MenuItem key={country} value={country}>
-                          {formatCountryLabel(country)}
+                          {country}
                         </MenuItem>
                       ))}
                     </Select>

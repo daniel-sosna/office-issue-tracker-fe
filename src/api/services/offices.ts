@@ -16,3 +16,15 @@ export const fetchCountries = async (): Promise<string[]> => {
   const res = await api.get<string[]>(ENDPOINTS.COUNTRIES);
   return res.data;
 };
+
+export interface CreateOfficeRequest {
+  title: string;
+  countryName: string;
+}
+
+export const createOffice = async (
+  office: CreateOfficeRequest
+): Promise<Office> => {
+  const res = await api.post<Office>(ENDPOINTS.OFFICES, office);
+  return res.data;
+};
