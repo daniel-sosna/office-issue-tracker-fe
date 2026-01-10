@@ -83,6 +83,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setAttachmentError("");
       setErrors({});
       setHasSubmitted(false);
+      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
     }
   }, [open, editor]);
