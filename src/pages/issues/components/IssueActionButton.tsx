@@ -19,7 +19,7 @@ export function IssueActionButton({
     status === IssueStatus.Closed || status === IssueStatus.Resolved;
 
   return (
-    <Box sx={{ minWidth: 100, textAlign: "center" }}>
+    <Box sx={{ width: 100, textAlign: "center" }}>
       {!isClosedOrResolved &&
         (isOwner ? (
           <Button

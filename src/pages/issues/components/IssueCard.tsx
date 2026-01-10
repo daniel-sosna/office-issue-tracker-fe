@@ -42,17 +42,38 @@ export default function IssueCard({
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
-            justifyContent: "space-around",
+            justifyContent: "space-between",
+            gap: { xs: 1.5, md: 2 },
             minWidth: 0,
-            gap: 2,
             py: 1.5,
           }}
         >
-          <Box flex="1 1 50%" minWidth="400px">
-            <Typography variant="subtitle1" fontWeight={500} noWrap>
+          <Box flex={{ xs: "1 0 100%", md: "auto" }} minWidth={0}>
+            <Typography
+              variant="subtitle1"
+              fontWeight={500}
+              sx={{
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: { xs: 2, sm: 1 },
+              }}
+            >
               {summary}
             </Typography>
-            <Typography variant="body2" color="text.secondary" noWrap>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mt: 0.25,
+                overflow: "hidden",
+                textOverflow: "ellipsis",
+                display: "-webkit-box",
+                WebkitBoxOrient: "vertical",
+                WebkitLineClamp: { xs: 3, sm: 1 },
+              }}
+            >
               {description}
             </Typography>
             <Typography
@@ -65,7 +86,14 @@ export default function IssueCard({
             </Typography>
           </Box>
 
-          <Box display="flex" alignItems="center" gap={6.5}>
+          <Box
+            display="flex"
+            alignItems="center"
+            justifyContent="space-around"
+            gap={{ xs: 2, md: 6 }}
+            maxWidth={{ xs: "400px", md: "auto" }}
+            flex={{ xs: "1", md: "0" }}
+          >
             <Box textAlign="center">
               <StatusChip status={issue.status} />
             </Box>
@@ -73,8 +101,8 @@ export default function IssueCard({
             <Box
               display="flex"
               alignItems="stretch"
-              gap={0.7}
-              sx={{ minWidth: 50 }}
+              gap={{ xs: 0.5, md: 0.7 }}
+              minWidth={{ xs: 40, md: 50 }}
             >
               <ArrowUpwardIcon fontSize="small" />
               <Typography variant="body1">{issue.votes}</Typography>
@@ -83,15 +111,15 @@ export default function IssueCard({
             <Box
               display="flex"
               alignItems="center"
-              gap={0.7}
-              sx={{ minWidth: 50 }}
+              gap={{ xs: 0.5, md: 0.7 }}
+              minWidth={{ xs: 40, md: 50 }}
             >
               <ChatBubbleOutlineIcon fontSize="small" />
               <Typography variant="body1">{issue.comments}</Typography>
             </Box>
           </Box>
 
-          <Box flex="0 0 auto" sx={{ px: 4 }}>
+          <Box display="flex" justifyContent="end" flex={{ xs: "1", md: "0" }}>
             <IssueActionButton {...issue} onVote={onClickVote} />
           </Box>
         </CardContent>

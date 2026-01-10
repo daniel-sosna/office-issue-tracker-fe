@@ -31,6 +31,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
   return (
     <Box
       sx={{
+        minWidth: "80px",
         width: "90px",
         bgcolor: "#fff",
         borderRight: "1px solid #e0e0e0",
