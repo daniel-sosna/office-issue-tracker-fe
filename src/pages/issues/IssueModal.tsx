@@ -309,7 +309,13 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 )}
               </Box>
             </Box>
-            <Box mt={0.5} minHeight="18px" fontSize={12} color="error.main">
+            <Box
+              mt={0.5}
+              ml={1.5}
+              minHeight="18px"
+              fontSize={12}
+              color="error.main"
+            >
               {hasSubmitted && errors.description ? errors.description : " "}
             </Box>
           </Box>
