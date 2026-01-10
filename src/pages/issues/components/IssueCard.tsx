@@ -1,7 +1,15 @@
-import { Card, CardContent, Box, Typography } from "@mui/material";
+import {
+  Card,
+  CardContent,
+  Box,
+  Typography,
+  CardActionArea,
+} from "@mui/material";
+import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import ChatBubbleOutlineIcon from "@mui/icons-material/ChatBubbleOutline";
 import type { Issue } from "@data/issues";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
-import { VoteSection } from "@pages/issues/components/VoteSection";
+import { IssueActionButton } from "@pages/issues/components/IssueActionButton";
 import { formatDate, stripHtml, stripHtmlDescription } from "@utils/formatters";
 import { truncate } from "@utils/truncation";
 
@@ -16,8 +24,8 @@ export default function IssueCard({
   onClickCard,
   onClickVote,
 }: IssueCardProps) {
-  const summary = truncate(stripHtml(issue.summary), 50);
-  const description = truncate(stripHtmlDescription(issue.description), 50);
+  const summary = truncate(stripHtml(issue.summary), 75);
+  const description = truncate(stripHtmlDescription(issue.description), 100);
   const dateCreated = formatDate(issue.dateCreated);
 
   return (
@@ -26,44 +34,25 @@ export default function IssueCard({
       sx={{
         mb: 1,
         borderRadius: 0.6,
-        cursor: "pointer",
-        transition:
-          "background-color 0.25s ease, box-shadow 0.25s ease, transform 0.15s ease",
-        "&:hover": {
-          "&:not(:has(button:hover))": {
-            backgroundColor: "#d8d8d8ff",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.12)",
-            transform: "translateY(-0.5px)",
-          },
-        },
       }}
-      onClick={onClickCard}
     >
-      <CardContent sx={{ py: 1.5, "&:last-child": { pb: 1.5 } }}>
-        <Box
-          display="flex"
-          alignItems="center"
-          justifyContent="space-between"
-          gap={2}
-          sx={{ minWidth: 0, pr: 2 }}
+      <CardActionArea onClick={onClickCard}>
+        <CardContent
+          sx={{
+            display: "flex",
+            flexWrap: "wrap",
+            alignItems: "center",
+            justifyContent: "space-around",
+            minWidth: 0,
+            gap: 2,
+            py: 1.5,
+          }}
         >
-          {/* Issue summary */}
-          <Box flex="1 1 50%">
-            <Typography variant="subtitle1" fontWeight={500}>
+          <Box flex="1 1 50%" minWidth="400px">
+            <Typography variant="subtitle1" fontWeight={500} noWrap>
               {summary}
             </Typography>
-            <Typography
-              variant="body2"
-              color="text.secondary"
-              sx={{
-                maxWidth: "95%",
-                display: "-webkit-box",
-                WebkitLineClamp: 1,
-                WebkitBoxOrient: "vertical",
-                overflow: "hidden",
-              }}
-              noWrap
-            >
+            <Typography variant="body2" color="text.secondary" noWrap>
               {description}
             </Typography>
             <Typography
@@ -76,15 +65,37 @@ export default function IssueCard({
             </Typography>
           </Box>
 
-          {/* Status chip */}
-          <Box flex="0 0 150px" display="flex" justifyContent="center">
-            <StatusChip status={issue.status} />
+          <Box display="flex" alignItems="center" gap={6.5}>
+            <Box textAlign="center">
+              <StatusChip status={issue.status} />
+            </Box>
+
+            <Box
+              display="flex"
+              alignItems="stretch"
+              gap={0.7}
+              sx={{ minWidth: 50 }}
+            >
+              <ArrowUpwardIcon fontSize="small" />
+              <Typography variant="body1">{issue.votes}</Typography>
+            </Box>
+
+            <Box
+              display="flex"
+              alignItems="center"
+              gap={0.7}
+              sx={{ minWidth: 50 }}
+            >
+              <ChatBubbleOutlineIcon fontSize="small" />
+              <Typography variant="body1">{issue.comments}</Typography>
+            </Box>
           </Box>
 
-          {/* Vote section */}
-          <VoteSection {...issue} onVote={onClickVote} />
-        </Box>
-      </CardContent>
+          <Box flex="0 0 auto" sx={{ px: 4 }}>
+            <IssueActionButton {...issue} onVote={onClickVote} />
+          </Box>
+        </CardContent>
+      </CardActionArea>
     </Card>
   );
 }
