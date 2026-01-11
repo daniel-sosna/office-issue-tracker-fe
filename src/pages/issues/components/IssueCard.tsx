@@ -24,8 +24,8 @@ export default function IssueCard({
   onClickCard,
   onClickVote,
 }: IssueCardProps) {
-  const summary = truncate(stripHtml(issue.summary), 75);
-  const description = truncate(stripHtmlDescription(issue.description), 100);
+  const summary = truncate(stripHtml(issue.summary), 95);
+  const description = stripHtmlDescription(issue.description);
   const dateCreated = formatDate(issue.dateCreated);
 
   return (
@@ -42,16 +42,17 @@ export default function IssueCard({
             display: "flex",
             flexWrap: "wrap",
             alignItems: "center",
-            justifyContent: "space-between",
+            justifyContent: { xs: "space-around", md: "space-between" },
             gap: { xs: 1.5, md: 2 },
             minWidth: 0,
             py: 1.5,
           }}
         >
-          <Box flex={{ xs: "1 0 100%", md: "auto" }} minWidth={0}>
+          <Box flex={{ xs: "1 0 100%", md: "1" }} minWidth={0}>
             <Typography
               variant="subtitle1"
               fontWeight={500}
+              maxWidth={{ sm: "90%", md: "min(600px, 90%)" }}
               sx={{
                 overflow: "hidden",
                 textOverflow: "ellipsis",
@@ -65,13 +66,14 @@ export default function IssueCard({
             <Typography
               variant="body2"
               color="text.secondary"
+              maxWidth={{ md: "800px" }}
               sx={{
                 mt: 0.25,
                 overflow: "hidden",
                 textOverflow: "ellipsis",
                 display: "-webkit-box",
                 WebkitBoxOrient: "vertical",
-                WebkitLineClamp: { xs: 3, sm: 1 },
+                WebkitLineClamp: { xs: 2, sm: 1 },
               }}
             >
               {description}
@@ -88,38 +90,44 @@ export default function IssueCard({
 
           <Box
             display="flex"
-            alignItems="center"
-            justifyContent="space-around"
-            gap={{ xs: 2, md: 6 }}
-            maxWidth={{ xs: "400px", md: "auto" }}
+            justifyContent="start"
             flex={{ xs: "1", md: "0" }}
           >
-            <Box textAlign="center">
-              <StatusChip status={issue.status} />
-            </Box>
-
-            <Box
-              display="flex"
-              alignItems="stretch"
-              gap={{ xs: 0.5, md: 0.7 }}
-              minWidth={{ xs: 40, md: 50 }}
-            >
-              <ArrowUpwardIcon fontSize="small" />
-              <Typography variant="body1">{issue.votes}</Typography>
-            </Box>
-
             <Box
               display="flex"
               alignItems="center"
-              gap={{ xs: 0.5, md: 0.7 }}
-              minWidth={{ xs: 40, md: 50 }}
+              justifyContent="space-around"
+              gap={{ xs: 2, md: 6 }}
+              maxWidth={{ xs: "400px", md: "auto" }}
+              flex={1}
             >
-              <ChatBubbleOutlineIcon fontSize="small" />
-              <Typography variant="body1">{issue.comments}</Typography>
+              <Box textAlign="center">
+                <StatusChip status={issue.status} />
+              </Box>
+
+              <Box
+                display="flex"
+                alignItems="stretch"
+                gap={{ xs: 0.5, md: 0.7 }}
+                minWidth={{ xs: 40, md: 50 }}
+              >
+                <ArrowUpwardIcon fontSize="small" />
+                <Typography variant="body1">{issue.votes}</Typography>
+              </Box>
+
+              <Box
+                display="flex"
+                alignItems="center"
+                gap={{ xs: 0.5, md: 0.7 }}
+                minWidth={{ xs: 40, md: 50 }}
+              >
+                <ChatBubbleOutlineIcon fontSize="small" />
+                <Typography variant="body1">{issue.comments}</Typography>
+              </Box>
             </Box>
           </Box>
 
-          <Box display="flex" justifyContent="end" flex={{ xs: "1", md: "0" }}>
+          <Box>
             <IssueActionButton {...issue} onVote={onClickVote} />
           </Box>
         </CardContent>
