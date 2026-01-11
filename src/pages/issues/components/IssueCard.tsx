@@ -92,12 +92,13 @@ export default function IssueCard({
             display="flex"
             justifyContent="start"
             flex={{ xs: "1", md: "0" }}
+            mr={{ lg: 3, xl: 6 }}
           >
             <Box
               display="flex"
               alignItems="center"
               justifyContent="space-around"
-              gap={{ xs: 2, md: 6 }}
+              gap={{ xs: 2, md: 3, lg: 8, xl: 10 }}
               maxWidth={{ xs: "400px", md: "auto" }}
               flex={1}
             >
@@ -127,9 +128,7 @@ export default function IssueCard({
             </Box>
           </Box>
 
-          <Box>
-            <IssueActionButton {...issue} onVote={onClickVote} />
-          </Box>
+          <IssueActionButton {...issue} onVote={onClickVote} />
         </CardContent>
       </CardActionArea>
     </Card>

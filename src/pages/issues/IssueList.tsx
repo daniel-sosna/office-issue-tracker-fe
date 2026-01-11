@@ -92,7 +92,7 @@ const IssuesList: React.FC = () => {
   }
 
   return (
-    <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
+    <Box sx={{ position: "relative" }}>
       <Box
         component="img"
         src={backgroundImage}

@@ -8,15 +8,28 @@ const SecondaryHeader: React.FC = () => {
 
   return (
     <Box
+      mx={1}
+      mt={1}
       mb={3}
-      px={4}
       display="flex"
+      flexDirection={{ xs: "column", md: "row" }}
       alignItems="center"
       justifyContent="space-between"
+      gap={3}
     >
-      <Box>
-        <Typography variant="h5">
-          Welcome to the Office Issue Tracker dashboard
+      <Box
+        flex={1}
+        minWidth={0}
+        width={{ xs: "100%", md: "auto" }}
+        textAlign={{ xs: "center", md: "left" }}
+        mr={{ xs: 0, md: 3 }}
+      >
+        <Typography variant="h5" fontWeight={600}>
+          Welcome to the{" "}
+          <Box component="span" whiteSpace="nowrap">
+            Office Issue Tracker
+          </Box>{" "}
+          dashboard
         </Typography>
         <Typography color="text.secondary" mt={1}>
           Report, vote, and comment on issues in the office that require our
@@ -28,7 +41,7 @@ const SecondaryHeader: React.FC = () => {
         variant="contained"
         color="secondary"
         startIcon={<AddIcon />}
-        sx={{ borderRadius: "50px" }}
+        sx={{ borderRadius: "50px", whiteSpace: "nowrap" }}
         onClick={() => setModalOpen(true)}
       >
         Report Issue

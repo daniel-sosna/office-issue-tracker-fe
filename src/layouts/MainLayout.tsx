@@ -38,12 +38,7 @@ const BaseLayout: React.FC = () => {
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {isAuthenticated && <PrimaryHeader />}
-        <Box
-          sx={{
-            flex: 1,
-            p: 4,
-          }}
-        >
+        <Box flex={1} px={{ xs: 1, sm: 2, md: 4 }} py={{ xs: 2, sm: 3, md: 4 }}>
           <Outlet />
         </Box>
         <Footer isAuthenticated={isAuthenticated} />
