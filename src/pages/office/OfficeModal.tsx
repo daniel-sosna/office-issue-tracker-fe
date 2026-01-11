@@ -19,7 +19,14 @@ import {
   Alert,
 } from "@mui/material";
 import Paper from "@mui/material/Paper";
-import { fetchCountries, fetchOffices } from "@api/services/offices";
+import {
+  fetchCountries,
+  fetchOffices,
+  type UpsertOfficeRequest,
+} from "@api/services/offices";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { saveOffices } from "@api/services/offices";
+import { queryKeys } from "@api/queries/queryKeys";
 
 interface Office {
   id: string;
@@ -44,10 +51,41 @@ export default function ManageOfficesModal({
   const [errorMessage, setErrorMessage] = useState("");
   const [allCountries, setAllCountries] = useState<string[]>([]);
 
+  const queryClient = useQueryClient();
+
+  const saveMutation = useMutation<Office[], unknown, UpsertOfficeRequest[]>({
+    mutationFn: async (offices) => {
+      return await saveOffices(offices);
+    },
+    onSuccess: (data) => {
+      void queryClient.invalidateQueries({ queryKey: queryKeys.offices() });
+      setLocalOffices(data);
+      onSave(data);
+    },
+    onError: (error: unknown) => {
+      let message = "Failed to save offices";
+      if (error instanceof Error) message = error.message;
+      setErrorMessage(message);
+    },
+  });
+
+  const isSaving = saveMutation.isPending;
+
   const handleCountryChange = (id: string, country: string) => {
-    setLocalOffices((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, country } : o))
+    setLocalOffices((previousOffices) =>
+      previousOffices.map((office) =>
+        office.id === id ? { ...office, country } : office
+      )
     );
+  };
+
+  const handleSave = () => {
+    const payload: UpsertOfficeRequest[] = localOffices.map((office) => ({
+      ...(office.id.startsWith("new-") ? {} : { id: office.id }),
+      title: office.title,
+      countryName: office.country,
+    }));
+    saveMutation.mutate(payload);
   };
 
   const isFormValid = localOffices.every(
@@ -65,8 +103,7 @@ export default function ManageOfficesModal({
         setLocalOffices(data);
         const countriesResponse = await fetchCountries();
         setAllCountries(countriesResponse);
-      } catch (err) {
-        console.error(err);
+      } catch {
         setErrorMessage("Failed to load offices or countries");
       }
     };
@@ -125,7 +162,7 @@ export default function ManageOfficesModal({
           <CloseIcon />
         </IconButton>
 
-        <DialogContent>
+        <DialogContent sx={{ maxHeight: "70vh", overflowY: "auto" }}>
           <Box display="flex" gap={32}>
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ color: "text.secondary", fontSize: "13px" }}>
@@ -166,11 +203,15 @@ export default function ManageOfficesModal({
                     size="small"
                     value={office.title}
                     sx={{ backgroundColor: "#fff" }}
-                    slots={{ input: OutlinedInput }}
-                    slotProps={{
-                      input: {
-                        readOnly: true,
-                      },
+                    onChange={(event) => {
+                      const newTitle = event.target.value;
+                      setLocalOffices((previousOffices) =>
+                        previousOffices.map((existingOffice) =>
+                          existingOffice.id === office.id
+                            ? { ...existingOffice, title: newTitle }
+                            : existingOffice
+                        )
+                      );
                     }}
                   />
                 </Box>
@@ -235,7 +276,7 @@ export default function ManageOfficesModal({
             onClick={() =>
               setLocalOffices((prev) => [
                 ...prev,
-                { id: Date.now().toString(), title: "", country: "" },
+                { id: `new-${Date.now()}`, title: "", country: "" },
               ])
             }
           >
@@ -261,15 +302,15 @@ export default function ManageOfficesModal({
           </Button>
           <Button
             variant="contained"
-            onClick={() => onSave(localOffices)}
-            disabled={!isFormValid}
+            onClick={handleSave}
+            disabled={!isFormValid || isSaving}
             sx={{
               borderRadius: "999px",
               paddingX: 4,
               backgroundColor: "secondary.main",
             }}
           >
-            Save
+            {isSaving ? "Saving..." : "Save"}
           </Button>
         </Box>
       </Dialog>

@@ -28,3 +28,16 @@ export const createOffice = async (
   const res = await api.post<Office>(ENDPOINTS.OFFICES, office);
   return res.data;
 };
+
+export interface UpsertOfficeRequest {
+  id?: string;
+  title: string;
+  countryName: string;
+}
+
+export const saveOffices = async (
+  offices: UpsertOfficeRequest[]
+): Promise<Office[]> => {
+  const res = await api.put<Office[]>(ENDPOINTS.OFFICES, offices);
+  return res.data;
+};
