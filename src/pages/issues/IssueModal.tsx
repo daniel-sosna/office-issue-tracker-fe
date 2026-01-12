@@ -197,11 +197,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setErrorMessage(backendMessage);
     }
   };
-  const handleClose = () => {
-    setErrors({});
-    setErrorMessage("");
-    onClose();
-  };
 
   return (
     <Dialog
@@ -224,7 +219,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         Report Issue
       </DialogTitle>
       <IconButton
-        onClick={() => void handleClose()}
+        onClick={onClose}
         size="small"
         sx={{
           position: "absolute",
@@ -366,7 +361,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       >
         <Button
           variant="outlined"
-          onClick={() => void handleClose()}
+          onClick={onClose}
           sx={{
             borderRadius: "999px",
             paddingX: 3,
