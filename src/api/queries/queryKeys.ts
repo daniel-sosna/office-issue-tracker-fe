@@ -5,4 +5,5 @@ export const queryKeys = {
     params ? (["issues", params] as const) : (["issues"] as const),
   offices: () => ["offices"],
   issueDetails: (issueId: string) => ["issueDetails", issueId] as const,
+  attachments: () => ["attachments"] as const,
 };

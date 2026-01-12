@@ -4,4 +4,5 @@ export const ENDPOINTS = {
   ISSUE_DETAILS: "/issues/:issueId/details",
   ISSUE_VOTE: "/issues/:issueId/vote",
   OFFICES: "/offices",
+  ATTACHMENTS: "/attachments",
 } as const;

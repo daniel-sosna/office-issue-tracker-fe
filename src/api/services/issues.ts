@@ -143,3 +143,6 @@ export async function updateIssueStatus(
 export async function softDeleteIssue(issueId: string): Promise<void> {
   await api.delete(`${ENDPOINTS.ISSUES}/${issueId}`);
 }
+export async function deleteAttachment(attachmentId: string): Promise<void> {
+  await api.delete(`${ENDPOINTS.ATTACHMENTS}/${attachmentId}`);
+}

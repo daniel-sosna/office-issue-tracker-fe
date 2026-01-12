@@ -15,6 +15,7 @@ import Button from "@mui/material/Button";
 import theme from "@styles/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  deleteAttachment,
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
@@ -241,6 +242,25 @@ export default function IssueDetailsSidebar({
       onClose();
     } catch {
       onError("Failed to delete the issue.");
+    } finally {
+      setDeleting(false);
+    }
+  };
+  const handleAttachmentDelete = async (attachmentId: string) => {
+    const deleteConfirmation = window.confirm(
+      "Are you sure you want to delete this attachment? This action cannot be undone."
+    );
+    if (!deleteConfirmation) return;
+    try {
+      await deleteAttachment(attachmentId);
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.attachments(),
+      });
+
+      onSaved();
+    } catch {
+      onError("Failed to delete the attachment.");
     } finally {
       setDeleting(false);
     }
@@ -516,7 +536,25 @@ export default function IssueDetailsSidebar({
               />
             )}
 
-            {attachments.length > 0 && (
+            {attachments.length > 0 && issueOwner && (
+              <Box mt={2}>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Attachments
+                </Typography>
+
+                <AttachmentList
+                  attachments={attachments.map((attachment) => ({
+                    id: attachment.id,
+                    name: attachment.originalFilename,
+                    url: attachment.url,
+                  }))}
+                  showDelete={true}
+                  onDelete={() => handleAttachmentDelete}
+                />
+              </Box>
+            )}
+
+            {attachments.length > 0 && !issueOwner && (
               <Box mt={2}>
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   Attachments
