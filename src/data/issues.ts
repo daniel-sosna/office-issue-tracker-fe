@@ -77,15 +77,6 @@ export interface IssueAttachment {
   fileSize: number;
 }
 
-export interface FetchIssuesParams {
-  page: number;
-  size: number;
-  status?: BackendIssueStatusType;
-  reportedBy?: string;
-  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
-  office?: string;
-}
-
 export interface IssuePage {
   content: Issue[];
   totalPages: number;
@@ -114,3 +105,8 @@ export const IssueTab = {
   CLOSED: 4,
   REPORTED_BY_ME: 5,
 } as const;
+
+export interface User {
+  id: string;
+  name: string;
+}

@@ -1,10 +1,6 @@
 import { csrfFetch } from "@utils/csrfFetch";
 import { BASE_URL, ENDPOINTS } from "@api/services/urls";
-
-export interface User {
-  id: string;
-  name: string;
-}
+import type { User } from "@data/issues";
 
 export const fetchUsers = async (): Promise<User[]> => {
   const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.USERS}`);

@@ -52,6 +52,15 @@ export interface FetchIssuePageArgs {
   officeId?: string;
 }
 
+export interface FetchIssuesParams {
+  page: number;
+  size: number;
+  status?: BackendIssueStatusType;
+  reportedBy?: string;
+  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
+  office?: string;
+}
+
 function normalizeIssue(issue: IssueResponse): Issue {
   return {
     id: issue.id,
