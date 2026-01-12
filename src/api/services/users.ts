@@ -1,6 +1,6 @@
 import { csrfFetch } from "@utils/csrfFetch";
 import { BASE_URL, ENDPOINTS } from "@api/services/urls";
-import type { User } from "@data/issues";
+import type { User } from "@data/user";
 
 export const fetchUsers = async (): Promise<User[]> => {
   const res = await csrfFetch(`${BASE_URL}${ENDPOINTS.USERS}`);

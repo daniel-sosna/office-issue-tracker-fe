@@ -105,8 +105,3 @@ export const IssueTab = {
   CLOSED: 4,
   REPORTED_BY_ME: 5,
 } as const;
-
-export interface User {
-  id: string;
-  name: string;
-}

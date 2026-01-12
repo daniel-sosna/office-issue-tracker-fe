@@ -157,7 +157,6 @@ export default function IssueDetailsSidebar({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
-
   async function handleSave() {
     if (!issue || !validateForm()) return;
 
