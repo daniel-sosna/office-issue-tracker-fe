@@ -41,6 +41,10 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
 
   const isLocal = url.startsWith("blob:");
 
+  function handleClick() {
+    window.open(url);
+  }
+
   return (
     <Box
       sx={{
@@ -74,19 +78,32 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
       )}
 
       <Avatar
-        src={thumbnailUrl}
+        component="button"
         variant="rounded"
-        sx={{ width: 48, height: 48, marginRight: "10px", borderRadius: 0.3 }}
+        onClick={handleClick}
+        sx={{
+          all: "unset",
+          cursor: "pointer",
+          width: 48,
+          height: 48,
+          marginRight: "10px",
+          borderRadius: 0.3,
+        }}
+        src={thumbnailUrl}
       />
       <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
         <Typography
           variant="body1"
+          component="button"
+          onClick={handleClick}
           sx={{
+            all: "unset",
             fontWeight: "bold",
             maxWidth: "140px",
             overflow: "hidden",
             textOverflow: "ellipsis",
             whiteSpace: "nowrap",
+            cursor: "pointer",
           }}
           color="text.primary"
         >
