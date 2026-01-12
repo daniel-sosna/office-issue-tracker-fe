@@ -1,5 +1,4 @@
-import { Box, Typography, Avatar, IconButton } from "@mui/material";
-import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
+import { Box, Typography, Avatar } from "@mui/material";
 import { formatRelativeTime } from "@utils/formatters";
 
 export interface Comment {
@@ -37,42 +36,6 @@ export default function CommentItem({ comment }: Props) {
         >
           {comment.commentText}
         </Typography>
-
-        <Box
-          mt={1}
-          display="inline-flex"
-          alignItems="center"
-          px={1}
-          py={0.25}
-          borderRadius={16}
-          bgcolor="#f4f4f4"
-          sx={{
-            cursor: "pointer",
-            transition: "background-color 0.2s ease",
-            "&:hover": {
-              backgroundColor: "#e0e0e0",
-            },
-          }}
-        >
-          <Box display="flex" alignItems="center" gap={0.5}>
-            <IconButton
-              size="small"
-              disableRipple
-              sx={{
-                p: 0,
-              }}
-            >
-              <ArrowUpwardIcon
-                fontSize="small"
-                color="primary"
-                sx={{ mr: 0.5 }}
-              />
-              <Typography variant="caption" color="text.primary">
-                {comment.votes ?? 0}
-              </Typography>
-            </IconButton>
-          </Box>
-        </Box>
       </Box>
     </Box>
   );
