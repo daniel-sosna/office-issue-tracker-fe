@@ -327,9 +327,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             <TextField
               select
               value={office}
-              onChange={(e) => {
-                setOffice(e.target.value);
-              }}
+              onChange={(e) => setOffice(e.target.value)}
               variant="outlined"
               size="small"
               sx={{ width: "45%" }}
