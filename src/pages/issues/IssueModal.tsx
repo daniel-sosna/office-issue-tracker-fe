@@ -57,7 +57,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     content: "",
   });
 
-  // Load offices when modal opens
   useEffect(() => {
     if (!open) return;
 
@@ -91,7 +90,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     }
   }, [open, editor]);
 
-  // Update description from TipTap editor
   useEffect(() => {
     if (!editor) return;
 
