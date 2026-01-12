@@ -19,7 +19,7 @@ export function useIssueDetails(issueId?: string) {
         summary: "Loading...",
         description: "Loading...",
         status: mapBackendStatus("CLOSED" as BackendIssueStatusType),
-        date: "2025-01-01 00:00:00.00000 +00:00",
+        dateCreated: "2025-01-01 00:00:00.00000 +00:00",
         officeId: "",
         office: "Loading...",
         reportedBy: "Loading...",

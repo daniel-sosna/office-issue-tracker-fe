@@ -16,7 +16,7 @@ interface IssueBaseResponse {
   summary: string;
   description: string;
   status: BackendIssueStatusType;
-  date: string;
+  dateCreated: string;
 }
 
 interface IssueResponse extends IssueBaseResponse {
@@ -61,7 +61,7 @@ function normalizeIssue(issue: IssueResponse): Issue {
     hasVoted: issue.hasVoted,
     votes: issue.voteCount,
     comments: issue.commentCount ?? 0,
-    date: issue.date,
+    dateCreated: issue.dateCreated,
   };
 }
 
@@ -92,7 +92,7 @@ export async function fetchIssueDetails(
     hasVoted: data.issue.hasVoted,
     votes: data.issue.voteCount,
     comments: data.issue.commentCount ?? 0,
-    date: data.issue.date,
+    dateCreated: data.issue.dateCreated,
   };
 
   return {

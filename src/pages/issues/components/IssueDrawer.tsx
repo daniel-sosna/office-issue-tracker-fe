@@ -310,7 +310,7 @@ export default function IssueDetailsSidebar({
           <Typography variant="body2">Reported at</Typography>
           <Box>
             <Typography variant="body2" color="text.primary">
-              {formatDate(issue.date)}
+              {formatDate(issue.dateCreated)}
             </Typography>
           </Box>
 

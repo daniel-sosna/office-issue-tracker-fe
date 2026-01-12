@@ -18,7 +18,7 @@ export default function IssueCard({
 }: IssueCardProps) {
   const summary = truncate(stripHtml(issue.summary), 50);
   const description = truncate(stripHtmlDescription(issue.description), 50);
-  const dateCreated = formatDate(issue.date);
+  const dateCreated = formatDate(issue.dateCreated);
 
   return (
     <Card

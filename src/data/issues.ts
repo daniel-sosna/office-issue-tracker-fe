@@ -54,7 +54,7 @@ export interface Issue {
   summary: string;
   description: string;
   status: IssueStatusType;
-  date: string;
+  dateCreated: string;
   hasVoted: boolean;
   votes: number;
   comments: number;
