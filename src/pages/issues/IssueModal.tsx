@@ -328,8 +328,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               select
               value={office}
               onChange={(e) => {
-                const value = e.target.value;
-                setOffice(value);
+                setOffice(e.target.value);
               }}
               variant="outlined"
               size="small"
