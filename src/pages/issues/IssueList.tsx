@@ -15,7 +15,10 @@ import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
 import { type Issue, IssueTab } from "@data/issues";
-import { type FetchIssuesParams } from "@api/services/issues";
+import type {
+  FetchIssuesParams,
+  FetchIssuePageArgs,
+} from "@api/services/issues";
 import { useAuth } from "@context/UseAuth";
 import EmployeesDropdown from "@components/EmployeesDropdown";
 import { useIssues } from "@api/queries/useIssues";
@@ -96,7 +99,18 @@ const IssuesList: React.FC = () => {
     office: selectedOffice,
   };
 
-  const { data, isLoading, error } = useIssues(params);
+  const apiParams: FetchIssuePageArgs = {
+    ...params,
+    sort:
+      selectedSort === "latest"
+        ? "latest"
+        : selectedSort === "oldest"
+          ? "oldest"
+          : "mostVotes",
+    officeId: params.office,
+  };
+
+  const { data, isLoading, error } = useIssues(apiParams);
   const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const handleCardClick = (issue: Issue) => {
