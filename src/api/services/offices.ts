@@ -41,3 +41,7 @@ export const saveOffices = async (
   const res = await api.put<Office[]>(ENDPOINTS.OFFICES, offices);
   return res.data;
 };
+
+export const deleteOffice = async (officeId: string): Promise<void> => {
+  await api.delete(`${ENDPOINTS.OFFICES}/${officeId}`);
+};

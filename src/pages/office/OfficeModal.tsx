@@ -8,7 +8,7 @@ import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-import DragIndicatorIcon from "@mui/icons-material/DragIndicator";
+import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import {
   FormControl,
@@ -23,16 +23,12 @@ import {
   fetchCountries,
   fetchOffices,
   type UpsertOfficeRequest,
+  type Office,
 } from "@api/services/offices";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveOffices } from "@api/services/offices";
 import { queryKeys } from "@api/queries/queryKeys";
-
-interface Office {
-  id: string;
-  title: string;
-  country: string;
-}
+import { useDeleteOffice } from "@api/queries/useDeleteOffice";
 
 interface ManageOfficesModalProps {
   open: boolean;
@@ -50,8 +46,12 @@ export default function ManageOfficesModal({
   const [localOffices, setLocalOffices] = useState<Office[]>(offices);
   const [errorMessage, setErrorMessage] = useState("");
   const [allCountries, setAllCountries] = useState<string[]>([]);
+  const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
+  const [officeToConfirmDelete, setOfficeToConfirmDelete] =
+    useState<Office | null>(null);
 
   const queryClient = useQueryClient();
+  const deleteOfficeMutation = useDeleteOffice();
 
   const saveMutation = useMutation<Office[], unknown, UpsertOfficeRequest[]>({
     mutationFn: async (offices) => {
@@ -86,6 +86,51 @@ export default function ManageOfficesModal({
       countryName: office.country,
     }));
     saveMutation.mutate(payload);
+  };
+
+  const requestDeleteConfirmation = (office: Office) => {
+    setOfficeToConfirmDelete(office);
+  };
+
+  const confirmDelete = () => {
+    if (!officeToConfirmDelete) {
+      return;
+    }
+
+    const { id } = officeToConfirmDelete;
+
+    if (id.startsWith("new-")) {
+      setLocalOffices((previous) =>
+        previous.filter((office) => office.id !== id)
+      );
+      setOfficeToConfirmDelete(null);
+      return;
+    }
+
+    setIsDeletingId(id);
+
+    deleteOfficeMutation.mutate(id, {
+      onSuccess: () => {
+        setLocalOffices((previous) =>
+          previous.filter((office) => office.id !== id)
+        );
+        setIsDeletingId(null);
+        setOfficeToConfirmDelete(null);
+      },
+      onError: (error: unknown) => {
+        let message = "Failed to delete office";
+        if (error instanceof Error) {
+          message = error.message;
+        }
+        setErrorMessage(message);
+        setIsDeletingId(null);
+        setOfficeToConfirmDelete(null);
+      },
+    });
+  };
+
+  const cancelDelete = () => {
+    setOfficeToConfirmDelete(null);
   };
 
   const isFormValid = localOffices.every(
@@ -127,6 +172,28 @@ export default function ManageOfficesModal({
           {errorMessage}
         </Alert>
       </Snackbar>
+
+      <Dialog open={!!officeToConfirmDelete} onClose={cancelDelete}>
+        <DialogTitle>Delete office</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ mb: 2 }}>
+            Are you sure you want to delete{" "}
+            <strong>
+              {officeToConfirmDelete?.title} ({officeToConfirmDelete?.country})
+            </strong>
+            ? This action cannot be undone.
+          </Typography>
+
+          <Box display="flex" justifyContent="flex-end" gap={1}>
+            <Button variant="outlined" onClick={cancelDelete}>
+              Cancel
+            </Button>
+            <Button variant="contained" color="error" onClick={confirmDelete}>
+              Delete
+            </Button>
+          </Box>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={open}
@@ -179,13 +246,17 @@ export default function ManageOfficesModal({
           <Box display="flex" flexDirection="column" gap={1}>
             {localOffices.map((office) => (
               <Box key={office.id} display="flex" gap={1} alignItems="center">
-                <DragIndicatorIcon
+                <IconButton
+                  onClick={() => requestDeleteConfirmation(office)}
+                  size="small"
                   sx={{
-                    cursor: "grab",
                     color: "text.secondary",
-                    fontSize: "13px",
+                    "&:hover": { color: "error.main" },
                   }}
-                />
+                  disabled={office.id === isDeletingId}
+                >
+                  <DeleteOutlineIcon fontSize="small" />
+                </IconButton>
 
                 <Box
                   sx={{
