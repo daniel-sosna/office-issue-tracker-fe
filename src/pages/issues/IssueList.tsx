@@ -14,7 +14,8 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import { type Issue, IssueTab, type FetchIssuesParams } from "@data/issues";
+import { type Issue, IssueTab } from "@data/issues";
+import { type FetchIssuesParams } from "@api/services/issues";
 import { useAuth } from "@context/UseAuth";
 import EmployeesDropdown from "@components/EmployeesDropdown";
 import { useIssues } from "@api/queries/useIssues";
