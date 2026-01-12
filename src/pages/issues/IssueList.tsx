@@ -8,23 +8,24 @@ import {
   MenuItem,
   Pagination,
   InputLabel,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import type { Issue, IssueDetails, FetchIssuesParams } from "@data/issues";
+import { type Issue, IssueTab, type FetchIssuesParams } from "@data/issues";
 import { useAuth } from "@context/UseAuth";
 import EmployeesDropdown from "@components/EmployeesDropdown";
 import { useIssues } from "@api/queries/useIssues";
 import { useOffices } from "@api/queries/useOffices";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
-import { IssueTab } from "@data/issues";
 
 const tabLabels = [
   "All issues",
   "Open",
-  "Planned",
+  "In Progress",
   "Resolved",
   "Closed",
   "Reported by me",
@@ -65,7 +66,9 @@ const IssuesList: React.FC = () => {
   const [selectedOffice, setSelectedOffice] = useState<string | undefined>(
     undefined
   );
-  const [selectedIssue, setSelectedIssue] = useState<IssueDetails | null>(null);
+  const [selectedIssueId, setSelectedIssueId] = useState<string | undefined>(
+    undefined
+  );
 
   const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
 
@@ -78,14 +81,15 @@ const IssuesList: React.FC = () => {
     setPage(1);
   }, [selectedTab, currentUserId]);
 
-  const statusParam = tabStatuses[selectedTab];
   const reportedByParam =
     selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : selectedUser;
+
+  const statusParamBackend = tabStatuses[selectedTab];
 
   const params: FetchIssuesParams = {
     page,
     size: 10,
-    status: statusParam,
+    status: statusParamBackend,
     sort: sortMap[selectedSort],
     reportedBy: reportedByParam,
     office: selectedOffice,
@@ -95,21 +99,22 @@ const IssuesList: React.FC = () => {
   const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const handleCardClick = (issue: Issue) => {
-    setSelectedIssue({
-      ...issue,
-      office: "Vilnius, Lithuania",
-      reportedBy: "John Doe",
-      reportedByAvatar: "/src/assets/profile_placeholder.jpeg",
-    });
+    setSelectedIssueId(issue.id);
   };
 
   const relativeZBox = { position: "relative", zIndex: 1 };
 
+  const [snackbar, setSnackbar] = useState<{
+    open: boolean;
+    message: string;
+    severity: "success" | "error";
+  }>({ open: false, message: "", severity: "success" });
+
   if (isLoading) return <Loader />;
   if (error)
     return (
-      <Box p={4} color="error.main">
-        Failed to load issues. Please try again later.
+      <Box p={4}>
+        <Alert severity="error">Failed to load issues.</Alert>
       </Box>
     );
 
@@ -258,8 +263,23 @@ const IssuesList: React.FC = () => {
 
       {/* Issue drawer */}
       <IssueDrawer
-        issue={selectedIssue}
-        onClose={() => setSelectedIssue(null)}
+        issueId={selectedIssueId}
+        onClose={() => setSelectedIssueId(undefined)}
+        user={user!}
+        onSaved={() =>
+          setSnackbar({
+            open: true,
+            message: "Issue saved successfully!",
+            severity: "success",
+          })
+        }
+        onError={(message) =>
+          setSnackbar({
+            open: true,
+            message,
+            severity: "error",
+          })
+        }
       />
 
       {/* Pagination */}
@@ -285,6 +305,15 @@ const IssuesList: React.FC = () => {
           }}
         />
       </Box>
+
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={3000}
+        onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+      >
+        <Alert severity={snackbar.severity}>{snackbar.message}</Alert>
+      </Snackbar>
     </Box>
   );
 };

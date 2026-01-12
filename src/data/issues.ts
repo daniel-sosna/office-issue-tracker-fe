@@ -62,8 +62,19 @@ export interface Issue {
 }
 
 export interface IssueDetails extends Issue {
+  officeId: string;
   office: string;
   reportedByAvatar: string;
+  reportedByEmail: string;
+  attachments: IssueAttachment[];
+}
+
+export interface IssueAttachment {
+  id: string;
+  url: string;
+  format: string;
+  originalFilename: string;
+  fileSize: number;
 }
 
 export interface FetchIssuesParams {

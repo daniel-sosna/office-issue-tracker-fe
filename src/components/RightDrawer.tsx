@@ -54,7 +54,9 @@ export default function RightDrawer({ open, onClose, children }: Props) {
         </Box>
       </Box>
 
-      <Box p={3}>{children}</Box>
+      <Box p={3} display="flex" flexDirection="column" height="100%">
+        {children}
+      </Box>
     </Drawer>
   );
 }

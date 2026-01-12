@@ -3,6 +3,9 @@ export function stripHtml(html: string): string {
   div.innerHTML = html;
   return div.textContent || div.innerText || "";
 }
+export function stripHtmlDescription(html: string): string {
+  return html.replace(/<[^>]+>/g, "");
+}
 
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
