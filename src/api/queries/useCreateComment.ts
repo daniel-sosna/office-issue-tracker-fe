@@ -7,6 +7,7 @@ import type { IssuePage, Issue } from "@data/issues";
 interface OptimisticContext {
   previousComments?: Comment[];
   previousIssueStats?: IssuePage;
+  previousIssueDetails?: Issue;
 }
 
 export function useCreateComment(issueId: string) {
@@ -88,10 +89,10 @@ export function useCreateComment(issueId: string) {
           context.previousIssueStats
         );
       }
-      if (context?.previousIssueStats) {
+      if (context?.previousIssueDetails) {
         queryClient.setQueryData(
           queryKeys.issueDetails(issueId),
-          context.previousIssueStats
+          context.previousIssueDetails
         );
       }
     },
