@@ -50,22 +50,20 @@ const BaseLayout: React.FC = () => {
               sm: {
                 content: '""',
                 position: "fixed",
-                inset: "10% -80px 20px 0",
+                minHeight: "500px",
+                inset: "min(20%, 200px) -100px 0 -50px",
                 backgroundImage: `url(${backgroundImage})`,
                 backgroundRepeat: "no-repeat",
                 backgroundPosition: "40% 20%",
                 backgroundSize: "contain",
-                filter: "opacity(0.1) grayscale(80%) brightness(1.2)",
-              },
-              md: {
-                position: "absolute",
-                inset: "200px -100px 20px -100px",
-                backgroundPosition: "40% 20%",
+                filter: "opacity(0.08) grayscale(80%) brightness(1)",
               },
             },
           }}
         >
-          <Outlet />
+          <Box sx={{ position: "relative", zIndex: 1 }}>
+            <Outlet />
+          </Box>
         </Box>
         <Footer isAuthenticated={isAuthenticated} />
       </Box>

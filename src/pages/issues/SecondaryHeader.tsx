@@ -8,9 +8,8 @@ const SecondaryHeader: React.FC = () => {
 
   return (
     <Box
-      mx={1}
-      mt={1}
-      mb={3}
+      p={1}
+      mb={2}
       display="flex"
       flexDirection={{ xs: "column", md: "row" }}
       alignItems="center"
