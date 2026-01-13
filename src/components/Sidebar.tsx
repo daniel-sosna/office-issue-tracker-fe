@@ -42,6 +42,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
         position: "sticky",
         top: 0,
         height: "100vh",
+        zIndex: 1,
       }}
     >
       <Avatar

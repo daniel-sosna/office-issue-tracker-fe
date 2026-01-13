@@ -20,6 +20,7 @@ const Footer: React.FC<FooterProps> = ({ isAuthenticated }) => {
         bgcolor: "background.paper",
         borderTop: isAuthenticated ? 1 : 0,
         borderColor: isAuthenticated ? "divider" : "transparent",
+        zIndex: 1,
       }}
     >
       {isAuthenticated ? (
