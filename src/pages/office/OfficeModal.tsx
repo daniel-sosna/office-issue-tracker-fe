@@ -230,7 +230,7 @@ export default function ManageOfficesModal({
         </IconButton>
 
         <DialogContent sx={{ maxHeight: "70vh", overflowY: "auto" }}>
-          <Box display="flex" gap={32}>
+          <Box display="flex" gap={34}>
             <Box sx={{ flex: 1 }}>
               <Typography sx={{ color: "text.secondary", fontSize: "13px" }}>
                 Office Title
