@@ -13,10 +13,8 @@ import {
 } from "@mui/material";
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
-import backgroundImage from "@assets/background.png";
 import type { Issue, IssueStats } from "@data/issues";
 import { useIssues } from "@api/queries/useIssues";
-import { useAuth } from "@context/UseAuth";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
 import type { FetchIssuePageArgs } from "@api/services/issues";
@@ -41,7 +39,6 @@ const IssuesList: React.FC = () => {
   const [selectedIssueStats, setSelectedIssueStats] = useState<
     IssueStats | undefined
   >(undefined);
-  const { user } = useAuth();
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -66,16 +63,11 @@ const IssuesList: React.FC = () => {
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssueId(issue.id);
-    setSelectedIssueStats({
-      hasVoted: issue.hasVoted,
-      votes: issue.votes,
-      comments: issue.comments,
-    });
+    setSelectedIssueStats({ ...issue });
   };
 
   const { mutate: voteOnIssue } = useVoteOnIssue();
 
-  const relativeZBox = { position: "relative", zIndex: 1 };
   const pillSelectStyle = {
     borderRadius: "9999px",
     backgroundColor: "#f4f4f4",
@@ -98,29 +90,9 @@ const IssuesList: React.FC = () => {
   }
 
   return (
-    <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
-      <Box
-        component="img"
-        src={backgroundImage}
-        alt="Background logo"
-        sx={{
-          position: "absolute",
-          top: "60%",
-          left: "40%",
-          width: "90%",
-          transform: "translate(-50%, -50%)",
-          opacity: 0.12,
-          zIndex: 0,
-          pointerEvents: "none",
-          filter: "grayscale(80%) brightness(1.2)",
-        }}
-      />
-
+    <Box sx={{ position: "relative" }}>
       {/* Tabs */}
-      <Box
-        mb={3}
-        sx={{ borderBottom: 1, borderColor: "divider", ...relativeZBox }}
-      >
+      <Box mb={3} sx={{ borderBottom: 1, borderColor: "divider" }}>
         <Tabs
           value={selectedTab}
           onChange={(_, newValue) => setSelectedTab(newValue as number)}
@@ -150,12 +122,7 @@ const IssuesList: React.FC = () => {
       </Box>
 
       {/* Filters */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        mb={4}
-        sx={relativeZBox}
-      >
+      <Box display="flex" justifyContent="space-between" mb={4}>
         <Box display="flex" gap={2}>
           {["All offices", "All employees"].map((label) => (
             <FormControl size="small" disabled key={label}>
@@ -182,7 +149,7 @@ const IssuesList: React.FC = () => {
       </Box>
 
       {/* Issue Cards */}
-      <Box sx={relativeZBox}>
+      <Box>
         {issues.map((issue) => (
           <IssueCard
             key={issue.id}
@@ -200,7 +167,6 @@ const IssuesList: React.FC = () => {
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
         onClose={() => setSelectedIssueId(undefined)}
-        user={user!}
         onSaved={() =>
           setSnackbar({
             open: true,
@@ -218,7 +184,7 @@ const IssuesList: React.FC = () => {
       />
 
       {/* Pagination */}
-      <Box display="flex" justifyContent="center" mt={5} sx={relativeZBox}>
+      <Box display="flex" justifyContent="center" mt={5}>
         <Pagination
           count={totalPages}
           page={page}

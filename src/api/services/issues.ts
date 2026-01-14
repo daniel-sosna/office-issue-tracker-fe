@@ -18,6 +18,7 @@ interface IssueBaseResponse {
 }
 
 interface IssueResponse extends IssueBaseResponse {
+  isOwner: boolean;
   hasVoted: boolean;
   voteCount: number;
   commentCount?: number;
@@ -37,7 +38,6 @@ interface IssueDetailsResponse {
   officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
-  reportedByEmail: string;
   attachments: IssueAttachment[];
 }
 
@@ -83,7 +83,7 @@ export async function fetchIssueDetails(
     ...data,
     ...normalizeIssue({
       ...data.issue,
-      hasVoted: stats.hasVoted,
+      ...stats,
       voteCount: stats.votes,
       commentCount: stats.comments,
     }),

@@ -8,11 +8,14 @@ import {
   Tab,
   MenuItem,
   Select,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import TextField from "@mui/material/TextField";
 import Button from "@mui/material/Button";
-import theme from "@styles/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   deleteAttachment,
@@ -24,7 +27,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useOffices } from "@api/queries/useOffices";
 import RightDrawer from "@components/RightDrawer";
-import type { User } from "@context/AuthContext";
+import { useAuth } from "@context/UseAuth";
 import {
   IssueStatus,
   type IssueAttachment,
@@ -39,7 +42,6 @@ import { stripHtmlDescription, formatDate } from "@utils/formatters";
 interface Props {
   issueId?: string;
   issueStats?: IssueStats;
-  user: User;
   onClose: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
@@ -47,8 +49,7 @@ interface Props {
 
 export default function IssueDetailsSidebar({
   issueId,
-  issueStats = { hasVoted: false, votes: 0, comments: 0 },
-  user,
+  issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
   onSaved,
   onError,
@@ -62,6 +63,7 @@ export default function IssueDetailsSidebar({
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
   const [errors, setErrors] = useState<{
@@ -82,14 +84,15 @@ export default function IssueDetailsSidebar({
   });
 
   const { data: issue, isError: issueDetailsError } = useIssueDetails(
-    issueId,
+    issueId ?? "",
     issueStats
   );
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
-  const admin = user.role === "ADMIN";
-  const issueOwner = issue?.reportedByEmail === user.email;
+  const { user } = useAuth();
+  const admin = user?.role === "ADMIN";
+  const issueOwner = issue?.isOwner ?? false;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
 
   useEffect(() => {
@@ -226,10 +229,7 @@ export default function IssueDetailsSidebar({
 
   const handleDelete = async () => {
     if (!issue) return;
-    const deleteConfirmation = window.confirm(
-      "Are you sure you want to delete this issue? This action cannot be undone."
-    );
-    if (!deleteConfirmation) return;
+
     try {
       setDeleting(true);
 
@@ -243,6 +243,7 @@ export default function IssueDetailsSidebar({
     } catch {
       onError("Failed to delete the issue.");
     } finally {
+      setDeleteDialogOpen(false);
       setDeleting(false);
     }
   };
@@ -592,11 +593,11 @@ export default function IssueDetailsSidebar({
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={() => void handleDelete()}
+                color="error"
+                onClick={() => setDeleteDialogOpen(true)}
                 sx={{
                   borderRadius: "999px",
                   paddingX: 3,
-                  backgroundColor: theme.palette.status.blockedBg,
                 }}
                 disabled={deleting}
               >
@@ -634,6 +635,32 @@ export default function IssueDetailsSidebar({
           </Box>
         </Box>
       )}
+
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
+        <DialogContent>
+          <Typography id="delete-dialog-description">
+            Are you sure you want to delete this issue? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => void handleDelete()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </RightDrawer>
   );
 }
