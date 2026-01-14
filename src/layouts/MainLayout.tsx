@@ -39,31 +39,34 @@ const BaseLayout: React.FC = () => {
 
       <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
         {isAuthenticated && <PrimaryHeader />}
+        {isAuthenticated && (
+          <Box
+            sx={{
+              "&::before": {
+                sm: {
+                  content: '""',
+                  position: "fixed",
+                  minHeight: "500px",
+                  inset: "min(20%, 200px) -100px 0 -50px",
+                  backgroundImage: `url(${backgroundImage})`,
+                  backgroundRepeat: "no-repeat",
+                  backgroundPosition: "40% 20%",
+                  backgroundSize: "contain",
+                  filter: "opacity(0.08) grayscale(80%) brightness(1)",
+                },
+              },
+            }}
+          />
+        )}
         <Box
           flex={1}
           px={{ xs: 1, sm: 2, md: 4 }}
           py={{ xs: 2, sm: 3, md: 4 }}
           position="relative"
           overflow="hidden"
-          sx={{
-            "&::before": {
-              sm: {
-                content: '""',
-                position: "fixed",
-                minHeight: "500px",
-                inset: "min(20%, 200px) -100px 0 -50px",
-                backgroundImage: `url(${backgroundImage})`,
-                backgroundRepeat: "no-repeat",
-                backgroundPosition: "40% 20%",
-                backgroundSize: "contain",
-                filter: "opacity(0.08) grayscale(80%) brightness(1)",
-              },
-            },
-          }}
+          zIndex={1}
         >
-          <Box sx={{ position: "relative", zIndex: 1 }}>
-            <Outlet />
-          </Box>
+          <Outlet />
         </Box>
         <Footer isAuthenticated={isAuthenticated} />
       </Box>
