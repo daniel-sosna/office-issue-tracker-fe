@@ -8,14 +8,12 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
-import EditorToolbar from "@components/EditorToolbar";
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
 import AttachmentSection from "./components/AttachmentSection";
+import EditorToolbar from "@components/EditorToolbar";
 import { validateFiles } from "@utils/attachments.validation";
 
 interface IssueFormData {
@@ -23,10 +21,10 @@ interface IssueFormData {
   description: string;
   office: string;
 }
+
 interface IssueFormErrors {
   summary?: string;
   description?: string;
-  office?: string;
 }
 
 interface IssueModalProps {
@@ -51,12 +49,16 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [hasSubmitted, setHasSubmitted] = useState(false);
   const [attachmentError, setAttachmentError] = useState("");
   const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
-  const [errors, setErrors] = useState<IssueFormErrors>({});
 
   const editor = useEditor({
     extensions: [StarterKit],
     content: "",
   });
+
+  const errors = {
+    summary: validateSummary(summary),
+    description: validateDescription(description),
+  } as IssueFormErrors;
 
   useEffect(() => {
     if (!open) return;
@@ -81,7 +83,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setDescription("");
       setErrorMessage("");
       setAttachmentError("");
-      setErrors({});
       setHasSubmitted(false);
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
@@ -97,11 +98,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     const updateListener = () => {
       const text = editor.getText().trim();
       setDescription(text);
-
-      setErrors((prev) => ({
-        ...prev,
-        description: validateDescription(text),
-      }));
     };
     editor.on("update", updateListener);
 
@@ -150,14 +146,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const handleSubmit = async (): Promise<void> => {
     setHasSubmitted(true);
 
-    const newErrors = {
-      summary: validateSummary(summary),
-      description: validateDescription(description),
-    };
-
-    setErrors(newErrors);
-
-    if (Object.values(newErrors).some(Boolean)) {
+    if (Object.values(errors).some(Boolean)) {
       return;
     }
 
@@ -247,10 +236,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               onChange={(e) => {
                 const value = e.target.value;
                 setSummary(value);
-                setErrors((prev) => ({
-                  ...prev,
-                  summary: validateSummary(value),
-                }));
               }}
               variant="outlined"
               fullWidth
@@ -275,11 +260,12 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 borderRadius: 1,
                 overflow: "hidden",
                 transition: "border 0.2s",
-                outline: errors.description
-                  ? "1px solid red"
-                  : editor?.isFocused
-                    ? "2px solid black"
-                    : "none",
+                outline:
+                  hasSubmitted && errors.description
+                    ? "1px solid red"
+                    : editor?.isFocused
+                      ? "2px solid black"
+                      : "none",
                 outlineOffset: -1,
               }}
               onClick={() => editor?.chain().focus().run()}
