@@ -9,6 +9,7 @@ export const IssueStatus = {
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
 
 export interface IssueStats {
+  isOwner: boolean;
   hasVoted: boolean;
   votes: number;
   comments: number;
@@ -27,7 +28,6 @@ export interface IssueDetails extends Issue {
   office: string;
   reportedBy: string;
   reportedByAvatar: string;
-  reportedByEmail: string;
   attachments: IssueAttachment[];
 }
 
