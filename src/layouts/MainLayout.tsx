@@ -56,14 +56,7 @@ const BaseLayout: React.FC = () => {
             }}
           />
         )}
-        <Box
-          flex={1}
-          px={{ xs: 1, sm: 2, md: 4 }}
-          py={{ xs: 2, sm: 3, md: 4 }}
-          position="relative"
-          overflow="hidden"
-          zIndex={1}
-        >
+        <Box flex={1} px={{ xs: 1, sm: 2, md: 4 }} py={{ xs: 2, sm: 3, md: 4 }}>
           <Outlet />
         </Box>
         <Footer isAuthenticated={isAuthenticated} />
