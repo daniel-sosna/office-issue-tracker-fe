@@ -31,7 +31,7 @@ const BaseLayout: React.FC = () => {
     <Box
       sx={{
         display: "flex",
-        minHeight: "100vh",
+        width: "100%",
         backgroundColor: "#ffffff",
       }}
     >
@@ -43,17 +43,15 @@ const BaseLayout: React.FC = () => {
           <Box
             sx={{
               "&::before": {
-                sm: {
-                  content: '""',
-                  position: "fixed",
-                  minHeight: "500px",
-                  inset: "min(20%, 200px) -100px 0 -50px",
-                  backgroundImage: `url(${backgroundImage})`,
-                  backgroundRepeat: "no-repeat",
-                  backgroundPosition: "40% 20%",
-                  backgroundSize: "contain",
-                  filter: "opacity(0.08) grayscale(80%) brightness(1)",
-                },
+                content: '""',
+                position: "fixed",
+                minHeight: "500px",
+                inset: "min(20%, 200px) -100px 0 -50px",
+                backgroundImage: `url(${backgroundImage})`,
+                backgroundRepeat: "no-repeat",
+                backgroundPosition: "40% 20%",
+                backgroundSize: "contain",
+                filter: "opacity(0.08) grayscale(80%) brightness(1)",
               },
             }}
           />
