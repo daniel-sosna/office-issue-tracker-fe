@@ -87,7 +87,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
     }
-  }, [open, editor]);
+  }, [open, editor, selectedFiles]);
 
   const isFormComplete =
     summary.trim() !== "" && description.trim() !== "" && office !== "";
