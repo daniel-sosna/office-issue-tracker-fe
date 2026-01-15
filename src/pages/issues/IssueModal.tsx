@@ -8,20 +8,23 @@ import Button from "@mui/material/Button";
 import Box from "@mui/material/Box";
 import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
-
-import EditorToolbar from "@components/EditorToolbar";
-
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import { fetchOffices } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
 import AttachmentSection from "./components/AttachmentSection";
+import EditorToolbar from "@components/EditorToolbar";
 import { validateFiles } from "@utils/attachments.validation";
 
 interface IssueFormData {
   summary: string;
   description: string;
   office: string;
+}
+
+interface IssueFormErrors {
+  summary?: string;
+  description?: string;
 }
 
 interface IssueModalProps {
@@ -43,6 +46,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [hasSubmitted, setHasSubmitted] = useState(false);
   const [attachmentError, setAttachmentError] = useState("");
   const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
 
@@ -50,6 +54,11 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     extensions: [StarterKit],
     content: "",
   });
+
+  const errors = {
+    summary: validateSummary(summary),
+    description: validateDescription(description),
+  } as IssueFormErrors;
 
   useEffect(() => {
     if (!open) return;
@@ -74,10 +83,14 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setDescription("");
       setErrorMessage("");
       setAttachmentError("");
+      setHasSubmitted(false);
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
     }
-  }, [open, editor]);
+  }, [open, editor, selectedFiles]);
+
+  const isFormComplete =
+    summary.trim() !== "" && description.trim() !== "" && office !== "";
 
   useEffect(() => {
     if (!editor) return;
@@ -86,7 +99,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       const text = editor.getText().trim();
       setDescription(text);
     };
-
     editor.on("update", updateListener);
 
     return () => {
@@ -94,8 +106,19 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     };
   }, [editor]);
 
-  const isFormValid =
-    summary.trim() !== "" && office !== "" && description !== "";
+  function validateSummary(value: string): string | undefined {
+    if (!value.trim()) return "Summary is required";
+    if (value.trim().length < 3) return "Summary must be at least 3 characters";
+    if (value.length > 200) return "Summary must be less than 200 characters";
+    return undefined;
+  }
+
+  function validateDescription(value: string): string | undefined {
+    if (!value.trim()) return "Description is required";
+    if (value.length > 2000)
+      return "Description must be less than 2000 characters";
+    return undefined;
+  }
 
   const handleAddFiles = (files: FileList) => {
     const { validFiles, errorMessage } = validateFiles(files, selectedFiles);
@@ -121,8 +144,9 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   };
 
   const handleSubmit = async (): Promise<void> => {
-    if (!isFormValid) {
-      setErrorMessage("Please fill in all required fields");
+    setHasSubmitted(true);
+
+    if (Object.values(errors).some(Boolean)) {
       return;
     }
 
@@ -209,11 +233,16 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </Box>
             <TextField
               value={summary}
-              onChange={(e) => setSummary(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+                setSummary(value);
+              }}
               variant="outlined"
               fullWidth
               size="small"
               autoFocus
+              error={hasSubmitted && !!errors.summary}
+              helperText={hasSubmitted && errors.summary ? errors.summary : " "}
             />
           </Box>
 
@@ -231,7 +260,12 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 borderRadius: 1,
                 overflow: "hidden",
                 transition: "border 0.2s",
-                outline: editor?.isFocused ? "2px solid black" : "none",
+                outline:
+                  hasSubmitted && errors.description
+                    ? "1px solid red"
+                    : editor?.isFocused
+                      ? "2px solid black"
+                      : "none",
                 outlineOffset: -1,
               }}
               onClick={() => editor?.chain().focus().run()}
@@ -255,6 +289,15 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                   />
                 )}
               </Box>
+            </Box>
+            <Box
+              mt={0.5}
+              ml={1.5}
+              minHeight="18px"
+              fontSize={12}
+              color="error.main"
+            >
+              {hasSubmitted && errors.description ? errors.description : " "}
             </Box>
           </Box>
 
@@ -316,7 +359,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         <Button
           variant="contained"
           onClick={() => void handleSubmit()}
-          disabled={!isFormValid}
+          disabled={!isFormComplete || isPending}
           sx={{
             borderRadius: "999px",
             paddingX: 3,
