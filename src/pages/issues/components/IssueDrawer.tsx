@@ -16,7 +16,6 @@ import {
   DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import theme from "@styles/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   softDeleteIssue,
@@ -27,7 +26,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useOffices } from "@api/queries/useOffices";
 import RightDrawer from "@components/RightDrawer";
-import type { User } from "@context/AuthContext";
+import { useAuth } from "@context/UseAuth";
 import {
   IssueStatus,
   type IssueAttachment,
@@ -41,16 +40,14 @@ import { stripHtmlDescription, formatDate } from "@utils/formatters";
 
 interface Props {
   issueId?: string;
-  user: User;
-  issueStats?: IssueStats; // merged from first version
+  issueStats?: IssueStats;
   onClose: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
 }
 
-export default function IssueDetailsSidebar({
+export default function IssueDrawer({
   issueId,
-  user,
   issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
   onSaved,
@@ -94,8 +91,9 @@ export default function IssueDetailsSidebar({
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
-  const admin = user.role === "ADMIN";
-  const issueOwner = issue?.reportedByEmail === user.email || issue?.isOwner;
+  const { user } = useAuth();
+  const admin = user?.role === "ADMIN";
+  const issueOwner = issue?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
 
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -220,6 +218,7 @@ export default function IssueDetailsSidebar({
     } catch {
       onError("Failed to delete the issue.");
     } finally {
+      setDeleteDialogOpen(false);
       setDeleting(false);
     }
   };
@@ -518,12 +517,9 @@ export default function IssueDetailsSidebar({
               <Button
                 variant="outlined"
                 size="medium"
+                color="error"
                 onClick={() => setDeleteDialogOpen(true)}
-                sx={{
-                  borderRadius: "999px",
-                  paddingX: 3,
-                  backgroundColor: theme.palette.status.blockedBg,
-                }}
+                sx={{ borderRadius: "999px", paddingX: 3 }}
                 disabled={deleting}
               >
                 {deleting ? "Deleting..." : "Delete"}
@@ -558,10 +554,12 @@ export default function IssueDetailsSidebar({
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
       >
-        <DialogTitle>Delete Issue</DialogTitle>
+        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
         <DialogContent>
-          <Typography>
+          <Typography id="delete-dialog-description">
             Are you sure you want to delete this issue? This action cannot be
             undone.
           </Typography>

@@ -13,7 +13,6 @@ import {
 } from "@mui/material";
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
-import backgroundImage from "@assets/background.png";
 import { type Issue, type IssueStats, IssueTab } from "@data/issues";
 import type {
   FetchIssuesParams,
@@ -90,7 +89,6 @@ const IssuesList: React.FC = () => {
 
   const reportedByParam =
     selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : selectedUser;
-
   const statusParamBackend = tabStatuses[selectedTab];
 
   const params: FetchIssuesParams = {
@@ -160,24 +158,6 @@ const IssuesList: React.FC = () => {
 
   return (
     <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
-      {/* Background image */}
-      <Box
-        component="img"
-        src={backgroundImage}
-        alt="Background logo"
-        sx={{
-          position: "absolute",
-          top: "60%",
-          left: "40%",
-          width: "90%",
-          transform: "translate(-50%, -50%)",
-          opacity: 0.12,
-          zIndex: 0,
-          pointerEvents: "none",
-          filter: "grayscale(80%) brightness(1.2)",
-        }}
-      />
-
       {/* Tabs */}
       <Box
         mb={3}
@@ -291,7 +271,6 @@ const IssuesList: React.FC = () => {
       <IssueDrawer
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
-        user={user!}
         onClose={() => setSelectedIssueId(undefined)}
         onSaved={() =>
           setSnackbar({
@@ -301,11 +280,7 @@ const IssuesList: React.FC = () => {
           })
         }
         onError={(message) =>
-          setSnackbar({
-            open: true,
-            message,
-            severity: "error",
-          })
+          setSnackbar({ open: true, message, severity: "error" })
         }
       />
 

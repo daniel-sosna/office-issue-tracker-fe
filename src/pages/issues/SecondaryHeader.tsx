@@ -7,42 +7,51 @@ const SecondaryHeader: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
 
   return (
-    <>
+    <Box
+      p={1}
+      mb={2}
+      display="flex"
+      flexDirection={{ xs: "column", md: "row" }}
+      alignItems="center"
+      justifyContent="space-between"
+      gap={3}
+    >
       <Box
-        mb={3}
-        px={4}
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
+        flex={1}
+        minWidth={0}
+        width={{ xs: "100%", md: "auto" }}
+        textAlign={{ xs: "center", md: "left" }}
+        mr={{ xs: 0, md: 3 }}
       >
-        <Box>
-          <Typography variant="h5">
-            Welcome to the Office Issue Registration System
-          </Typography>
-          <Typography color="text.secondary" mt={1}>
-            Discover, report, and vote for office issues that require our
-            attention and fix
-          </Typography>
-        </Box>
-
-        <Button
-          variant="contained"
-          color="secondary"
-          startIcon={<AddIcon />}
-          sx={{ borderRadius: "50px" }}
-          onClick={() => setModalOpen(true)}
-        >
-          Report Issue
-        </Button>
+        <Typography variant="h5" fontWeight={600}>
+          Welcome to the{" "}
+          <Box component="span" whiteSpace="nowrap">
+            Office Issue Tracker
+          </Box>{" "}
+          dashboard
+        </Typography>
+        <Typography color="text.secondary" mt={1}>
+          Report, vote, and comment on issues in the office that require our
+          attention and fixing
+        </Typography>
       </Box>
 
-      {/* Issue Modal */}
+      <Button
+        variant="contained"
+        color="secondary"
+        startIcon={<AddIcon />}
+        sx={{ borderRadius: "50px", whiteSpace: "nowrap" }}
+        onClick={() => setModalOpen(true)}
+      >
+        Report Issue
+      </Button>
+
       <IssueModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={() => setModalOpen(false)}
       />
-    </>
+    </Box>
   );
 };
 

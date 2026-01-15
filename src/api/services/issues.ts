@@ -21,7 +21,7 @@ interface IssueBaseResponse {
 }
 
 interface IssueResponse extends IssueBaseResponse {
-  isOwner?: boolean;
+  isOwner: boolean;
   hasVoted: boolean;
   voteCount: number;
   commentCount?: number;
