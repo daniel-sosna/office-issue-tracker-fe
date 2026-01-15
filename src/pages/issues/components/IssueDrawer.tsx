@@ -98,6 +98,8 @@ export default function IssueDrawer({
   const admin = user?.role === "ADMIN";
   const issueOwner = issue?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
+  const allowedToEdit =
+    (issueOwner ?? admin) && selectedTab === TabIndex.Details;
 
   useEffect(() => {
     setSelectedTab(TabIndex.Details);
@@ -503,7 +505,7 @@ export default function IssueDrawer({
           />
         )}
 
-        {(issueOwner ?? admin) && selectedTab === TabIndex.Details && (
+        {allowedToEdit && (
           <Box mt={2}>
             <Divider sx={{ my: 2 }} />
             <Box
