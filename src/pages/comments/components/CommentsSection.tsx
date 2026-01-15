@@ -11,7 +11,7 @@ export default function CommentsSection({
   onCommentCreated: () => void;
 }) {
   const { data: comments = [] } = useComments(issueId);
-  const createComment = useCreateComment(issueId);
+  const { mutate: createComment, isPending } = useCreateComment(issueId);
 
   return (
     <Box>
@@ -20,8 +20,8 @@ export default function CommentsSection({
       <Divider sx={{ my: 2 }} />
 
       <CommentInput
-        loading={createComment.isPending}
-        onSubmit={(text) => createComment.mutate(text)}
+        loading={isPending}
+        onSubmit={(text) => createComment(text)}
       />
     </Box>
   );
