@@ -14,7 +14,7 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import backgroundImage from "@assets/background.png";
-import { type Issue, IssueTab } from "@data/issues";
+import { type Issue, type IssueStats, IssueTab } from "@data/issues";
 import type {
   FetchIssuesParams,
   FetchIssuePageArgs,
@@ -73,6 +73,9 @@ const IssuesList: React.FC = () => {
   const [selectedIssueId, setSelectedIssueId] = useState<string | undefined>(
     undefined
   );
+  const [selectedIssueStats, setSelectedIssueStats] = useState<
+    IssueStats | undefined
+  >(undefined);
 
   const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
 
@@ -111,19 +114,41 @@ const IssuesList: React.FC = () => {
   };
 
   const { data, isLoading, error } = useIssues(apiParams);
+  const issues = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
   const { mutate: voteOnIssue } = useVoteOnIssue();
 
   const handleCardClick = (issue: Issue) => {
     setSelectedIssueId(issue.id);
+    setSelectedIssueStats({ ...issue });
   };
-
-  const relativeZBox = { position: "relative", zIndex: 1 };
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
     message: string;
     severity: "success" | "error";
   }>({ open: false, message: "", severity: "success" });
+
+  const pillSelectStyle = {
+    borderRadius: "9999px",
+    backgroundColor: "#f4f4f4",
+    fontSize: 16,
+    minWidth: 160,
+    "& .MuiOutlinedInput-root": {
+      minHeight: 40,
+      display: "flex",
+      alignItems: "center",
+      padding: "0 12px",
+      boxSizing: "border-box",
+    },
+    "& .MuiSelect-select": {
+      display: "flex",
+      alignItems: "center",
+      minHeight: "inherit",
+    },
+    "& fieldset": { borderRadius: "9999px" },
+  };
 
   if (isLoading) return <Loader />;
   if (error)
@@ -194,21 +219,12 @@ const IssuesList: React.FC = () => {
       </Box>
 
       {/* Filters */}
-      <Box
-        display="flex"
-        justifyContent="space-between"
-        mb={4}
-        sx={{ position: "relative", zIndex: 1 }}
-      >
+      <Box display="flex" justifyContent="space-between" mb={4}>
         <Box display="flex" gap={2}>
           <FormControl size="small" disabled={isOfficesLoading}>
             <Select
               value={selectedOffice ?? "all"}
-              sx={{
-                minWidth: 140,
-                borderRadius: "9999px",
-                backgroundColor: "#f4f4f4",
-              }}
+              sx={{ ...pillSelectStyle }}
               onChange={(e) => {
                 const val = e.target.value;
                 setSelectedOffice(val === "all" ? undefined : String(val));
@@ -242,11 +258,7 @@ const IssuesList: React.FC = () => {
           <FormControl size="small">
             <Select
               value={selectedSort}
-              sx={{
-                minWidth: 160,
-                borderRadius: "9999px",
-                backgroundColor: "#f4f4f4",
-              }}
+              sx={{ ...pillSelectStyle }}
               onChange={(e) => {
                 setSelectedSort(e.target.value);
                 setPage(1);
@@ -262,25 +274,25 @@ const IssuesList: React.FC = () => {
       </Box>
 
       {/* Issue Cards */}
-      <Box sx={relativeZBox}>
-        {Array.isArray(data?.content) &&
-          data.content.map((issue: Issue) => (
-            <IssueCard
-              key={issue.id}
-              issue={issue}
-              onClickCard={() => handleCardClick(issue)}
-              onClickVote={() =>
-                voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
-              }
-            />
-          ))}
+      <Box>
+        {issues.map((issue) => (
+          <IssueCard
+            key={issue.id}
+            issue={issue}
+            onClickCard={() => void handleCardClick(issue)}
+            onClickVote={() =>
+              voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
+            }
+          />
+        ))}
       </Box>
 
       {/* Issue drawer */}
       <IssueDrawer
         issueId={selectedIssueId}
-        onClose={() => setSelectedIssueId(undefined)}
+        issueStats={selectedIssueStats}
         user={user!}
+        onClose={() => setSelectedIssueId(undefined)}
         onSaved={() =>
           setSnackbar({
             open: true,
@@ -298,19 +310,14 @@ const IssuesList: React.FC = () => {
       />
 
       {/* Pagination */}
-      <Box
-        display="flex"
-        justifyContent="center"
-        mt={5}
-        sx={{ position: "relative", zIndex: 1 }}
-      >
+      <Box display="flex" justifyContent="center" mt={5}>
         <Pagination
-          count={data?.totalPages ?? 1}
+          count={totalPages}
           page={page}
           onChange={(_, value: number) => setPage(value)}
           color="primary"
           hidePrevButton={page === 1}
-          hideNextButton={page === (data?.totalPages ?? 1)}
+          hideNextButton={page === totalPages}
           sx={{
             "& .MuiPaginationItem-root.Mui-selected": {
               backgroundColor: "#78ece8",

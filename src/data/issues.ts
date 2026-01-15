@@ -2,8 +2,8 @@ export const IssueStatus = {
   Open: "Open",
   InProgress: "In Progress",
   Resolved: "Resolved",
-  Closed: "Closed",
   Blocked: "Blocked",
+  Closed: "Closed",
 } as const;
 
 export type IssueStatusType = (typeof IssueStatus)[keyof typeof IssueStatus];
@@ -49,15 +49,19 @@ export function mapFrontendStatus(
   return frontendToBackendStatusMap[status];
 }
 
-export interface Issue {
+export interface IssueStats {
+  isOwner?: boolean;
+  hasVoted: boolean;
+  votes: number;
+  comments: number;
+}
+
+export interface Issue extends IssueStats {
   id: string;
   summary: string;
   description: string;
   status: IssueStatusType;
   dateCreated: string;
-  hasVoted: boolean;
-  votes: number;
-  comments: number;
   reportedBy?: string;
 }
 
@@ -65,7 +69,7 @@ export interface IssueDetails extends Issue {
   officeId: string;
   office: string;
   reportedByAvatar: string;
-  reportedByEmail: string;
+  reportedByEmail?: string;
   attachments: IssueAttachment[];
 }
 

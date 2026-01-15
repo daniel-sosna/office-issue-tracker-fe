@@ -10,6 +10,10 @@ import {
   Select,
   TextField,
   Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import theme from "@styles/theme";
@@ -27,6 +31,7 @@ import type { User } from "@context/AuthContext";
 import {
   IssueStatus,
   type IssueAttachment,
+  type IssueStats,
   type IssueStatusType,
 } from "@data/issues";
 import AttachmentList from "@pages/issues/components/AttachmentList";
@@ -37,6 +42,7 @@ import { stripHtmlDescription, formatDate } from "@utils/formatters";
 interface Props {
   issueId?: string;
   user: User;
+  issueStats?: IssueStats; // merged from first version
   onClose: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
@@ -45,6 +51,7 @@ interface Props {
 export default function IssueDetailsSidebar({
   issueId,
   user,
+  issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
   onSaved,
   onError,
@@ -58,8 +65,11 @@ export default function IssueDetailsSidebar({
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
+
   const [errors, setErrors] = useState<{
     summary?: string;
     description?: string;
@@ -77,12 +87,15 @@ export default function IssueDetailsSidebar({
     officeId: "",
   });
 
-  const { data: issue, isError: issueDetailsError } = useIssueDetails(issueId);
+  const { data: issue, isError: issueDetailsError } = useIssueDetails(
+    issueId ?? "",
+    issueStats
+  );
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
   const admin = user.role === "ADMIN";
-  const issueOwner = issue?.reportedByEmail === user.email;
+  const issueOwner = issue?.reportedByEmail === user.email || issue?.isOwner;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
 
   const summaryRef = useRef<HTMLDivElement>(null);
@@ -94,7 +107,6 @@ export default function IssueDetailsSidebar({
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
       if (!editingField) return;
-
       const target = event.target as HTMLElement;
       if (actionsRef.current?.contains(target)) return;
       if (target.closest(".MuiMenu-paper")) return;
@@ -141,6 +153,7 @@ export default function IssueDetailsSidebar({
       });
     }
   }, [issue]);
+
   function validateForm() {
     const newErrors: typeof errors = {};
     if (!form.summary?.trim()) newErrors.summary = "Summary is required";
@@ -157,6 +170,7 @@ export default function IssueDetailsSidebar({
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
+
   async function handleSave() {
     if (!issue || !validateForm()) return;
 
@@ -194,17 +208,14 @@ export default function IssueDetailsSidebar({
 
   const handleDelete = async () => {
     if (!issue) return;
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this issue? This action cannot be undone."
-      )
-    )
-      return;
 
     try {
       setDeleting(true);
+
       await softDeleteIssue(issue.id);
       await queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
+
+      setDeleteDialogOpen(false);
       onClose();
     } catch {
       onError("Failed to delete the issue.");
@@ -254,7 +265,6 @@ export default function IssueDetailsSidebar({
               )}
             </>
           )}
-
           {editingField === "summary" && issueOwner && (
             <TextField
               variant="standard"
@@ -274,7 +284,7 @@ export default function IssueDetailsSidebar({
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Issue Metadata */}
+        {/* Metadata */}
         <Box
           display="grid"
           gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
@@ -381,12 +391,12 @@ export default function IssueDetailsSidebar({
                       : issue.office;
                   })()}
                 </Typography>
-                {(issueOwner || admin) && (
+                {(issueOwner ?? admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
                 )}
               </Box>
             )}
-            {editingField === "office" && (issueOwner || admin) && (
+            {editingField === "office" && (issueOwner ?? admin) && (
               <Select
                 size="small"
                 value={form.officeId || issue.officeId}
@@ -434,7 +444,6 @@ export default function IssueDetailsSidebar({
             <Typography variant="body2" color="text.secondary">
               Description
             </Typography>
-
             {editingField !== "description" && (
               <Box
                 sx={{
@@ -461,7 +470,6 @@ export default function IssueDetailsSidebar({
                 )}
               </Box>
             )}
-
             {editingField === "description" && issueOwner && (
               <TextField
                 multiline
@@ -482,17 +490,16 @@ export default function IssueDetailsSidebar({
                   Attachments
                 </Typography>
                 <AttachmentList
-                  attachments={attachments.map((attachment) => ({
-                    id: attachment.id,
-                    name: attachment.originalFilename,
-                    url: attachment.url,
+                  attachments={attachments.map((a) => ({
+                    id: a.id,
+                    name: a.originalFilename,
+                    url: a.url,
                   }))}
                 />
               </Box>
             )}
           </Box>
         )}
-
         {selectedTab === TabIndex.Comments && (
           <Typography variant="body1" color="text.primary">
             Comments section is under construction.
@@ -500,7 +507,7 @@ export default function IssueDetailsSidebar({
         )}
 
         {/* Actions */}
-        {(issueOwner || admin) && (
+        {(issueOwner ?? admin) && (
           <Box mt={2}>
             <Divider sx={{ my: 2 }} />
             <Box
@@ -511,7 +518,7 @@ export default function IssueDetailsSidebar({
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={() => void handleDelete()}
+                onClick={() => setDeleteDialogOpen(true)}
                 sx={{
                   borderRadius: "999px",
                   paddingX: 3,
@@ -531,7 +538,6 @@ export default function IssueDetailsSidebar({
                 >
                   Cancel
                 </Button>
-
                 <Button
                   variant="contained"
                   size="medium"
@@ -547,6 +553,31 @@ export default function IssueDetailsSidebar({
           </Box>
         )}
       </Box>
+
+      {/* Delete Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+      >
+        <DialogTitle>Delete Issue</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Are you sure you want to delete this issue? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => void handleDelete()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </RightDrawer>
   );
 }

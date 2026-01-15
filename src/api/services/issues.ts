@@ -5,6 +5,7 @@ import {
   type IssueAttachment,
   type IssueStatusType,
   type BackendIssueStatusType,
+  type IssueStats,
   mapBackendStatus,
   mapFrontendStatus,
 } from "@data/issues";
@@ -20,6 +21,7 @@ interface IssueBaseResponse {
 }
 
 interface IssueResponse extends IssueBaseResponse {
+  isOwner?: boolean;
   hasVoted: boolean;
   voteCount: number;
   commentCount?: number;
@@ -39,7 +41,7 @@ interface IssueDetailsResponse {
   officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
-  reportedByEmail: string;
+  reportedByEmail?: string;
   attachments: IssueAttachment[];
 }
 
@@ -52,15 +54,6 @@ export interface FetchIssuePageArgs {
   officeId?: string;
 }
 
-export interface FetchIssuesParams {
-  page: number;
-  size: number;
-  status?: BackendIssueStatusType;
-  reportedBy?: string;
-  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
-  office?: string;
-}
-
 function normalizeIssue(issue: IssueResponse): Issue {
   return {
     id: issue.id,
@@ -71,6 +64,7 @@ function normalizeIssue(issue: IssueResponse): Issue {
     votes: issue.voteCount,
     comments: issue.commentCount ?? 0,
     dateCreated: issue.dateCreated,
+    isOwner: issue.isOwner,
   };
 }
 
@@ -80,32 +74,37 @@ export async function fetchIssues(
   const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
     params,
   });
+
   return {
     ...data,
     content: data.content.map(normalizeIssue),
   };
 }
 
+export interface FetchIssuesParams {
+  page: number;
+  size: number;
+  status?: BackendIssueStatusType;
+  reportedBy?: string;
+  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
+  office?: string;
+}
+
 export async function fetchIssueDetails(
-  issueId: string
+  issueId: string,
+  stats?: IssueStats
 ): Promise<IssueDetails> {
   const { data } = await api.get<IssueDetailsResponse>(
     ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
   );
 
-  const issue: Issue = {
-    id: data.issue.id,
-    summary: data.issue.summary,
-    description: data.issue.description,
-    status: mapBackendStatus(data.issue.status),
-    hasVoted: data.issue.hasVoted,
-    votes: data.issue.voteCount,
-    comments: data.issue.commentCount ?? 0,
-    dateCreated: data.issue.dateCreated,
-  };
-
   return {
-    ...issue,
+    ...normalizeIssue({
+      ...data.issue,
+      ...stats,
+      voteCount: stats?.votes ?? data.issue.voteCount,
+      commentCount: stats?.comments ?? data.issue.commentCount,
+    }),
     officeId: data.officeId,
     office: data.officeName ?? "",
     reportedBy: data.reportedBy,
