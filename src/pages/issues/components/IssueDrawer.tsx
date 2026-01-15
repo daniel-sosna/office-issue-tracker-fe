@@ -265,7 +265,7 @@ export default function IssueDetailsSidebar({
 
   return (
     <RightDrawer open={!!issueId} onClose={onClose}>
-      <Box sx={{ flex: 1, overflowY: "auto" }}>
+      <Box sx={{ flex: 1 }}>
         <Box
           ref={summaryRef}
           display="flex"
