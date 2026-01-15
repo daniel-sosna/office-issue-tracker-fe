@@ -3,14 +3,16 @@ import {
   type IssueDetails,
   type IssuePage,
   type IssueAttachment,
+  type IssueStats,
   type IssueStatusType,
   type BackendIssueStatusType,
-  type IssueStats,
   mapBackendStatus,
   mapFrontendStatus,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
+
+/** --- Types --- **/
 
 interface IssueBaseResponse {
   id: string;
@@ -45,14 +47,36 @@ interface IssueDetailsResponse {
   attachments: IssueAttachment[];
 }
 
+export type FrontendSortKey =
+  | "latest"
+  | "oldest"
+  | "mostVotes"
+  | "mostComments";
+
 export interface FetchIssuePageArgs {
   page: number;
   size: number;
   status?: BackendIssueStatusType;
   reportedBy?: string;
-  sort?: "latest" | "oldest" | "mostVotes";
+  sort?: FrontendSortKey;
   officeId?: string;
 }
+
+export interface FetchIssuesParams {
+  page: number;
+  size: number;
+  status?: BackendIssueStatusType;
+  reportedBy?: string;
+  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
+  office?: string;
+}
+
+const sortMap: Record<FrontendSortKey, FetchIssuesParams["sort"]> = {
+  latest: "dateDesc",
+  oldest: "dateAsc",
+  mostVotes: "votesDesc",
+  mostComments: "commentsDesc",
+};
 
 function normalizeIssue(issue: IssueResponse): Issue {
   return {
@@ -71,23 +95,23 @@ function normalizeIssue(issue: IssueResponse): Issue {
 export async function fetchIssues(
   params: FetchIssuePageArgs
 ): Promise<IssuePage> {
+  const backendParams: FetchIssuesParams = {
+    page: params.page,
+    size: params.size,
+    status: params.status,
+    reportedBy: params.reportedBy,
+    sort: params.sort ? sortMap[params.sort] : undefined,
+    office: params.officeId,
+  };
+
   const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
-    params,
+    params: backendParams,
   });
 
   return {
     ...data,
     content: data.content.map(normalizeIssue),
   };
-}
-
-export interface FetchIssuesParams {
-  page: number;
-  size: number;
-  status?: BackendIssueStatusType;
-  reportedBy?: string;
-  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
-  office?: string;
 }
 
 export async function fetchIssueDetails(
@@ -149,7 +173,7 @@ export async function updateIssue(
     "issue",
     new Blob([JSON.stringify(data)], { type: "application/json" })
   );
-  (files ?? []).forEach((f) => formData.append("files", f));
+  (files ?? []).forEach((file) => formData.append("files", file));
   (deleteAttachmentIds ?? []).forEach((id) =>
     formData.append("deleteAttachmentIds", id)
   );

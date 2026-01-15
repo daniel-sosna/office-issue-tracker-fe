@@ -14,16 +14,13 @@ import {
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
 import { type Issue, type IssueStats, IssueTab } from "@data/issues";
-import type {
-  FetchIssuesParams,
-  FetchIssuePageArgs,
-} from "@api/services/issues";
 import { useAuth } from "@context/UseAuth";
 import EmployeesDropdown from "@components/EmployeesDropdown";
 import { useIssues } from "@api/queries/useIssues";
 import { useOffices } from "@api/queries/useOffices";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
+import { type FrontendSortKey } from "@api/services/issues";
 
 const tabLabels = [
   "All issues",
@@ -46,23 +43,13 @@ const tabStatuses: Record<
   [IssueTab.REPORTED_BY_ME]: undefined,
 };
 
-const sortMap: Record<
-  string,
-  "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc"
-> = {
-  latest: "dateDesc",
-  oldest: "dateAsc",
-  mostVotes: "votesDesc",
-  mostComments: "commentsDesc",
-};
-
 const IssuesList: React.FC = () => {
   const { user } = useAuth();
   const currentUserId = user?.id;
 
   const [page, setPage] = useState<number>(1);
   const [selectedTab, setSelectedTab] = useState<IssueTab>(IssueTab.ALL);
-  const [selectedSort, setSelectedSort] = useState<string>("latest");
+  const [selectedSort, setSelectedSort] = useState<FrontendSortKey>("latest");
   const [selectedUser, setSelectedUser] = useState<string | undefined>(
     undefined
   );
@@ -91,24 +78,13 @@ const IssuesList: React.FC = () => {
     selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : selectedUser;
   const statusParamBackend = tabStatuses[selectedTab];
 
-  const params: FetchIssuesParams = {
+  const apiParams = {
     page,
     size: 10,
     status: statusParamBackend,
-    sort: sortMap[selectedSort],
     reportedBy: reportedByParam,
-    office: selectedOffice,
-  };
-
-  const apiParams: FetchIssuePageArgs = {
-    ...params,
-    sort:
-      selectedSort === "latest"
-        ? "latest"
-        : selectedSort === "oldest"
-          ? "oldest"
-          : "mostVotes",
-    officeId: params.office,
+    sort: selectedSort,
+    officeId: selectedOffice,
   };
 
   const { data, isLoading, error } = useIssues(apiParams);
@@ -126,7 +102,11 @@ const IssuesList: React.FC = () => {
     open: boolean;
     message: string;
     severity: "success" | "error";
-  }>({ open: false, message: "", severity: "success" });
+  }>({
+    open: false,
+    message: "",
+    severity: "success",
+  });
 
   const pillSelectStyle = {
     borderRadius: "9999px",
@@ -240,7 +220,7 @@ const IssuesList: React.FC = () => {
               value={selectedSort}
               sx={{ ...pillSelectStyle }}
               onChange={(e) => {
-                setSelectedSort(e.target.value);
+                setSelectedSort(e.target.value as FrontendSortKey);
                 setPage(1);
               }}
             >
@@ -259,7 +239,7 @@ const IssuesList: React.FC = () => {
           <IssueCard
             key={issue.id}
             issue={issue}
-            onClickCard={() => void handleCardClick(issue)}
+            onClickCard={() => handleCardClick(issue)}
             onClickVote={() =>
               voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
             }
