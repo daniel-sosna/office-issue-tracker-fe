@@ -8,11 +8,14 @@ import {
   Tab,
   MenuItem,
   Select,
+  TextField,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
-import TextField from "@mui/material/TextField";
-import Button from "@mui/material/Button";
-import theme from "@styles/theme";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   softDeleteIssue,
@@ -23,7 +26,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useOffices } from "@api/queries/useOffices";
 import RightDrawer from "@components/RightDrawer";
-import type { User } from "@context/AuthContext";
+import { useAuth } from "@context/UseAuth";
 import {
   IssueStatus,
   type IssueAttachment,
@@ -38,16 +41,14 @@ import { stripHtmlDescription, formatDate } from "@utils/formatters";
 interface Props {
   issueId?: string;
   issueStats?: IssueStats;
-  user: User;
   onClose: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
 }
 
-export default function IssueDetailsSidebar({
+export default function IssueDrawer({
   issueId,
-  issueStats = { hasVoted: false, votes: 0, comments: 0 },
-  user,
+  issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
   onSaved,
   onError,
@@ -61,8 +62,11 @@ export default function IssueDetailsSidebar({
   const [selectedTab, setSelectedTab] = useState<TabIndex>(TabIndex.Details);
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
+
   const [errors, setErrors] = useState<{
     summary?: string;
     description?: string;
@@ -76,32 +80,21 @@ export default function IssueDetailsSidebar({
   }>({
     summary: "",
     description: "",
-    status: "OPEN",
+    status: "Open",
     officeId: "",
   });
 
   const { data: issue, isError: issueDetailsError } = useIssueDetails(
-    issueId,
+    issueId ?? "",
     issueStats
   );
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
-  const admin = user.role === "ADMIN";
-  const issueOwner = issue?.reportedByEmail === user.email;
+  const { user } = useAuth();
+  const admin = user?.role === "ADMIN";
+  const issueOwner = issue?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
-
-  useEffect(() => {
-    if (issueDetailsError) {
-      onError("Failed to load issue details.");
-    }
-  }, [issueDetailsError, onError]);
-
-  useEffect(() => {
-    if (officesError) {
-      onError("Failed to load offices.");
-    }
-  }, [officesError, onError]);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -112,16 +105,9 @@ export default function IssueDetailsSidebar({
   const handleClickOutside = useCallback(
     (event: MouseEvent) => {
       if (!editingField) return;
-
       const target = event.target as HTMLElement;
-
-      if (actionsRef.current?.contains(target)) {
-        return;
-      }
-
-      if (target.closest(".MuiMenu-paper")) {
-        return;
-      }
+      if (actionsRef.current?.contains(target)) return;
+      if (target.closest(".MuiMenu-paper")) return;
 
       const refs: Record<
         EditingField,
@@ -147,6 +133,14 @@ export default function IssueDetailsSidebar({
   }, [handleClickOutside]);
 
   useEffect(() => {
+    if (issueDetailsError) onError("Failed to load issue details.");
+  }, [issueDetailsError, onError]);
+
+  useEffect(() => {
+    if (officesError) onError("Failed to load offices.");
+  }, [officesError, onError]);
+
+  useEffect(() => {
     if (issue) {
       setEditingField(null);
       setForm({
@@ -160,56 +154,43 @@ export default function IssueDetailsSidebar({
 
   function validateForm() {
     const newErrors: typeof errors = {};
-
-    if (!form.summary || form.summary.trim().length === 0) {
-      newErrors.summary = "Summary is required";
-    } else if (form.summary.trim().length < 3) {
+    if (!form.summary?.trim()) newErrors.summary = "Summary is required";
+    else if (form.summary.trim().length < 3)
       newErrors.summary = "Summary must be at least 3 characters";
-    } else if (form.summary.length > 200) {
+    else if (form.summary.length > 200)
       newErrors.summary = "Summary must be less than 200 characters";
-    }
 
-    if (!form.description || form.description.trim().length === 0) {
+    if (!form.description?.trim())
       newErrors.description = "Description is required";
-    } else if (form.description.length > 2000) {
+    else if (form.description.length > 2000)
       newErrors.description = "Description must be less than 2000 characters";
-    }
 
     setErrors(newErrors);
-
-    const isValid = Object.keys(newErrors).length === 0;
-    return isValid;
+    return Object.keys(newErrors).length === 0;
   }
 
   async function handleSave() {
-    if (!issue) return;
-    if (!validateForm()) {
-      return;
-    }
+    if (!issue || !validateForm()) return;
 
     try {
       setSaving(true);
 
       if (issueOwner) {
-        const payload = {
+        await updateIssue(issue.id, {
           summary: form.summary,
           description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
           officeId: form.officeId || issue.officeId,
-        };
-        await updateIssue(issue.id, payload);
-      }
-      if (admin) {
-        if (form.status !== issue.status) {
-          await updateIssueStatus(issue.id, form.status);
-        }
-        if (!issueOwner && form.officeId !== issue.officeId) {
-          await updateIssue(issue.id, { officeId: form.officeId });
-        }
+        });
       }
 
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.issues(),
-      });
+      if (admin) {
+        if (form.status !== issue.status)
+          await updateIssueStatus(issue.id, form.status);
+        if (!issueOwner && form.officeId !== issue.officeId)
+          await updateIssue(issue.id, { officeId: form.officeId });
+      }
+
+      await queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
       await queryClient.invalidateQueries({
         queryKey: queryKeys.issueDetails(issue.id),
       });
@@ -225,23 +206,19 @@ export default function IssueDetailsSidebar({
 
   const handleDelete = async () => {
     if (!issue) return;
-    const deleteConfirmation = window.confirm(
-      "Are you sure you want to delete this issue? This action cannot be undone."
-    );
-    if (!deleteConfirmation) return;
+
     try {
       setDeleting(true);
 
       await softDeleteIssue(issue.id);
+      await queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
 
-      await queryClient.invalidateQueries({
-        queryKey: queryKeys.issues(),
-      });
-
+      setDeleteDialogOpen(false);
       onClose();
     } catch {
       onError("Failed to delete the issue.");
     } finally {
+      setDeleteDialogOpen(false);
       setDeleting(false);
     }
   };
@@ -258,7 +235,8 @@ export default function IssueDetailsSidebar({
 
   return (
     <RightDrawer open={!!issueId} onClose={onClose}>
-      <Box sx={{ flex: 1, overflowY: "auto" }}>
+      <Box sx={{ flex: 1, overflowY: "auto", p: 2 }}>
+        {/* Summary */}
         <Box
           ref={summaryRef}
           display="flex"
@@ -281,13 +259,11 @@ export default function IssueDetailsSidebar({
               >
                 {form.summary}
               </Typography>
-
               {issueOwner && (
                 <EditButton onClick={() => setEditingField("summary")} />
               )}
             </>
           )}
-
           {editingField === "summary" && issueOwner && (
             <TextField
               variant="standard"
@@ -299,12 +275,7 @@ export default function IssueDetailsSidebar({
               error={!!errors.summary}
               helperText={errors.summary}
               slotProps={{
-                input: {
-                  sx: {
-                    fontSize: "22px",
-                    fontWeight: 400,
-                  },
-                },
+                input: { sx: { fontSize: "22px", fontWeight: 400 } },
               }}
             />
           )}
@@ -312,6 +283,7 @@ export default function IssueDetailsSidebar({
 
         <Divider sx={{ my: 2 }} />
 
+        {/* Metadata */}
         <Box
           display="grid"
           gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
@@ -319,6 +291,7 @@ export default function IssueDetailsSidebar({
           alignItems="center"
           mb={2}
         >
+          {/* Reported By */}
           <Typography variant="body2">Reported by</Typography>
           <Box>
             <Box
@@ -341,13 +314,15 @@ export default function IssueDetailsSidebar({
             </Box>
           </Box>
 
-          <Typography variant="body2">Reported</Typography>
+          {/* Reported Date */}
+          <Typography variant="body2">Reported at</Typography>
           <Box>
             <Typography variant="body2" color="text.primary">
               {formatDate(issue.dateCreated)}
             </Typography>
           </Box>
 
+          {/* Status */}
           <Typography variant="body2">Status</Typography>
           <Box ref={statusRef}>
             {editingField !== "status" && (
@@ -358,17 +333,16 @@ export default function IssueDetailsSidebar({
                 )}
               </Box>
             )}
-
             {editingField === "status" && admin && (
               <Select
                 size="small"
                 value={form.status}
-                onChange={(e) => {
+                onChange={(e) =>
                   setForm((prev) => ({
                     ...prev,
                     status: e.target.value as IssueStatusType,
-                  }));
-                }}
+                  }))
+                }
               >
                 {(Object.values(IssueStatus) as IssueStatusType[]).map(
                   (status) => (
@@ -381,6 +355,7 @@ export default function IssueDetailsSidebar({
             )}
           </Box>
 
+          {/* Upvotes */}
           <Typography variant="body2">Upvotes</Typography>
           <Box>
             <Box
@@ -390,18 +365,17 @@ export default function IssueDetailsSidebar({
                 px: 1,
                 py: 0.25,
                 borderRadius: 16,
-                backgroundColor: issueStats.hasVoted
-                  ? "vote.activeBg"
-                  : "#f4f4f4",
+                backgroundColor: issue.hasVoted ? "vote.activeBg" : "#f4f4f4",
               }}
             >
               <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
               <Typography variant="body2" color="text.primary">
-                {issueStats.votes}
+                {issue.votes}
               </Typography>
             </Box>
           </Box>
 
+          {/* Office */}
           <Typography variant="body2">Office</Typography>
           <Box ref={officeRef}>
             {editingField !== "office" && (
@@ -416,21 +390,17 @@ export default function IssueDetailsSidebar({
                       : issue.office;
                   })()}
                 </Typography>
-                {(issueOwner || admin) && (
+                {(issueOwner ?? admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
                 )}
               </Box>
             )}
-
-            {editingField === "office" && (issueOwner || admin) && (
+            {editingField === "office" && (issueOwner ?? admin) && (
               <Select
                 size="small"
                 value={form.officeId || issue.officeId}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    officeId: e.target.value,
-                  }))
+                  setForm((prev) => ({ ...prev, officeId: e.target.value }))
                 }
                 sx={{ minWidth: 160 }}
               >
@@ -444,6 +414,7 @@ export default function IssueDetailsSidebar({
           </Box>
         </Box>
 
+        {/* Tabs */}
         <Tabs
           value={selectedTab}
           onChange={(_, value: TabIndex) => setSelectedTab(value)}
@@ -466,6 +437,7 @@ export default function IssueDetailsSidebar({
           />
         </Tabs>
 
+        {/* Tab Panels */}
         {selectedTab === TabIndex.Details && (
           <Box ref={descriptionRef}>
             <Typography variant="body2" color="text.secondary">
@@ -488,12 +460,10 @@ export default function IssueDetailsSidebar({
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
                     flexGrow: 1,
-                    maxWidth: "auto",
                   }}
                 >
                   {form.description}
                 </Typography>
-
                 {issueOwner && (
                   <EditButton onClick={() => setEditingField("description")} />
                 )}
@@ -506,10 +476,7 @@ export default function IssueDetailsSidebar({
                 minRows={4}
                 value={form.description}
                 onChange={(e) =>
-                  setForm((prev) => ({
-                    ...prev,
-                    description: e.target.value,
-                  }))
+                  setForm((prev) => ({ ...prev, description: e.target.value }))
                 }
                 error={!!errors.description}
                 helperText={errors.description}
@@ -521,81 +488,94 @@ export default function IssueDetailsSidebar({
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   Attachments
                 </Typography>
-
                 <AttachmentList
-                  attachments={attachments.map((attachment) => ({
-                    id: attachment.id,
-                    name: attachment.originalFilename,
-                    url: attachment.url,
+                  attachments={attachments.map((a) => ({
+                    id: a.id,
+                    name: a.originalFilename,
+                    url: a.url,
                   }))}
                 />
               </Box>
             )}
           </Box>
         )}
-
         {selectedTab === TabIndex.Comments && (
           <Typography variant="body1" color="text.primary">
             Comments section is under construction.
           </Typography>
         )}
-      </Box>
 
-      {(issueOwner || admin) && (
-        <Box>
-          <Divider sx={{ my: 2 }} />
-
-          <Box
-            display="flex"
-            justifyContent="space-between"
-            alignItems="center"
-          >
-            <Box>
+        {/* Actions */}
+        {(issueOwner ?? admin) && (
+          <Box mt={2}>
+            <Divider sx={{ my: 2 }} />
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+            >
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={() => void handleDelete()}
-                sx={{
-                  borderRadius: "999px",
-                  paddingX: 3,
-                  backgroundColor: theme.palette.status.blockedBg,
-                }}
+                color="error"
+                onClick={() => setDeleteDialogOpen(true)}
+                sx={{ borderRadius: "999px", paddingX: 3 }}
                 disabled={deleting}
               >
                 {deleting ? "Deleting..." : "Delete"}
               </Button>
-            </Box>
 
-            <Box ref={actionsRef} display="flex" gap={2}>
-              <Button
-                variant="outlined"
-                size="medium"
-                onClick={onClose}
-                sx={{
-                  borderRadius: "999px",
-                  paddingX: 3,
-                }}
-              >
-                Cancel
-              </Button>
-
-              <Button
-                variant="contained"
-                size="medium"
-                color="secondary"
-                onClick={() => void handleSave()}
-                sx={{
-                  borderRadius: "999px",
-                  paddingX: 3,
-                }}
-                disabled={saving}
-              >
-                {saving ? "Saving..." : "Save"}
-              </Button>
+              <Box ref={actionsRef} display="flex" gap={2}>
+                <Button
+                  variant="outlined"
+                  size="medium"
+                  onClick={onClose}
+                  sx={{ borderRadius: "999px", paddingX: 3 }}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  variant="contained"
+                  size="medium"
+                  color="secondary"
+                  onClick={() => void handleSave()}
+                  sx={{ borderRadius: "999px", paddingX: 3 }}
+                  disabled={saving}
+                >
+                  {saving ? "Saving..." : "Save"}
+                </Button>
+              </Box>
             </Box>
           </Box>
-        </Box>
-      )}
+        )}
+      </Box>
+
+      {/* Delete Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={() => setDeleteDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
+        <DialogContent>
+          <Typography id="delete-dialog-description">
+            Are you sure you want to delete this issue? This action cannot be
+            undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
+          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => void handleDelete()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </RightDrawer>
   );
 }

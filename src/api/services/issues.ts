@@ -1,23 +1,29 @@
 import {
   type Issue,
   type IssueDetails,
-  type IssueStatusType,
   type IssuePage,
   type IssueAttachment,
   type IssueStats,
+  type IssueStatusType,
+  type BackendIssueStatusType,
+  mapBackendStatus,
+  mapFrontendStatus,
 } from "@data/issues";
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
+
+/** --- Types --- **/
 
 interface IssueBaseResponse {
   id: string;
   summary: string;
   description: string;
-  status: IssueStatusType;
+  status: BackendIssueStatusType;
   dateCreated: string;
 }
 
 interface IssueResponse extends IssueBaseResponse {
+  isOwner: boolean;
   hasVoted: boolean;
   voteCount: number;
   commentCount?: number;
@@ -32,37 +38,74 @@ interface IssuePageResponse {
 }
 
 interface IssueDetailsResponse {
-  issue: IssueBaseResponse;
+  issue: IssueResponse;
   officeId: string;
   officeName: string;
   reportedBy: string;
   reportedByAvatar: string;
-  reportedByEmail: string;
+  reportedByEmail?: string;
   attachments: IssueAttachment[];
 }
+
+export type FrontendSortKey =
+  | "latest"
+  | "oldest"
+  | "mostVotes"
+  | "mostComments";
 
 export interface FetchIssuePageArgs {
   page: number;
   size: number;
-  status?: IssueStatusType;
+  status?: BackendIssueStatusType;
   reportedBy?: string;
-  sort?: "latest" | "oldest" | "mostVotes";
+  sort?: FrontendSortKey;
   officeId?: string;
 }
 
+export interface FetchIssuesParams {
+  page: number;
+  size: number;
+  status?: BackendIssueStatusType;
+  reportedBy?: string;
+  sort?: "dateDesc" | "dateAsc" | "votesDesc" | "commentsDesc";
+  office?: string;
+}
+
+const sortMap: Record<FrontendSortKey, FetchIssuesParams["sort"]> = {
+  latest: "dateDesc",
+  oldest: "dateAsc",
+  mostVotes: "votesDesc",
+  mostComments: "commentsDesc",
+};
+
 function normalizeIssue(issue: IssueResponse): Issue {
   return {
-    ...issue,
+    id: issue.id,
+    summary: issue.summary,
+    description: issue.description,
+    status: mapBackendStatus(issue.status),
+    hasVoted: issue.hasVoted,
     votes: issue.voteCount,
     comments: issue.commentCount ?? 0,
+    dateCreated: issue.dateCreated,
+    isOwner: issue.isOwner,
   };
 }
 
 export async function fetchIssues(
   params: FetchIssuePageArgs
 ): Promise<IssuePage> {
+  const backendParams: FetchIssuesParams = {
+    page: params.page,
+    size: params.size,
+    status: params.status,
+    reportedBy: params.reportedBy,
+    sort: params.sort ? sortMap[params.sort] : undefined,
+    office: params.officeId,
+  };
+
   const { data } = await api.get<IssuePageResponse>(ENDPOINTS.ISSUES, {
-    params,
+    params: backendParams,
   });
 
   return {
@@ -73,21 +116,25 @@ export async function fetchIssues(
 
 export async function fetchIssueDetails(
   issueId: string,
-  stats: IssueStats
+  stats?: IssueStats
 ): Promise<IssueDetails> {
   const { data } = await api.get<IssueDetailsResponse>(
     ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
   );
 
   return {
-    ...data,
     ...normalizeIssue({
       ...data.issue,
-      hasVoted: stats.hasVoted,
-      voteCount: stats.votes,
-      commentCount: stats.comments,
+      ...stats,
+      voteCount: stats?.votes ?? data.issue.voteCount,
+      commentCount: stats?.comments ?? data.issue.commentCount,
     }),
-    office: data.officeName,
+    officeId: data.officeId,
+    office: data.officeName ?? "",
+    reportedBy: data.reportedBy,
+    reportedByAvatar: data.reportedByAvatar ?? "",
+    reportedByEmail: data.reportedByEmail ?? "",
+    attachments: data.attachments ?? [],
   };
 }
 
@@ -126,7 +173,7 @@ export async function updateIssue(
     "issue",
     new Blob([JSON.stringify(data)], { type: "application/json" })
   );
-  (files ?? []).forEach((f) => formData.append("files", f));
+  (files ?? []).forEach((file) => formData.append("files", file));
   (deleteAttachmentIds ?? []).forEach((id) =>
     formData.append("deleteAttachmentIds", id)
   );
@@ -137,7 +184,9 @@ export async function updateIssueStatus(
   issueId: string,
   status: IssueStatusType
 ): Promise<void> {
-  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/status`, { status });
+  await api.patch(`${ENDPOINTS.ISSUES}/${issueId}/status`, {
+    status: mapFrontendStatus(status),
+  });
 }
 
 export async function softDeleteIssue(issueId: string): Promise<void> {
