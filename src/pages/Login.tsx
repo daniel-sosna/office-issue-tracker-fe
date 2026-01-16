@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
 import { useAuth } from "@context/UseAuth";
 import { Box, Button, Stack, Typography } from "@mui/material";
+import { API_ORIGIN } from "@api/services/urls";
 
 export const Login = () => {
   const { isAuthenticated } = useAuth();
@@ -26,7 +27,7 @@ export const Login = () => {
 
   const handleLogin = (provider: string) => {
     if (provider === "google") {
-      window.location.href = "/oauth2/authorization/google";
+      window.location.href = `${API_ORIGIN}/oauth2/authorization/google`;
     } else return;
   };
 
