@@ -10,14 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import DeleteOutlineIcon from "@mui/icons-material/DeleteOutline";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import {
-  FormControl,
-  Select,
-  MenuItem,
-  OutlinedInput,
-  Snackbar,
-  Alert,
-} from "@mui/material";
+import { FormControl, Snackbar, Alert } from "@mui/material";
 import Paper from "@mui/material/Paper";
 import {
   fetchCountries,
@@ -29,6 +22,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { saveOffices } from "@api/services/offices";
 import { queryKeys } from "@api/queries/queryKeys";
 import { useDeleteOffice } from "@api/queries/useDeleteOffice";
+import Autocomplete from "@mui/material/Autocomplete";
 
 interface ManageOfficesModalProps {
   open: boolean;
@@ -49,7 +43,6 @@ export default function ManageOfficesModal({
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
   const [officeToConfirmDelete, setOfficeToConfirmDelete] =
     useState<Office | null>(null);
-
   const queryClient = useQueryClient();
   const deleteOfficeMutation = useDeleteOffice();
 
@@ -299,36 +292,46 @@ export default function ManageOfficesModal({
                     sx={{ color: "text.secondary", fontSize: "13px" }}
                   ></Typography>
                   <FormControl sx={{ flex: 1, pl: "10px" }} size="small">
-                    <Select
-                      value={office.country}
-                      displayEmpty
-                      onChange={(e) =>
-                        handleCountryChange(office.id, e.target.value)
+                    <Autocomplete
+                      options={allCountries}
+                      value={office.country || undefined}
+                      onChange={(_, newValue) =>
+                        handleCountryChange(office.id, newValue ?? "")
                       }
-                      input={<OutlinedInput />}
-                      IconComponent={ExpandMoreIcon}
-                      renderValue={(selected) =>
-                        selected === "" ? "Select" : selected
+                      filterOptions={(options, { inputValue }) =>
+                        options.filter((option) =>
+                          option
+                            .toLowerCase()
+                            .startsWith(inputValue.toLowerCase())
+                        )
                       }
+                      disableClearable
+                      clearIcon={null}
+                      isOptionEqualToValue={(option, value) => option === value}
+                      popupIcon={<ExpandMoreIcon />}
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          size="small"
+                          placeholder="Select"
+                          sx={{
+                            backgroundColor: "#fff",
+                            "& input": {
+                              fontSize: "13px",
+                            },
+                          }}
+                        />
+                      )}
                       sx={{
-                        backgroundColor: "#fff",
-                        fontSize: "13px",
-                        p: "3px",
-                        color:
-                          office.country === ""
-                            ? "text.disabled"
-                            : "text.primary",
-                        "& .MuiSelect-icon": {
+                        "& .MuiOutlinedInput-root": {
+                          fontSize: "13px",
+                          padding: "3px",
+                        },
+                        "& .MuiAutocomplete-popupIndicator": {
                           color: "secondary.main",
                         },
                       }}
-                    >
-                      {allCountries.map((country) => (
-                        <MenuItem key={country} value={country}>
-                          {country}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    />
                   </FormControl>
                 </Box>
               </Box>
