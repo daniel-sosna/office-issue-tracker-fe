@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Box,
   Tabs,
@@ -13,11 +13,14 @@ import {
 } from "@mui/material";
 import IssueCard from "@pages/issues/components/IssueCard";
 import IssueDrawer from "@pages/issues/components/IssueDrawer";
-import type { Issue, IssueStats } from "@data/issues";
+import { type Issue, type IssueStats, IssueTab } from "@data/issues";
+import { useAuth } from "@context/UseAuth";
+import EmployeesDropdown from "@components/EmployeesDropdown";
 import { useIssues } from "@api/queries/useIssues";
+import { useOffices } from "@api/queries/useOffices";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
-import type { FetchIssuePageArgs } from "@api/services/issues";
+import { type FrontendSortKey } from "@api/services/issues";
 
 const tabLabels = [
   "All issues",
@@ -26,19 +29,74 @@ const tabLabels = [
   "Resolved",
   "Closed",
   "Reported by me",
-];
+] as const;
 
-const size = 10;
+const tabStatuses: Record<
+  IssueTab,
+  "OPEN" | "IN_PROGRESS" | "RESOLVED" | "CLOSED" | undefined
+> = {
+  [IssueTab.ALL]: undefined,
+  [IssueTab.OPEN]: "OPEN",
+  [IssueTab.PLANNED]: "IN_PROGRESS",
+  [IssueTab.RESOLVED]: "RESOLVED",
+  [IssueTab.CLOSED]: "CLOSED",
+  [IssueTab.REPORTED_BY_ME]: undefined,
+};
 
 const IssuesList: React.FC = () => {
-  const [page, setPage] = useState(1);
-  const [selectedTab, setSelectedTab] = useState(0);
+  const { user } = useAuth();
+  const currentUserId = user?.id;
+
+  const [page, setPage] = useState<number>(1);
+  const [selectedTab, setSelectedTab] = useState<IssueTab>(IssueTab.ALL);
+  const [selectedSort, setSelectedSort] = useState<FrontendSortKey>("latest");
+  const [selectedUser, setSelectedUser] = useState<string | undefined>(
+    undefined
+  );
+  const [selectedOffice, setSelectedOffice] = useState<string | undefined>(
+    undefined
+  );
   const [selectedIssueId, setSelectedIssueId] = useState<string | undefined>(
     undefined
   );
   const [selectedIssueStats, setSelectedIssueStats] = useState<
     IssueStats | undefined
   >(undefined);
+
+  const { data: offices = [], isLoading: isOfficesLoading } = useOffices();
+
+  useEffect(() => {
+    if (selectedTab === IssueTab.REPORTED_BY_ME && currentUserId) {
+      setSelectedUser(currentUserId);
+    } else if (selectedTab !== IssueTab.REPORTED_BY_ME) {
+      setSelectedUser(undefined);
+    }
+    setPage(1);
+  }, [selectedTab, currentUserId]);
+
+  const reportedByParam =
+    selectedTab === IssueTab.REPORTED_BY_ME ? currentUserId : selectedUser;
+  const statusParamBackend = tabStatuses[selectedTab];
+
+  const apiParams = {
+    page,
+    size: 10,
+    status: statusParamBackend,
+    reportedBy: reportedByParam,
+    sort: selectedSort,
+    officeId: selectedOffice,
+  };
+
+  const { data, isLoading, error } = useIssues(apiParams);
+  const issues = data?.content ?? [];
+  const totalPages = data?.totalPages ?? 1;
+
+  const { mutate: voteOnIssue } = useVoteOnIssue();
+
+  const handleCardClick = (issue: Issue) => {
+    setSelectedIssueId(issue.id);
+    setSelectedIssueStats({ ...issue });
+  };
 
   const [snackbar, setSnackbar] = useState<{
     open: boolean;
@@ -50,52 +108,51 @@ const IssuesList: React.FC = () => {
     severity: "success",
   });
 
-  const params: FetchIssuePageArgs = {
-    page,
-    size,
-  };
-
-  const { data, isLoading, isError } = useIssues(params);
-
-  const issues = data?.content ?? [];
-
-  const totalPages = data?.totalPages ?? 1;
-
-  const handleCardClick = (issue: Issue) => {
-    setSelectedIssueId(issue.id);
-    setSelectedIssueStats({ ...issue });
-  };
-
-  const { mutate: voteOnIssue } = useVoteOnIssue();
-
   const pillSelectStyle = {
     borderRadius: "9999px",
     backgroundColor: "#f4f4f4",
-    px: 1.5,
-    fontSize: 14,
-    "& .MuiSelect-select": { py: "6px", borderRadius: "9999px" },
+    fontSize: 16,
+    minWidth: 160,
+    "& .MuiOutlinedInput-root": {
+      minHeight: 40,
+      display: "flex",
+      alignItems: "center",
+      padding: "0 12px",
+      boxSizing: "border-box",
+    },
+    "& .MuiSelect-select": {
+      display: "flex",
+      alignItems: "center",
+      minHeight: "inherit",
+    },
     "& fieldset": { borderRadius: "9999px" },
   };
 
-  if (isLoading) {
-    return <Loader />;
-  }
-
-  if (isError) {
+  if (isLoading) return <Loader />;
+  if (error)
     return (
       <Box p={4}>
         <Alert severity="error">Failed to load issues.</Alert>
       </Box>
     );
-  }
 
   return (
-    <Box sx={{ position: "relative" }}>
+    <Box sx={{ position: "relative", overflow: "hidden", px: 4 }}>
       {/* Tabs */}
-      <Box mb={3} sx={{ borderBottom: 1, borderColor: "divider" }}>
+      <Box
+        mb={3}
+        sx={{
+          borderBottom: 1,
+          borderColor: "divider",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
         <Tabs
           value={selectedTab}
-          onChange={(_, newValue) => setSelectedTab(newValue as number)}
+          onChange={(_, newValue: number) =>
+            setSelectedTab(newValue as IssueTab)
+          }
           textColor="secondary"
           indicatorColor="secondary"
           sx={{
@@ -124,25 +181,53 @@ const IssuesList: React.FC = () => {
       {/* Filters */}
       <Box display="flex" justifyContent="space-between" mb={4}>
         <Box display="flex" gap={2}>
-          {["All offices", "All employees"].map((label) => (
-            <FormControl size="small" disabled key={label}>
-              <Select value="all" sx={{ minWidth: 140, ...pillSelectStyle }}>
-                <MenuItem value="all">{label}</MenuItem>
-              </Select>
-            </FormControl>
-          ))}
+          <FormControl size="small" disabled={isOfficesLoading}>
+            <Select
+              value={selectedOffice ?? "all"}
+              sx={{ ...pillSelectStyle }}
+              onChange={(e) => {
+                const val = e.target.value;
+                setSelectedOffice(val === "all" ? undefined : String(val));
+                setPage(1);
+              }}
+            >
+              <MenuItem value="all">All offices</MenuItem>
+              {offices.map((office) => (
+                <MenuItem key={office.id} value={office.id}>
+                  {office.title}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
+
+          <EmployeesDropdown
+            selectedUser={selectedUser}
+            setSelectedUser={setSelectedUser}
+            setPage={setPage}
+            selectedTab={selectedTab}
+            setSelectedTab={(tab: number) => setSelectedTab(tab as IssueTab)}
+            currentUserId={currentUserId}
+            disabled={selectedTab === IssueTab.REPORTED_BY_ME}
+          />
         </Box>
 
         <Box display="flex" alignItems="center" gap={1}>
           <InputLabel sx={{ fontSize: 14, color: "text.secondary" }}>
             Sort by:
           </InputLabel>
-          <FormControl size="small" disabled>
-            <Select value="latest" sx={{ minWidth: 160, ...pillSelectStyle }}>
-              <MenuItem value="reportedByMe">Reported by me</MenuItem>
+          <FormControl size="small">
+            <Select
+              value={selectedSort}
+              sx={{ ...pillSelectStyle }}
+              onChange={(e) => {
+                setSelectedSort(e.target.value as FrontendSortKey);
+                setPage(1);
+              }}
+            >
               <MenuItem value="latest">Latest</MenuItem>
               <MenuItem value="oldest">Oldest</MenuItem>
               <MenuItem value="mostVotes">Most votes</MenuItem>
+              <MenuItem value="mostComments">Most comments</MenuItem>
             </Select>
           </FormControl>
         </Box>
@@ -154,7 +239,7 @@ const IssuesList: React.FC = () => {
           <IssueCard
             key={issue.id}
             issue={issue}
-            onClickCard={() => void handleCardClick(issue)}
+            onClickCard={() => handleCardClick(issue)}
             onClickVote={() =>
               voteOnIssue({ issueId: issue.id, vote: !issue.hasVoted })
             }
@@ -162,7 +247,7 @@ const IssuesList: React.FC = () => {
         ))}
       </Box>
 
-      {/* Issue details sidebar */}
+      {/* Issue drawer */}
       <IssueDrawer
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
@@ -175,11 +260,7 @@ const IssuesList: React.FC = () => {
           })
         }
         onError={(message) =>
-          setSnackbar({
-            open: true,
-            message,
-            severity: "error",
-          })
+          setSnackbar({ open: true, message, severity: "error" })
         }
       />
 
@@ -188,7 +269,7 @@ const IssuesList: React.FC = () => {
         <Pagination
           count={totalPages}
           page={page}
-          onChange={(_, value) => setPage(value)}
+          onChange={(_, value: number) => setPage(value)}
           color="primary"
           hidePrevButton={page === 1}
           hideNextButton={page === totalPages}

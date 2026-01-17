@@ -17,7 +17,7 @@ export default function RightDrawer({ open, onClose, children }: Props) {
       slotProps={{
         paper: {
           sx: {
-            width: { xs: "100%", sm: 650 },
+            width: { xs: "100%", sm: 500 },
             p: 1,
           },
         },

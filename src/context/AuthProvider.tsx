@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { AuthContext, type User } from "@context/AuthContext";
 import { csrfFetch } from "@utils/csrfFetch";
+import { BASE_URL } from "@api/services/urls";
 
 interface Props {
   children: ReactNode;
@@ -12,7 +13,7 @@ export const AuthProvider = ({ children }: Props) => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/user", { credentials: "include" })
+    fetch(`${BASE_URL}/api/user`, { credentials: "include" })
       .then((res) => {
         if (!res.ok) throw new Error("Not Authenticated");
         return res.json();
@@ -21,6 +22,7 @@ export const AuthProvider = ({ children }: Props) => {
         if (!data) setUser(null);
         else {
           setUser({
+            id: data.id,
             name: data.name,
             email: data.email,
             picture: data.picture,
