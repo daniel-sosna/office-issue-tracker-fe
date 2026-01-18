@@ -38,6 +38,8 @@ import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
 import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
+import { useAttachments } from "@api/queries/useAttachments.ts";
 
 interface Props {
   issueId?: string;
@@ -64,6 +66,13 @@ export default function IssueDrawer({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const {
+    selectedFiles,
+    attachmentError,
+    handleAddFiles,
+    handleDeleteFile,
+    resetAttachments,
+  } = useAttachments();
 
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
@@ -170,6 +179,13 @@ export default function IssueDrawer({
     return Object.keys(newErrors).length === 0;
   }
 
+  const handleClose = () => {
+    resetAttachments();
+    setEditingField(null);
+    setErrors({});
+    onClose();
+  };
+
   async function handleSave() {
     if (!issue || !validateForm()) return;
 
@@ -245,7 +261,7 @@ export default function IssueDrawer({
 
   if (!issue) {
     return (
-      <RightDrawer open={false} onClose={onClose}>
+      <RightDrawer open={false} onClose={handleClose}>
         <Typography variant="h4" sx={{ fontWeight: 400 }}>
           Select an issue to see details.
         </Typography>
@@ -254,8 +270,8 @@ export default function IssueDrawer({
   }
 
   return (
-    <RightDrawer open={!!issueId} onClose={onClose}>
-      <Box sx={{ flex: 1, overflowY: "auto", p: 2 }}>
+    <RightDrawer open={!!issueId} onClose={handleClose}>
+      <Box sx={{ flex: 1, p: 2 }}>
         {/* Summary */}
         <Box
           ref={summaryRef}
@@ -535,6 +551,19 @@ export default function IssueDrawer({
                 />
               </Box>
             )}
+            {issueOwner && (
+              <AttachmentSection
+                attachments={selectedFiles.map((f) => ({
+                  id: f.name + f.size,
+                  name: f.name,
+                  url: URL.createObjectURL(f),
+                }))}
+                onAddFiles={handleAddFiles}
+                onDelete={handleDeleteFile}
+                error={attachmentError}
+                drawerEditor={true}
+              />
+            )}
           </Box>
         )}
         {selectedTab === TabIndex.Comments && (
@@ -567,7 +596,7 @@ export default function IssueDrawer({
                 <Button
                   variant="outlined"
                   size="medium"
-                  onClick={onClose}
+                  onClick={handleClose}
                   sx={{ borderRadius: "999px", paddingX: 3 }}
                 >
                   Cancel

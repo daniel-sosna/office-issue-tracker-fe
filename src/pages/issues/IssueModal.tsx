@@ -14,7 +14,7 @@ import { fetchOffices } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
 import AttachmentSection from "./components/AttachmentSection";
 import EditorToolbar from "@components/EditorToolbar";
-import { validateFiles } from "@utils/attachments.validation";
+import { useAttachments } from "@api/queries/useAttachments.ts";
 
 interface IssueFormData {
   summary: string;
@@ -45,10 +45,15 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [attachmentError, setAttachmentError] = useState("");
   const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
+  const {
+    selectedFiles,
+    attachmentError,
+    handleAddFiles,
+    handleDeleteFile,
+    resetAttachments,
+  } = useAttachments();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -75,19 +80,16 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     void loadOffices();
   }, [open]);
 
-  useEffect(() => {
-    if (open && editor) {
-      editor.commands.setContent("");
-      setSummary("");
-      setOffice("");
-      setDescription("");
-      setErrorMessage("");
-      setAttachmentError("");
-      setHasSubmitted(false);
-      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
-      setSelectedFiles([]);
-    }
-  }, [open, editor, selectedFiles]);
+  const handleClose = () => {
+    editor.commands.setContent("");
+    setSummary("");
+    setOffice("");
+    setDescription("");
+    setErrorMessage("");
+    setHasSubmitted(false);
+    resetAttachments();
+    onClose();
+  };
 
   const isFormComplete =
     summary.trim() !== "" && description.trim() !== "" && office !== "";
@@ -119,29 +121,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       return "Description must be less than 2000 characters";
     return undefined;
   }
-
-  const handleAddFiles = (files: FileList) => {
-    const { validFiles, errorMessage } = validateFiles(files, selectedFiles);
-
-    if (errorMessage) {
-      setAttachmentError(errorMessage);
-    } else {
-      setAttachmentError("");
-    }
-
-    setSelectedFiles((prev) => [...prev, ...validFiles]);
-  };
-
-  const handleDeleteFile = (id: string) => {
-    setSelectedFiles((prev) =>
-      prev.filter((f) => {
-        if (f.name + f.size === id) {
-          URL.revokeObjectURL(f.name);
-        }
-        return f.name + f.size !== id;
-      })
-    );
-  };
 
   const handleSubmit = async (): Promise<void> => {
     setHasSubmitted(true);
@@ -190,7 +169,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       fullWidth
       maxWidth="sm"
       disableRestoreFocus
@@ -208,7 +187,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         Report Issue
       </DialogTitle>
       <IconButton
-        onClick={onClose}
+        onClick={handleClose}
         size="small"
         sx={{
           position: "absolute",
@@ -330,6 +309,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             onAddFiles={handleAddFiles}
             onDelete={handleDeleteFile}
             error={attachmentError}
+            drawerEditor={false}
           />
         </Box>
       </DialogContent>
@@ -347,7 +327,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       >
         <Button
           variant="outlined"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             borderRadius: "999px",
             paddingX: 3,
