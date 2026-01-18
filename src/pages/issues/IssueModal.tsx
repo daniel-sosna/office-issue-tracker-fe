@@ -60,6 +60,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     description: validateDescription(description),
   } as IssueFormErrors;
 
+  // Load offices when the modal is opened
   useEffect(() => {
     if (!open) return;
 
@@ -75,23 +76,23 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     void loadOffices();
   }, [open]);
 
+  // Reset form when modal is opened
   useEffect(() => {
-    if (open && editor) {
-      editor.commands.setContent("");
+    if (open) {
       setSummary("");
       setOffice("");
       setDescription("");
       setErrorMessage("");
       setAttachmentError("");
       setHasSubmitted(false);
-      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
     }
-  }, [open, editor, selectedFiles]);
+  }, [open]);
 
   const isFormComplete =
     summary.trim() !== "" && description.trim() !== "" && office !== "";
 
+  // Update description when editor content changes
   useEffect(() => {
     if (!editor) return;
 
@@ -106,6 +107,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     };
   }, [editor]);
 
+  // Validation functions
   function validateSummary(value: string): string | undefined {
     if (!value.trim()) return "Summary is required";
     if (value.trim().length < 3) return "Summary must be at least 3 characters";
@@ -227,6 +229,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </Box>
           )}
 
+          {/* Summary Input */}
           <Box>
             <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Short summary <span style={{ color: "red" }}>*</span>
@@ -246,6 +249,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             />
           </Box>
 
+          {/* Description Input */}
           <Box>
             <Box mb={1} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Description <span style={{ color: "red" }}>*</span>
@@ -301,6 +305,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </Box>
           </Box>
 
+          {/* Office Selection */}
           <Box>
             <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Office <span style={{ color: "red" }}>*</span>
@@ -321,6 +326,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </TextField>
           </Box>
 
+          {/* Attachment Section */}
           <AttachmentSection
             attachments={selectedFiles.map((f) => ({
               id: f.name + f.size,
@@ -334,6 +340,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         </Box>
       </DialogContent>
 
+      {/* Footer Buttons */}
       <Box
         sx={{
           borderTop: "1px solid divider",
