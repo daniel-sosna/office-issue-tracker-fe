@@ -84,14 +84,13 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setErrorMessage("");
       setAttachmentError("");
       setHasSubmitted(false);
-      setSelectedFiles([]);
+      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
     }
   }, [open, editor]);
 
   const isFormComplete =
     summary.trim() !== "" && description.trim() !== "" && office !== "";
 
-  // Update description when editor content changes
   useEffect(() => {
     if (!editor) return;
 
@@ -106,7 +105,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     };
   }, [editor]);
 
-  // Validation functions
   function validateSummary(value: string): string | undefined {
     if (!value.trim()) return "Summary is required";
     if (value.trim().length < 3) return "Summary must be at least 3 characters";
