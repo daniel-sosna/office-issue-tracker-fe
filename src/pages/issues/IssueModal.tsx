@@ -60,6 +60,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     description: validateDescription(description),
   } as IssueFormErrors;
 
+  // Load offices when the modal is opened
   useEffect(() => {
     if (!open) return;
 
@@ -87,7 +88,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
       setSelectedFiles([]);
     }
-  }, [open, editor, selectedFiles]);
+  }, [open, editor]);
 
   const isFormComplete =
     summary.trim() !== "" && description.trim() !== "" && office !== "";
