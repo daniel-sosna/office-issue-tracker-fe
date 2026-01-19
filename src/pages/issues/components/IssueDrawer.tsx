@@ -532,7 +532,7 @@ export default function IssueDrawer({
                     url: attachment.url,
                   }))}
                   showDelete={true}
-                  onDelete={() => void handleAttachmentDelete}
+                  onDelete={(id) => void handleAttachmentDelete(id)}
                 />
               </Box>
             )}

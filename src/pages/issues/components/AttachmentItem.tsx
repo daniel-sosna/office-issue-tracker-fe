@@ -62,7 +62,10 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
       {showDelete && (
         <IconButton
           size="small"
-          onClick={() => onDelete?.(id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete?.(id);
+          }}
           color="primary"
           disableRipple
           sx={{
