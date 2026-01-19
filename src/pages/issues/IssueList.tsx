@@ -25,7 +25,7 @@ import { type FrontendSortKey } from "@api/services/issues";
 const tabLabels = [
   "All issues",
   "Open",
-  "Planned",
+  "In progress",
   "Resolved",
   "Closed",
   "Reported by me",

@@ -11,9 +11,9 @@ const theme = createTheme({
     text: { primary: "#000048", secondary: "#5f6368" },
     status: {
       openBg: "#CFE7D7",
-      inProgressBg: "#dae9ff",
-      resolvedBg: "#edeff1",
-      closedBg: "#edeff1",
+      inProgressBg: "#FFF7DA",
+      resolvedBg: "#DAE9FF",
+      closedBg: "#EDEFF1",
       blockedBg: "#FFDAE3",
 
       mainText: "secondary.main",
