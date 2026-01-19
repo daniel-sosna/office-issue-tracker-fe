@@ -75,7 +75,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     void loadOffices();
   }, [open]);
 
-  // Reset form when modal is opened
   useEffect(() => {
     if (open) {
       setSummary("");
@@ -226,7 +225,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </Box>
           )}
 
-          {/* Summary Input */}
           <Box>
             <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Short summary <span style={{ color: "red" }}>*</span>
@@ -246,7 +244,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             />
           </Box>
 
-          {/* Description Input */}
           <Box>
             <Box mb={1} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Description <span style={{ color: "red" }}>*</span>
@@ -302,7 +299,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </Box>
           </Box>
 
-          {/* Office Selection */}
           <Box>
             <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Office <span style={{ color: "red" }}>*</span>
@@ -323,7 +319,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             </TextField>
           </Box>
 
-          {/* Attachment Section */}
           <AttachmentSection
             attachments={selectedFiles.map((f) => ({
               id: f.name + f.size,
@@ -337,7 +332,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         </Box>
       </DialogContent>
 
-      {/* Footer Buttons */}
       <Box
         sx={{
           borderTop: "1px solid divider",
