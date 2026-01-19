@@ -205,8 +205,7 @@ export default function IssueDrawer({
             description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
             officeId: form.officeId || issue.officeId,
           },
-          selectedFiles,
-          []
+          selectedFiles
         );
       }
 

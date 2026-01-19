@@ -165,8 +165,7 @@ export async function createIssue({
 export async function updateIssue(
   issueId: string,
   data: { summary?: string; description?: string; officeId?: string },
-  files?: File[],
-  deleteAttachmentIds?: string[]
+  files?: File[]
 ): Promise<void> {
   const formData = new FormData();
   formData.append(
@@ -174,9 +173,6 @@ export async function updateIssue(
     new Blob([JSON.stringify(data)], { type: "application/json" })
   );
   (files ?? []).forEach((file) => formData.append("files", file));
-  (deleteAttachmentIds ?? []).forEach((id) =>
-    formData.append("deleteAttachmentIds", id)
-  );
   await api.patch(`${ENDPOINTS.ISSUES}/${issueId}`, formData);
 }
 
