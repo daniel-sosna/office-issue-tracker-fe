@@ -66,6 +66,11 @@ export default function IssueDrawer({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAttachmentDialogOpen, setDeleteAttachmentDialogOpen] =
+    useState(false);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<string | null>(
+    null
+  );
   const {
     selectedFiles,
     attachmentError,
@@ -239,18 +244,19 @@ export default function IssueDrawer({
       setDeleting(false);
     }
   };
-  const handleAttachmentDelete = async (attachmentId: string) => {
-    const deleteConfirmation = window.confirm(
-      "Are you sure you want to delete this attachment? This action cannot be undone."
-    );
-    if (!deleteConfirmation) return;
+  const handleAttachmentDelete = async () => {
+    if (!attachmentToDelete || !issue) return;
     try {
-      await deleteAttachment(attachmentId);
+      setDeleting(true);
+
+      await deleteAttachment(attachmentToDelete);
 
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.issueDetails(issue!.id),
+        queryKey: queryKeys.issueDetails(issue.id),
       });
 
+      setDeleteAttachmentDialogOpen(false);
+      setAttachmentToDelete(null);
       onSaved();
     } catch {
       onError("Failed to delete the attachment.");
@@ -532,7 +538,10 @@ export default function IssueDrawer({
                     url: attachment.url,
                   }))}
                   showDelete={true}
-                  onDelete={(id) => void handleAttachmentDelete(id)}
+                  onDelete={(id) => {
+                    setAttachmentToDelete(id);
+                    setDeleteAttachmentDialogOpen(true);
+                  }}
                 />
               </Box>
             )}
@@ -635,6 +644,34 @@ export default function IssueDrawer({
           <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
           <Button
             onClick={() => void handleDelete()}
+            color="error"
+            variant="contained"
+            disabled={deleting}
+          >
+            {deleting ? "Deleting..." : "Delete"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      {/* Delete Attachment Dialog */}
+      <Dialog
+        open={deleteAttachmentDialogOpen}
+        onClose={() => setDeleteAttachmentDialogOpen(false)}
+        aria-labelledby="delete-dialog-title"
+        aria-describedby="delete-dialog-description"
+      >
+        <DialogTitle id="delete-dialog-title">Delete Attachment</DialogTitle>
+        <DialogContent>
+          <Typography id="delete-dialog-description">
+            Are you sure you want to delete this attachment? This action cannot
+            be undone.
+          </Typography>
+        </DialogContent>
+        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
+          <Button onClick={() => setDeleteAttachmentDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={() => void handleAttachmentDelete()}
             color="error"
             variant="contained"
             disabled={deleting}
