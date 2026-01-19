@@ -198,11 +198,16 @@ export default function IssueDrawer({
       setSaving(true);
 
       if (issueOwner) {
-        await updateIssue(issue.id, {
-          summary: form.summary,
-          description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
-          officeId: form.officeId || issue.officeId,
-        });
+        await updateIssue(
+          issue.id,
+          {
+            summary: form.summary,
+            description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
+            officeId: form.officeId || issue.officeId,
+          },
+          selectedFiles,
+          []
+        );
       }
 
       if (admin) {
@@ -218,7 +223,7 @@ export default function IssueDrawer({
       });
 
       onSaved();
-      onClose();
+      handleClose();
     } catch {
       onError("Failed to save the Issue.");
     } finally {
