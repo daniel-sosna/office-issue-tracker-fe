@@ -76,7 +76,8 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   }, [open]);
 
   useEffect(() => {
-    if (open) {
+    if (open && editor) {
+      editor.commands.setContent("");
       setSummary("");
       setOffice("");
       setDescription("");
@@ -84,6 +85,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       setAttachmentError("");
       setHasSubmitted(false);
       selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
+      setSelectedFiles([]);
     }
   }, [open, editor]);
 
