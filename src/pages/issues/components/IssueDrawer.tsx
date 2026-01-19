@@ -248,7 +248,7 @@ export default function IssueDrawer({
       await deleteAttachment(attachmentId);
 
       await queryClient.invalidateQueries({
-        queryKey: queryKeys.attachments(),
+        queryKey: queryKeys.issueDetails(issue!.id),
       });
 
       onSaved();
@@ -532,7 +532,7 @@ export default function IssueDrawer({
                     url: attachment.url,
                   }))}
                   showDelete={true}
-                  onDelete={() => handleAttachmentDelete}
+                  onDelete={() => void handleAttachmentDelete}
                 />
               </Box>
             )}

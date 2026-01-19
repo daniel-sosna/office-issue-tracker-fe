@@ -3,10 +3,11 @@ import { Box, Typography, Link, Avatar, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface AttachmentItemProps {
+  id: string;
   name: string;
   url: string;
   showDelete?: boolean;
-  onDelete?: () => void;
+  onDelete?: (id: string) => void;
 }
 
 const getThumbnailUrl = (url: string): string => {
@@ -31,6 +32,7 @@ const getDownloadUrl = (url: string): string => {
 };
 
 const AttachmentItem: React.FC<AttachmentItemProps> = ({
+  id,
   name,
   url,
   showDelete,
@@ -60,7 +62,7 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
       {showDelete && (
         <IconButton
           size="small"
-          onClick={onDelete}
+          onClick={() => onDelete?.(id)}
           color="primary"
           disableRipple
           sx={{

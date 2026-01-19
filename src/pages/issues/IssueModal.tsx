@@ -147,7 +147,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         files: selectedFiles,
       });
 
-      onClose();
+      handleClose();
     } catch (error: unknown) {
       let backendMessage = "An error occurred while submitting the issue";
 
