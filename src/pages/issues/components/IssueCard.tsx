@@ -128,7 +128,11 @@ export default function IssueCard({
             </Box>
           </Box>
 
-          <IssueActionButton {...issue} onVote={onClickVote} />
+          <IssueActionButton
+            {...issue}
+            isOwner={issue.isOwner ?? false}
+            onVote={onClickVote}
+          />
         </CardContent>
       </CardActionArea>
     </Card>

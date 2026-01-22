@@ -75,6 +75,10 @@ export default function IssueDrawer({
     description?: string;
   }>({});
 
+  const { data: issue, isError: issueDetailsError } = useIssueDetails(
+    issueId ?? ""
+  );
+
   const [form, setForm] = useState<{
     summary: string;
     description: string;
@@ -83,20 +87,17 @@ export default function IssueDrawer({
   }>({
     summary: "",
     description: "",
-    status: "Open",
+    status: issue?.status ?? "Open",
     officeId: "",
   });
 
-  const { data: issue, isError: issueDetailsError } = useIssueDetails(
-    issueId ?? "",
-    issueStats
-  );
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
-  const issueOwner = issue?.isOwner ?? issue?.reportedByEmail === user?.email;
+  const issueOwner =
+    issueStats?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
   const allowedToEdit =
     (issueOwner ?? admin) && selectedTab === TabIndex.Details;
@@ -142,11 +143,15 @@ export default function IssueDrawer({
   }, [handleClickOutside]);
 
   useEffect(() => {
-    if (issueDetailsError) onError("Failed to load issue details.");
+    if (issueDetailsError) {
+      onError("Failed to load issue details.");
+    }
   }, [issueDetailsError, onError]);
 
   useEffect(() => {
-    if (officesError) onError("Failed to load offices.");
+    if (officesError) {
+      onError("Failed to load offices.");
+    }
   }, [officesError, onError]);
 
   useEffect(() => {
@@ -155,11 +160,11 @@ export default function IssueDrawer({
       setForm({
         summary: issue.summary,
         description: stripHtmlDescription(issue.description),
-        status: issue.status,
+        status: issue.status || "OPEN",
         officeId: issue.officeId,
       });
     }
-  }, [issue]);
+  }, [issue, issueStats]);
 
   function validateForm() {
     const newErrors: typeof errors = {};
@@ -193,8 +198,9 @@ export default function IssueDrawer({
       }
 
       if (admin) {
-        if (form.status !== issue.status)
+        if (form.status !== issue.status) {
           await updateIssueStatus(issue.id, form.status);
+        }
         if (!issueOwner && form.officeId !== issue.officeId)
           await updateIssue(issue.id, { officeId: form.officeId });
       }
@@ -244,7 +250,7 @@ export default function IssueDrawer({
 
   return (
     <RightDrawer open={!!issueId} onClose={onClose}>
-      <Box sx={{ flex: 1, p: 2 }}>
+      <Box sx={{ p: 2, flex: 1 }}>
         <Box
           ref={summaryRef}
           display="flex"
@@ -277,14 +283,11 @@ export default function IssueDrawer({
               variant="standard"
               fullWidth
               value={form.summary}
-              onChange={(e) =>
-                setForm((prev) => ({ ...prev, summary: e.target.value }))
-              }
+              onChange={(e) => {
+                setForm((prev) => ({ ...prev, summary: e.target.value }));
+              }}
               error={!!errors.summary}
               helperText={errors.summary}
-              slotProps={{
-                input: { sx: { fontSize: "22px", fontWeight: 400 } },
-              }}
             />
           )}
         </Box>
@@ -341,12 +344,12 @@ export default function IssueDrawer({
               <Select
                 size="small"
                 value={form.status}
-                onChange={(e) =>
+                onChange={(e) => {
                   setForm((prev) => ({
                     ...prev,
                     status: e.target.value as IssueStatusType,
-                  }))
-                }
+                  }));
+                }}
               >
                 {(Object.values(IssueStatus) as IssueStatusType[]).map(
                   (status) => (
@@ -373,7 +376,7 @@ export default function IssueDrawer({
             >
               <ArrowUpwardIcon fontSize="small" sx={{ mr: 0.5 }} />
               <Typography variant="body2" color="text.primary">
-                {issue.votes}
+                {issueStats.votes}
               </Typography>
             </Box>
           </Box>
@@ -401,9 +404,9 @@ export default function IssueDrawer({
               <Select
                 size="small"
                 value={form.officeId || issue.officeId}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, officeId: e.target.value }))
-                }
+                onChange={(e) => {
+                  setForm((prev) => ({ ...prev, officeId: e.target.value }));
+                }}
                 sx={{ minWidth: 160 }}
               >
                 {offices.map((o) => (
@@ -432,7 +435,7 @@ export default function IssueDrawer({
         >
           <Tab label="Details" sx={{ textTransform: "none" }} />
           <Tab
-            label={`Comments (${issue.comments})`}
+            label={`Comments (${issueStats.comments})`}
             sx={{ textTransform: "none" }}
           />
         </Tabs>
@@ -474,9 +477,9 @@ export default function IssueDrawer({
                 fullWidth
                 minRows={4}
                 value={form.description}
-                onChange={(e) =>
-                  setForm((prev) => ({ ...prev, description: e.target.value }))
-                }
+                onChange={(e) => {
+                  setForm((prev) => ({ ...prev, description: e.target.value }));
+                }}
                 error={!!errors.description}
                 helperText={errors.description}
               />
@@ -504,46 +507,54 @@ export default function IssueDrawer({
             onCommentCreated={onCommentCreated}
           />
         )}
+      </Box>
 
+      {/* Actions */}
+      <Box
+        sx={{
+          bottom: 0,
+          background: "white",
+          zIndex: 10,
+          borderTop: "1px solid #ddd",
+          padding: "12px",
+        }}
+      >
         {allowedToEdit && (
-          <Box mt={2}>
-            <Divider sx={{ my: 2 }} />
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
+          <Box
+            display="flex"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Button
+              variant="outlined"
+              size="medium"
+              color="error"
+              onClick={() => setDeleteDialogOpen(true)}
+              sx={{ borderRadius: "999px", paddingX: 3 }}
+              disabled={deleting}
             >
+              {deleting ? "Deleting..." : "Delete"}
+            </Button>
+
+            <Box display="flex" gap={2}>
               <Button
                 variant="outlined"
                 size="medium"
-                color="error"
-                onClick={() => setDeleteDialogOpen(true)}
+                onClick={onClose}
                 sx={{ borderRadius: "999px", paddingX: 3 }}
-                disabled={deleting}
               >
-                {deleting ? "Deleting..." : "Delete"}
+                Cancel
               </Button>
-
-              <Box ref={actionsRef} display="flex" gap={2}>
-                <Button
-                  variant="outlined"
-                  size="medium"
-                  onClick={onClose}
-                  sx={{ borderRadius: "999px", paddingX: 3 }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  variant="contained"
-                  size="medium"
-                  color="secondary"
-                  onClick={() => void handleSave()}
-                  sx={{ borderRadius: "999px", paddingX: 3 }}
-                  disabled={saving}
-                >
-                  {saving ? "Saving..." : "Save"}
-                </Button>
-              </Box>
+              <Button
+                variant="contained"
+                size="medium"
+                color="secondary"
+                onClick={() => void handleSave()}
+                sx={{ borderRadius: "999px", paddingX: 3 }}
+                disabled={saving}
+              >
+                {saving ? "Saving..." : "Save"}
+              </Button>
             </Box>
           </Box>
         )}
@@ -570,6 +581,10 @@ export default function IssueDrawer({
             color="error"
             variant="contained"
             disabled={deleting}
+            sx={{
+              borderRadius: "999px",
+              paddingX: 3,
+            }}
           >
             {deleting ? "Deleting..." : "Delete"}
           </Button>
