@@ -46,7 +46,6 @@ const tabStatuses: Record<
 const IssuesList: React.FC = () => {
   const { user } = useAuth();
   const currentUserId = user?.id;
-
   const [page, setPage] = useState<number>(1);
   const [selectedTab, setSelectedTab] = useState<IssueTab>(IssueTab.ALL);
   const [selectedSort, setSelectedSort] = useState<FrontendSortKey>("latest");

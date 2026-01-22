@@ -8,11 +8,10 @@ export function useVoteOnIssue() {
 
   return useMutation<void, Error, VoteOnIssueArgs>({
     mutationFn: voteOnIssue,
+
     onMutate: async ({ issueId, vote }) => {
-      // Cancel outgoing refetches
       await queryClient.cancelQueries({ queryKey: queryKeys.issues() });
 
-      // Optimistically update the cache
       queryClient.setQueriesData<IssuePage>(
         { queryKey: queryKeys.issues() },
         (old) => {
@@ -32,8 +31,8 @@ export function useVoteOnIssue() {
         }
       );
     },
+
     onError: () => {
-      // Rollback on error
       void queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
     },
   });

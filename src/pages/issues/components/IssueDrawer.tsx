@@ -35,6 +35,7 @@ import {
 } from "@data/issues";
 import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
+import IssueActivityLogTab from "@components/IssueActivityLogTab";
 import { EditButton } from "./EditButton";
 import { stripHtmlDescription, formatDate } from "@utils/formatters";
 
@@ -56,6 +57,7 @@ export default function IssueDrawer({
   const TabIndex = {
     Details: 0,
     Comments: 1,
+    ActivityLog: 2,
   } as const;
   type TabIndex = (typeof TabIndex)[keyof typeof TabIndex];
 
@@ -284,7 +286,6 @@ export default function IssueDrawer({
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Metadata */}
         <Box
           display="grid"
           gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
@@ -292,7 +293,6 @@ export default function IssueDrawer({
           alignItems="center"
           mb={2}
         >
-          {/* Reported By */}
           <Typography variant="body2">Reported by</Typography>
           <Box>
             <Box
@@ -315,7 +315,6 @@ export default function IssueDrawer({
             </Box>
           </Box>
 
-          {/* Reported Date */}
           <Typography variant="body2">Reported at</Typography>
           <Box>
             <Typography variant="body2" color="text.primary">
@@ -323,7 +322,6 @@ export default function IssueDrawer({
             </Typography>
           </Box>
 
-          {/* Status */}
           <Typography variant="body2">Status</Typography>
           <Box ref={statusRef}>
             {editingField !== "status" && (
@@ -356,7 +354,6 @@ export default function IssueDrawer({
             )}
           </Box>
 
-          {/* Upvotes */}
           <Typography variant="body2">Upvotes</Typography>
           <Box>
             <Box
@@ -376,7 +373,6 @@ export default function IssueDrawer({
             </Box>
           </Box>
 
-          {/* Office */}
           <Typography variant="body2">Office</Typography>
           <Box ref={officeRef}>
             {editingField !== "office" && (
@@ -415,7 +411,6 @@ export default function IssueDrawer({
           </Box>
         </Box>
 
-        {/* Tabs */}
         <Tabs
           value={selectedTab}
           onChange={(_, value: TabIndex) => setSelectedTab(value)}
@@ -436,9 +431,9 @@ export default function IssueDrawer({
             label={`Comments (${issue.comments})`}
             sx={{ textTransform: "none" }}
           />
+          <Tab label="Activity Log" sx={{ textTransform: "none" }} />
         </Tabs>
 
-        {/* Tab Panels */}
         {selectedTab === TabIndex.Details && (
           <Box ref={descriptionRef}>
             <Typography variant="body2" color="text.secondary">
@@ -500,10 +495,17 @@ export default function IssueDrawer({
             )}
           </Box>
         )}
+
         {selectedTab === TabIndex.Comments && (
           <Typography variant="body1" color="text.primary">
             Comments section is under construction.
           </Typography>
+        )}
+
+        {selectedTab === TabIndex.ActivityLog && (
+          <Box>
+            <IssueActivityLogTab issueId={issueId ?? ""} />
+          </Box>
         )}
       </Box>
 
@@ -518,7 +520,7 @@ export default function IssueDrawer({
           padding: "12px",
         }}
       >
-        {(issueOwner ?? admin) && (
+        {(issueOwner || admin) && (
           <Box
             display="flex"
             justifyContent="space-between"
@@ -559,7 +561,6 @@ export default function IssueDrawer({
         )}
       </Box>
 
-      {/* Delete Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={() => setDeleteDialogOpen(false)}
