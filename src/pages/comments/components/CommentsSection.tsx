@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export default function CommentsSection({
   issueId,
-  onCommentCreated, // <-- add this here
+  onCommentCreated,
 }: {
   issueId: string;
   onCommentCreated: () => void;
