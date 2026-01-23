@@ -174,7 +174,8 @@ export default function ManageOfficesModal({
             <strong>
               {officeToConfirmDelete?.title} ({officeToConfirmDelete?.country})
             </strong>
-            ? This action cannot be undone.
+            ? All issues related to this office will also be deleted. This
+            action cannot be undone.
           </Typography>
 
           <Box display="flex" justifyContent="flex-end" gap={1}>
