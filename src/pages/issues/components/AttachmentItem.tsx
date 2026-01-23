@@ -113,19 +113,6 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
           variant="caption"
           sx={{ color: "text.secondary", letterSpacing: "0.2px" }}
         >
-          <Link
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="none"
-            sx={{
-              color: "text.secondary",
-              "&:hover": { color: "text.primary" },
-            }}
-          >
-            Media
-          </Link>
-
           {!isLocal && (
             <>
               {" "}
