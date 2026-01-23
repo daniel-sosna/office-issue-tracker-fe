@@ -515,8 +515,9 @@ export default function IssueDrawer({
           bottom: 0,
           background: "white",
           zIndex: 10,
-          borderTop: "1px solid #ddd",
-          padding: "12px",
+          position: "sticky",
+          borderTop: allowedToEdit ? "1px solid #ddd" : "none",
+          padding: allowedToEdit ? "12px" : "none",
         }}
       >
         {allowedToEdit && (
