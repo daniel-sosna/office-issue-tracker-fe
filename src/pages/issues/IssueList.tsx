@@ -257,7 +257,6 @@ const IssuesList: React.FC = () => {
             prev ? { ...prev, comments: prev.comments + 1 } : prev
           )
         }
-        user={user!}
         onSaved={() =>
           setSnackbar({
             open: true,
