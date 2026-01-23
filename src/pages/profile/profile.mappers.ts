@@ -1,5 +1,5 @@
 import type { ProfileResponse, ProfileRequest } from "@api/services/profile";
-import type { ProfileFormValues } from "@pages/profile/profile.types";
+import type { ProfileFormValues } from "@data/profile.types";
 
 export function toFormValues(data: ProfileResponse): ProfileFormValues {
   return {

@@ -18,7 +18,7 @@ import { useAuth } from "@context/UseAuth";
 import { useProfile } from "@api/queries/useProfile";
 import { useUpdateProfile } from "@api/queries/useUpdateProfile";
 import { toFormValues, toRequestBody } from "@pages/profile/profile.mappers";
-import type { ProfileFormValues } from "@pages/profile/profile.types";
+import type { ProfileFormValues } from "@data/profile.types";
 import { validate } from "@pages/profile/profile.validation";
 
 const departments = ["Operations", "Engineering", "HR", "Finance", "Sales"];

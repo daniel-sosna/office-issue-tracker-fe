@@ -1,7 +1,4 @@
-import type {
-  ProfileFormValues,
-  ValidationErrors,
-} from "@pages/profile/profile.types";
+import type { ProfileFormValues, ValidationErrors } from "@data/profile.types";
 
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
