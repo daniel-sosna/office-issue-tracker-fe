@@ -18,6 +18,13 @@ export default function CommentInput({ onSubmit, loading = false }: Props) {
     setValue("");
   };
 
+  const handleClear = () => {
+    setValue("");
+  };
+
+  const canSend = !!value.trim();
+  const canClear = value.length > 0;
+
   return (
     <Box>
       <TextField
@@ -48,13 +55,23 @@ export default function CommentInput({ onSubmit, loading = false }: Props) {
           {value.length}/{MAX_LENGTH}
         </Typography>
 
-        <Button
-          variant="contained"
-          onClick={handleSubmit}
-          disabled={loading || !value.trim()}
-        >
-          Send
-        </Button>
+        <Box display="flex" gap={1}>
+          <Button
+            variant="outlined"
+            onClick={handleClear}
+            disabled={loading || !canClear}
+          >
+            Clear
+          </Button>
+
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={loading || !canSend}
+          >
+            Send
+          </Button>
+        </Box>
       </Box>
     </Box>
   );
