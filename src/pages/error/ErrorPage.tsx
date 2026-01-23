@@ -17,7 +17,7 @@ export const ErrorPage: FC = () => {
     : "Sorry, something went wrong. Try refreshing the page. If the problem persists, please notify the system administrator.";
 
   return (
-    <Box sx={{ maxWidth: 640, mt: 4 }}>
+    <Box sx={{ maxWidth: 640, m: 4 }}>
       <Stack spacing={2}>
         <Typography variant="h4" component="h1" fontWeight={600}>
           {title}

@@ -1,12 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchIssueDetails } from "@api/services/issues";
-import type { IssueDetails, IssueStats } from "@data/issues";
+import type {
+  IssueDetails,
+  IssueStats,
+  BackendIssueStatusType,
+} from "@data/issues";
 import { queryKeys } from "./queryKeys";
+import { mapBackendStatus } from "@data/issues";
 
-export function useIssueDetails(
-  issueId?: string,
-  stats: IssueStats = { hasVoted: false, votes: 0, comments: 0 }
-) {
+export function useIssueDetails(issueId?: string, stats?: IssueStats) {
   return useQuery<IssueDetails, Error>({
     enabled: !!issueId,
     queryKey: issueId
@@ -15,12 +17,13 @@ export function useIssueDetails(
     queryFn: () => fetchIssueDetails(issueId ?? "", stats),
     placeholderData: () => {
       if (!issueId) return undefined;
+
       return {
         ...stats,
         id: issueId,
         summary: "Loading...",
         description: "Loading...",
-        status: "CLOSED",
+        status: mapBackendStatus("CLOSED" as BackendIssueStatusType),
         dateCreated: "2025-01-01 00:00:00.00000 +00:00",
         officeId: "",
         office: "Loading...",
@@ -28,6 +31,9 @@ export function useIssueDetails(
         reportedByAvatar: "",
         reportedByEmail: "",
         attachments: [],
+        hasVoted: stats?.hasVoted ?? false,
+        votes: stats?.votes ?? 0,
+        comments: stats?.comments ?? 0,
       } as IssueDetails;
     },
     staleTime: 1000 * 60 * 5,
