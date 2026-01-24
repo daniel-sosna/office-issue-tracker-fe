@@ -112,7 +112,7 @@ export default function IssueDrawer({
     issueStats?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
   const allowedToEdit =
-    (issueOwner ?? admin) && selectedTab === TabIndex.Details;
+    (issueOwner || admin) && selectedTab === TabIndex.Details;
 
   useEffect(() => {
     setSelectedTab(TabIndex.Details);
