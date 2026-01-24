@@ -251,6 +251,11 @@ const IssuesList: React.FC = () => {
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
         onClose={() => setSelectedIssueId(undefined)}
+        onCommentCreated={() =>
+          setSelectedIssueStats((prev) =>
+            prev ? { ...prev, comments: prev.comments + 1 } : prev
+          )
+        }
         onSaved={() =>
           setSnackbar({
             open: true,

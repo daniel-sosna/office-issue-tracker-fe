@@ -26,6 +26,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useOffices } from "@api/queries/useOffices";
 import RightDrawer from "@components/RightDrawer";
+import CommentsSection from "@pages/comments/components/CommentsSection";
 import { useAuth } from "@context/UseAuth";
 import {
   IssueStatus,
@@ -43,6 +44,7 @@ interface Props {
   issueId?: string;
   issueStats?: IssueStats;
   onClose: () => void;
+  onCommentCreated: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
 }
@@ -51,6 +53,7 @@ export default function IssueDrawer({
   issueId,
   issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
+  onCommentCreated,
   onSaved,
   onError,
 }: Props) {
@@ -89,6 +92,7 @@ export default function IssueDrawer({
     status: issue?.status ?? "Open",
     officeId: "",
   });
+
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
@@ -97,6 +101,12 @@ export default function IssueDrawer({
   const issueOwner =
     issueStats?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
+  const allowedToEdit =
+    (issueOwner ?? admin) && selectedTab === TabIndex.Details;
+
+  useEffect(() => {
+    setSelectedTab(TabIndex.Details);
+  }, [issueId]);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -242,7 +252,7 @@ export default function IssueDrawer({
 
   return (
     <RightDrawer open={!!issueId} onClose={onClose}>
-      <Box sx={{ padding: "12px", flex: 1 }}>
+      <Box sx={{ p: 2, flex: 1 }}>
         <Box
           ref={summaryRef}
           display="flex"
@@ -427,8 +437,7 @@ export default function IssueDrawer({
         >
           <Tab label="Details" sx={{ textTransform: "none" }} />
           <Tab
-            disabled
-            label={`Comments (${issue.comments})`}
+            label={`Comments (${issueStats.comments})`}
             sx={{ textTransform: "none" }}
           />
           <Tab label="Activity Log" sx={{ textTransform: "none" }} />
@@ -497,9 +506,16 @@ export default function IssueDrawer({
         )}
 
         {selectedTab === TabIndex.Comments && (
-          <Typography variant="body1" color="text.primary">
-            Comments section is under construction.
-          </Typography>
+          <CommentsSection
+            issueId={issue.id}
+            onCommentCreated={onCommentCreated}
+          />
+        )}
+
+        {selectedTab === TabIndex.ActivityLog && (
+          <Box>
+            <IssueActivityLogTab issueId={issueId ?? ""} />
+          </Box>
         )}
 
         {selectedTab === TabIndex.ActivityLog && (
@@ -512,15 +528,15 @@ export default function IssueDrawer({
       {/* Actions */}
       <Box
         sx={{
-          position: "sticky",
           bottom: 0,
           background: "white",
           zIndex: 10,
-          borderTop: "1px solid #ddd",
-          padding: "12px",
+          position: "sticky",
+          borderTop: allowedToEdit ? "1px solid #ddd" : "none",
+          padding: allowedToEdit ? "12px" : "none",
         }}
       >
-        {(issueOwner || admin) && (
+        {allowedToEdit && (
           <Box
             display="flex"
             justifyContent="space-between"
