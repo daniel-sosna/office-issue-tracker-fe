@@ -4,6 +4,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { NOTIFICATION_KEYS } from "./useNotifications";
 import type { Notification } from "@data/notification";
 import { ENDPOINTS } from "@api/services/urls";
+export const BASE_URL = import.meta.env.VITE_API_BASE_URL as string;
 
 let stompClient: Client | null = null;
 
@@ -13,13 +14,15 @@ export const useNotificationSocket = (userId: string) => {
   useEffect(() => {
     if (!userId || stompClient?.active) return;
 
+    const wsBaseUrl = BASE_URL.replace(/^http/, "ws");
+    const brokerURL = `${wsBaseUrl}${ENDPOINTS.WS_NOTIFICATIONS}`;
+    console.log(brokerURL);
+
     stompClient = new Client({
-      brokerURL: `ws://localhost:8080${ENDPOINTS.WS_NOTIFICATIONS}`,
+      brokerURL,
       reconnectDelay: 5000,
 
       onConnect: () => {
-        console.log("[WS] Connected");
-
         stompClient?.subscribe(
           `/user/${userId}/queue/notifications`,
           (message: IMessage) => {
