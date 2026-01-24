@@ -526,24 +526,41 @@ export default function IssueDrawer({
               </Box>
             )}
             {editingField === "description" && issueOwner && (
-              <Box
-                sx={{
-                  height: 250,
-                  display: "flex",
-                  flexDirection: "column",
-                  border: 1,
-                  borderColor: "divider",
-                  borderRadius: 1,
-                  overflow: "hidden",
-                }}
-                onClick={() => descriptionEditor?.chain().focus().run()}
-              >
-                <EditorToolbar editor={descriptionEditor} />
-                <Box sx={{ flex: 1, p: 1, overflowY: "auto" }}>
-                  {descriptionEditor && (
-                    <EditorContent editor={descriptionEditor} />
-                  )}
+              <Box>
+                <Box
+                  sx={{
+                    height: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                  }}
+                  onClick={() => descriptionEditor?.chain().focus().run()}
+                >
+                  <EditorToolbar editor={descriptionEditor} />
+
+                  <Box
+                    sx={{
+                      flex: 1,
+                      p: 1,
+                      overflowY: "auto",
+                      cursor: "text",
+                      display: "flex",
+                      flexDirection: "column",
+                      "& .ProseMirror:focus": { outline: "none" },
+                    }}
+                  >
+                    {descriptionEditor && (
+                      <EditorContent
+                        editor={descriptionEditor}
+                        style={{ flex: 1, width: "100%" }}
+                      />
+                    )}
+                  </Box>
                 </Box>
+
                 {errors.description && (
                   <Typography color="error" fontSize={12} mt={0.5}>
                     {errors.description}
