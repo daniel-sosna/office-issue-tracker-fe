@@ -16,7 +16,6 @@ export const useNotificationSocket = (userId: string) => {
 
     const wsBaseUrl = BASE_URL.replace(/^http/, "ws");
     const brokerURL = `${wsBaseUrl}${ENDPOINTS.WS_NOTIFICATIONS}`;
-    console.log(brokerURL);
 
     stompClient = new Client({
       brokerURL,
