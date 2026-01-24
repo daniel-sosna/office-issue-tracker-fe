@@ -11,6 +11,9 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import EditorToolbar from "@components/EditorToolbar";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -81,6 +84,11 @@ export default function IssueDrawer({
 
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
+
+  const descriptionEditor = useEditor({
+    extensions: [StarterKit],
+    content: "",
+  });
 
   const [errors, setErrors] = useState<{
     summary?: string;
@@ -171,12 +179,18 @@ export default function IssueDrawer({
       setEditingField(null);
       setForm({
         summary: issue.summary,
-        description: stripHtmlDescription(issue.description),
+        description: issue.description,
         status: issue.status || "Open",
         officeId: issue.officeId,
       });
     }
   }, [issue, issueStats]);
+
+  useEffect(() => {
+    if (editingField === "description" && descriptionEditor && issue) {
+      descriptionEditor.commands.setContent(issue.description || "");
+    }
+  }, [editingField, descriptionEditor, issue]);
 
   function validateForm() {
     const newErrors: typeof errors = {};
@@ -186,9 +200,10 @@ export default function IssueDrawer({
     else if (form.summary.length > 200)
       newErrors.summary = "Summary must be less than 200 characters";
 
-    if (!form.description?.trim())
-      newErrors.description = "Description is required";
-    else if (form.description.length > 2000)
+    const plainText = stripHtmlDescription(descriptionEditor?.getText() ?? "");
+
+    if (!plainText.trim()) newErrors.description = "Description is required";
+    else if (plainText.length > 2000)
       newErrors.description = "Description must be less than 2000 characters";
 
     setErrors(newErrors);
@@ -214,7 +229,7 @@ export default function IssueDrawer({
           issue.id,
           {
             summary: form.summary,
-            description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
+            description: descriptionEditor?.getHTML() ?? "",
             officeId: form.officeId || issue.officeId,
           },
           selectedFiles
@@ -503,33 +518,38 @@ export default function IssueDrawer({
                 }}
               >
                 <Typography
-                  sx={{
-                    fontSize: "16px",
-                    lineHeight: "1.5",
-                    whiteSpace: "pre-wrap",
-                    wordBreak: "break-word",
-                    flexGrow: 1,
-                  }}
-                >
-                  {form.description}
-                </Typography>
+                  dangerouslySetInnerHTML={{ __html: form.description }}
+                />
                 {issueOwner && (
                   <EditButton onClick={() => setEditingField("description")} />
                 )}
               </Box>
             )}
             {editingField === "description" && issueOwner && (
-              <TextField
-                multiline
-                fullWidth
-                minRows={4}
-                value={form.description}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, description: e.target.value }));
+              <Box
+                sx={{
+                  height: 250,
+                  display: "flex",
+                  flexDirection: "column",
+                  border: 1,
+                  borderColor: "divider",
+                  borderRadius: 1,
+                  overflow: "hidden",
                 }}
-                error={!!errors.description}
-                helperText={errors.description}
-              />
+                onClick={() => descriptionEditor?.chain().focus().run()}
+              >
+                <EditorToolbar editor={descriptionEditor} />
+                <Box sx={{ flex: 1, p: 1, overflowY: "auto" }}>
+                  {descriptionEditor && (
+                    <EditorContent editor={descriptionEditor} />
+                  )}
+                </Box>
+                {errors.description && (
+                  <Typography color="error" fontSize={12} mt={0.5}>
+                    {errors.description}
+                  </Typography>
+                )}
+              </Box>
             )}
 
             {attachments.length > 0 && issueOwner && (
