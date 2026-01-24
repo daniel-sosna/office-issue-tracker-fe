@@ -32,6 +32,7 @@ const AttachmentList: React.FC<AttachmentListProps> = ({
     >
       {attachments.map((attachment) => (
         <AttachmentItem
+          id={attachment.id}
           key={attachment.id}
           name={attachment.name}
           url={attachment.url}

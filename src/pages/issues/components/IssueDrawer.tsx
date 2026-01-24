@@ -10,14 +10,11 @@ import {
   Select,
   TextField,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  deleteAttachment,
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
@@ -38,6 +35,9 @@ import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
 import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
+import { useAttachments } from "@api/queries/useAttachments.ts";
+import ConfirmDialog from "@pages/issues/components/ConfirmDialog.tsx";
 
 interface Props {
   issueId?: string;
@@ -66,6 +66,18 @@ export default function IssueDrawer({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAttachmentDialogOpen, setDeleteAttachmentDialogOpen] =
+    useState(false);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<string | null>(
+    null
+  );
+  const {
+    selectedFiles,
+    attachmentError,
+    handleAddFiles,
+    handleDeleteFile,
+    resetAttachments,
+  } = useAttachments();
 
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
@@ -100,11 +112,11 @@ export default function IssueDrawer({
     issueStats?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
   const allowedToEdit =
-    (issueOwner ?? admin) && selectedTab === TabIndex.Details;
+    (issueOwner || admin) && selectedTab === TabIndex.Details;
 
   useEffect(() => {
     setSelectedTab(TabIndex.Details);
-  }, [issueId]);
+  }, [TabIndex.Details, issueId]);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -160,7 +172,7 @@ export default function IssueDrawer({
       setForm({
         summary: issue.summary,
         description: stripHtmlDescription(issue.description),
-        status: issue.status || "OPEN",
+        status: issue.status || "Open",
         officeId: issue.officeId,
       });
     }
@@ -183,6 +195,14 @@ export default function IssueDrawer({
     return Object.keys(newErrors).length === 0;
   }
 
+  const handleClose = () => {
+    resetAttachments();
+    setEditingField(null);
+    setErrors({});
+    selectedFiles.forEach((f) => URL.revokeObjectURL(f.name));
+    onClose();
+  };
+
   async function handleSave() {
     if (!issue || !validateForm()) return;
 
@@ -190,11 +210,15 @@ export default function IssueDrawer({
       setSaving(true);
 
       if (issueOwner) {
-        await updateIssue(issue.id, {
-          summary: form.summary,
-          description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
-          officeId: form.officeId || issue.officeId,
-        });
+        await updateIssue(
+          issue.id,
+          {
+            summary: form.summary,
+            description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
+            officeId: form.officeId || issue.officeId,
+          },
+          selectedFiles
+        );
       }
 
       if (admin) {
@@ -211,7 +235,7 @@ export default function IssueDrawer({
       });
 
       onSaved();
-      onClose();
+      handleClose();
     } catch {
       onError("Failed to save the Issue.");
     } finally {
@@ -237,10 +261,30 @@ export default function IssueDrawer({
       setDeleting(false);
     }
   };
+  const handleAttachmentDelete = async () => {
+    if (!attachmentToDelete || !issue) return;
+    try {
+      setDeleting(true);
+
+      await deleteAttachment(attachmentToDelete);
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.issueDetails(issue.id),
+      });
+
+      setDeleteAttachmentDialogOpen(false);
+      setAttachmentToDelete(null);
+      onSaved();
+    } catch {
+      onError("Failed to delete the attachment.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (!issue) {
     return (
-      <RightDrawer open={false} onClose={onClose}>
+      <RightDrawer open={false} onClose={handleClose}>
         <Typography variant="h4" sx={{ fontWeight: 400 }}>
           Select an issue to see details.
         </Typography>
@@ -249,7 +293,7 @@ export default function IssueDrawer({
   }
 
   return (
-    <RightDrawer open={!!issueId} onClose={onClose}>
+    <RightDrawer open={!!issueId} onClose={handleClose}>
       <Box sx={{ p: 2, flex: 1 }}>
         <Box
           ref={summaryRef}
@@ -288,6 +332,9 @@ export default function IssueDrawer({
               }}
               error={!!errors.summary}
               helperText={errors.summary}
+              slotProps={{
+                input: { sx: { fontSize: "22px", fontWeight: 400 } },
+              }}
             />
           )}
         </Box>
@@ -395,12 +442,12 @@ export default function IssueDrawer({
                       : issue.office;
                   })()}
                 </Typography>
-                {(issueOwner ?? admin) && (
+                {(issueOwner || admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
                 )}
               </Box>
             )}
-            {editingField === "office" && (issueOwner ?? admin) && (
+            {editingField === "office" && (issueOwner || admin) && (
               <Select
                 size="small"
                 value={form.officeId || issue.officeId}
@@ -485,7 +532,28 @@ export default function IssueDrawer({
               />
             )}
 
-            {attachments.length > 0 && (
+            {attachments.length > 0 && issueOwner && (
+              <Box mt={2}>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Attachments
+                </Typography>
+
+                <AttachmentList
+                  attachments={attachments.map((attachment) => ({
+                    id: attachment.id,
+                    name: attachment.originalFilename,
+                    url: attachment.url,
+                  }))}
+                  showDelete={true}
+                  onDelete={(id) => {
+                    setAttachmentToDelete(id);
+                    setDeleteAttachmentDialogOpen(true);
+                  }}
+                />
+              </Box>
+            )}
+
+            {attachments.length > 0 && !issueOwner && (
               <Box mt={2}>
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   Attachments
@@ -498,6 +566,19 @@ export default function IssueDrawer({
                   }))}
                 />
               </Box>
+            )}
+            {issueOwner && (
+              <AttachmentSection
+                attachments={selectedFiles.map((f) => ({
+                  id: f.name + f.size,
+                  name: f.name,
+                  url: URL.createObjectURL(f),
+                }))}
+                onAddFiles={handleAddFiles}
+                onDelete={handleDeleteFile}
+                error={attachmentError}
+                drawerEditor={true}
+              />
             )}
           </Box>
         )}
@@ -537,11 +618,11 @@ export default function IssueDrawer({
               {deleting ? "Deleting..." : "Delete"}
             </Button>
 
-            <Box display="flex" gap={2}>
+            <Box ref={actionsRef} display="flex" gap={2}>
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={onClose}
+                onClick={handleClose}
                 sx={{ borderRadius: "999px", paddingX: 3 }}
               >
                 Cancel
@@ -562,35 +643,29 @@ export default function IssueDrawer({
       </Box>
 
       {/* Delete Dialog */}
-      <Dialog
+      <ConfirmDialog
         open={deleteDialogOpen}
+        title={"Delete Issue"}
+        description={
+          "Are you sure you want to delete this issue? This action cannot be\n" +
+          "            undone."
+        }
+        loading={deleting}
         onClose={() => setDeleteDialogOpen(false)}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
-        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
-        <DialogContent>
-          <Typography id="delete-dialog-description">
-            Are you sure you want to delete this issue? This action cannot be
-            undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => void handleDelete()}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-            sx={{
-              borderRadius: "999px",
-              paddingX: 3,
-            }}
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={() => void handleDelete()}
+      ></ConfirmDialog>
+
+      <ConfirmDialog
+        open={deleteAttachmentDialogOpen}
+        title={"Delete Attachment"}
+        description={
+          "Are you sure you want to delete this attachment? This action cannot be\n" +
+          "                 undone."
+        }
+        loading={deleting}
+        onClose={() => setDeleteAttachmentDialogOpen(false)}
+        onConfirm={() => void handleAttachmentDelete()}
+      ></ConfirmDialog>
     </RightDrawer>
   );
 }
