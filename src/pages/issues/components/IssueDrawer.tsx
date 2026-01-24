@@ -10,10 +10,6 @@ import {
   Select,
   TextField,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useQueryClient } from "@tanstack/react-query";
@@ -41,6 +37,7 @@ import { EditButton } from "./EditButton";
 import { stripHtmlDescription, formatDate } from "@utils/formatters";
 import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
 import { useAttachments } from "@api/queries/useAttachments.ts";
+import ConfirmDialog from "@pages/issues/components/ConfirmDialog.tsx";
 
 interface Props {
   issueId?: string;
@@ -119,7 +116,7 @@ export default function IssueDrawer({
 
   useEffect(() => {
     setSelectedTab(TabIndex.Details);
-  }, [issueId]);
+  }, [TabIndex.Details, issueId]);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -646,67 +643,29 @@ export default function IssueDrawer({
       </Box>
 
       {/* Delete Dialog */}
-      <Dialog
+      <ConfirmDialog
         open={deleteDialogOpen}
+        title={"Delete Issue"}
+        description={
+          "Are you sure you want to delete this issue? This action cannot be\n" +
+          "            undone."
+        }
+        loading={deleting}
         onClose={() => setDeleteDialogOpen(false)}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
-        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
-        <DialogContent>
-          <Typography id="delete-dialog-description">
-            Are you sure you want to delete this issue? This action cannot be
-            undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => void handleDelete()}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-            sx={{
-              borderRadius: "999px",
-              paddingX: 3,
-            }}
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-      {/* Delete Attachment Dialog */}
-      <Dialog
+        onConfirm={() => void handleDelete}
+      ></ConfirmDialog>
+
+      <ConfirmDialog
         open={deleteAttachmentDialogOpen}
+        title={"Delete Attachment"}
+        description={
+          "Are you sure you want to delete this attachment? This action cannot be\n" +
+          "                 undone."
+        }
+        loading={deleting}
         onClose={() => setDeleteAttachmentDialogOpen(false)}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
-        <DialogTitle id="delete-dialog-title">Delete Attachment</DialogTitle>
-        <DialogContent>
-          <Typography id="delete-dialog-description">
-            Are you sure you want to delete this attachment? This action cannot
-            be undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
-          <Button onClick={() => setDeleteAttachmentDialogOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            onClick={() => void handleAttachmentDelete()}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-            sx={{
-              borderRadius: "999px",
-              paddingX: 3,
-            }}
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={() => void handleAttachmentDelete()}
+      ></ConfirmDialog>
     </RightDrawer>
   );
 }
