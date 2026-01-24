@@ -4,7 +4,19 @@ export function stripHtml(html: string): string {
   return div.textContent || div.innerText || "";
 }
 export function stripHtmlDescription(html: string): string {
-  return html.replace(/<[^>]+>/g, "");
+  if (!html) return "";
+
+  let text = html.replace(/<(br|p|div|li)[^>]*>/gi, " ");
+
+  text = text.replace(/<[^>]+>/g, "");
+
+  text = text.replace(/&nbsp;/gi, " ").replace(/\u00a0/g, " ");
+
+  text = text.replace(/[\r\n]+/g, " ");
+
+  text = text.replace(/\s+/g, " ").trim();
+
+  return text;
 }
 
 export function formatDate(dateString: string): string {
