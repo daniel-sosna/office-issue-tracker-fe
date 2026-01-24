@@ -5,5 +5,7 @@ export const ENDPOINTS = {
   ISSUE_VOTE: "/issues/:issueId/vote",
   OFFICES: "/offices",
   COUNTRIES: "/offices/countries",
+  ISSUE_COMMENTS: "/issues/:issueId/comments",
+  ISSUE_COMMENTS_CREATE: "/issues/:issueId/comments/create",
   USERS: "/api/users",
 } as const;
