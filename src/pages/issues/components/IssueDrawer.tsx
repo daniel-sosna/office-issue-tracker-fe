@@ -652,7 +652,7 @@ export default function IssueDrawer({
         }
         loading={deleting}
         onClose={() => setDeleteDialogOpen(false)}
-        onConfirm={() => void handleDelete}
+        onConfirm={() => void handleDelete()}
       ></ConfirmDialog>
 
       <ConfirmDialog
