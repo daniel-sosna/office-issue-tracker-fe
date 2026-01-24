@@ -187,10 +187,27 @@ export default function IssueDrawer({
   }, [issue, issueStats]);
 
   useEffect(() => {
-    if (editingField === "description" && descriptionEditor && issue) {
-      descriptionEditor.commands.setContent(issue.description || "");
+    if (editingField === "description" && descriptionEditor) {
+      descriptionEditor.commands.setContent(form.description || "");
     }
-  }, [editingField, descriptionEditor, issue]);
+  }, [editingField, descriptionEditor]);
+
+  useEffect(() => {
+    if (!descriptionEditor) return;
+
+    const updateHandler = () => {
+      setForm((prev) => ({
+        ...prev,
+        description: descriptionEditor.getHTML(),
+      }));
+    };
+
+    descriptionEditor.on("update", updateHandler);
+
+    return () => {
+      descriptionEditor.off("update", updateHandler);
+    };
+  }, [descriptionEditor]);
 
   function validateForm() {
     const newErrors: typeof errors = {};
