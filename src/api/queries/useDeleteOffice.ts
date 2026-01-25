@@ -7,10 +7,11 @@ export function useDeleteOffice() {
 
   return useMutation({
     mutationFn: (officeId: string) => deleteOffice(officeId),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: queryKeys.offices(),
-      });
+    onSuccess: async () => {
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: queryKeys.offices() }),
+        queryClient.invalidateQueries({ queryKey: queryKeys.issues() }),
+      ]);
     },
   });
 }
