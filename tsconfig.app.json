@@ -40,5 +40,5 @@
     }
   },
 
-  "include": ["src", "App.tsx"]
+  "include": ["src"]
 }
