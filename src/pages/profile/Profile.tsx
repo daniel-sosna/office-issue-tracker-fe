@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { Navigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
@@ -34,6 +34,7 @@ interface AuthUserWithPicture {
 }
 
 export const Profile = () => {
+  const navigate = useNavigate();
   const { isAuthenticated, loading, user } = useAuth();
   const { data, isLoading, isError, error } = useProfile();
   const update = useUpdateProfile();
@@ -141,6 +142,7 @@ export const Profile = () => {
     setTouched({});
     setSnack(null);
     setCountryChangedByUser(false);
+    void navigate("/issues", { replace: true });
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
