@@ -35,7 +35,6 @@ interface AuthUserWithPicture {
 
 export const Profile = () => {
   const { isAuthenticated, loading, user } = useAuth();
-
   const { data, isLoading, isError, error } = useProfile();
   const update = useUpdateProfile();
 
@@ -58,7 +57,6 @@ export const Profile = () => {
   const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
   const [citiesOptions, setCitiesOptions] = useState<string[]>([]);
   const [countryChangedByUser, setCountryChangedByUser] = useState(false);
-
   const [hydrated, setHydrated] = useState(false);
 
   const [touched, setTouched] = useState<
@@ -68,6 +66,12 @@ export const Profile = () => {
     type: "success" | "error";
     msg: string;
   } | null>(null);
+
+  const isPageLoading = loading || isLoading;
+
+  useEffect(() => {
+    setCountryOptions(fetchCountries());
+  }, []);
 
   useEffect(() => {
     if (!data) return;
@@ -87,20 +91,12 @@ export const Profile = () => {
   }, [data, authPicture, hydrated]);
 
   const errors = useMemo(() => validate(form), [form]);
-
+  const selectedCountryName = useMemo(() => {
+    const found = countryOptions.find((c) => c.code === form.country);
+    return found?.name ?? "";
+  }, [countryOptions, form.country]);
   useEffect(() => {
-    let alive = true;
-
-    const list = fetchCountries();
-    if (alive) setCountryOptions(list);
-
-    return () => {
-      alive = false;
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!form.country) {
+    if (!selectedCountryName) {
       setCitiesOptions([]);
       return;
     }
@@ -109,14 +105,14 @@ export const Profile = () => {
 
     void (async () => {
       const cities = await fetchCitiesByCountryName(
-        form.country,
+        selectedCountryName,
         controller.signal
       );
       setCitiesOptions(cities);
     })().catch(() => setCitiesOptions([]));
 
     return () => controller.abort();
-  }, [form.country]);
+  }, [selectedCountryName]);
 
   useEffect(() => {
     if (!countryChangedByUser) return;
@@ -180,16 +176,15 @@ export const Profile = () => {
     void onSubmit(e);
   };
 
-  if (loading) return <div>Loading...</div>;
-  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
-
-  if (isLoading) {
+  if (isPageLoading) {
     return (
       <Stack sx={{ p: 6 }} alignItems="center">
         <CircularProgress />
       </Stack>
     );
   }
+
+  if (!isAuthenticated || !user) return <Navigate to="/login" replace />;
 
   if (isError) {
     return (
@@ -352,15 +347,12 @@ export const Profile = () => {
                       o.toLowerCase().includes(state.inputValue.toLowerCase())
                     )
                   }
-                  onChange={(_, newValue) => {
-                    setForm((p) => ({
-                      ...p,
-                      city: String(newValue ?? ""),
-                    }));
-                  }}
-                  onInputChange={(_, newInputValue) => {
-                    setForm((p) => ({ ...p, city: newInputValue }));
-                  }}
+                  onChange={(_, newValue) =>
+                    setForm((p) => ({ ...p, city: String(newValue ?? "") }))
+                  }
+                  onInputChange={(_, newInputValue) =>
+                    setForm((p) => ({ ...p, city: newInputValue }))
+                  }
                   renderInput={(params) => (
                     <TextField
                       {...params}
@@ -407,14 +399,13 @@ export const Profile = () => {
 
               <FormControl fullWidth error={!!fieldError("country")}>
                 <InputLabel shrink>Country</InputLabel>
-
                 <Select
                   label="Country"
                   value={countryOptions.length ? form.country : ""}
                   disabled={!countryOptions.length}
                   onChange={(e: SelectChangeEvent) => {
                     setCountryChangedByUser(true);
-                    setForm((p) => ({ ...p, country: String(e.target.value) }));
+                    setForm((p) => ({ ...p, country: String(e.target.value) })); // ✅ CODE
                   }}
                   onBlur={() => markTouched("country")}
                 >
@@ -442,9 +433,7 @@ export const Profile = () => {
               <Button
                 type="button"
                 variant="outlined"
-                onClick={() => {
-                  onCancel();
-                }}
+                onClick={onCancel}
                 disabled={update.isPending}
                 sx={{ borderRadius: 999 }}
               >

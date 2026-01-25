@@ -1,5 +1,20 @@
 import type { ProfileResponse, ProfileRequest } from "@api/services/profile";
 import type { ProfileFormValues } from "@data/profile.types";
+import { allowedCountries } from "@pages/profile/profile.locationApi";
+
+function normalizeCountryToCode(raw: string | null | undefined): string {
+  const v = (raw ?? "").trim();
+  if (!v) return "";
+  const byCode = allowedCountries.find(
+    (c) => c.code.toLowerCase() === v.toLowerCase()
+  );
+  if (byCode) return byCode.code;
+  const byName = allowedCountries.find(
+    (c) => c.name.toLowerCase() === v.toLowerCase()
+  );
+  if (byName) return byName.code;
+  return "";
+}
 
 export function toFormValues(data: ProfileResponse): ProfileFormValues {
   return {
@@ -12,7 +27,7 @@ export function toFormValues(data: ProfileResponse): ProfileFormValues {
     city: data.city ?? "",
     stateProvince: data.stateProvince ?? "",
     postcode: data.postcode ?? "",
-    country: data.country ?? "",
+    country: normalizeCountryToCode(data.country),
   };
 }
 
@@ -25,6 +40,7 @@ export function toRequestBody(values: ProfileFormValues): ProfileRequest {
     city: values.city || null,
     stateProvince: values.stateProvince || null,
     postcode: values.postcode || null,
+
     country: values.country || null,
   };
 }
