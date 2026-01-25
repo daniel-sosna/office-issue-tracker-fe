@@ -38,6 +38,7 @@ import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
 import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import { sanitizeHtml } from "@utils/sanitizeHtml";
 import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
 import { useAttachments } from "@api/queries/useAttachments.ts";
 import ConfirmDialog from "@pages/issues/components/ConfirmDialog.tsx";
@@ -535,7 +536,9 @@ export default function IssueDrawer({
                 }}
               >
                 <Typography
-                  dangerouslySetInnerHTML={{ __html: form.description }}
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(form.description),
+                  }}
                 />
                 {issueOwner && (
                   <EditButton onClick={() => setEditingField("description")} />
