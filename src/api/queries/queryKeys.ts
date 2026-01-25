@@ -6,5 +6,5 @@ export const queryKeys = {
   offices: () => ["offices"],
   users: ["users"] as const,
   issueDetails: (issueId: string) => ["issueDetails", issueId] as const,
-  profileMe: ["profile", "me"] as const,
+  profileMe: () => ["profile", "me"] as const,
 };
