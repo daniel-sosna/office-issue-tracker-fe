@@ -1,15 +1,15 @@
 import createDOMPurify from "dompurify";
 
-let DOMPurify: ReturnType<typeof createDOMPurify> | null = null;
+let DOMPurifyInstance: ReturnType<typeof createDOMPurify> | null = null;
 
 export function sanitizeHtml(html: string): string {
-  if (!DOMPurify && typeof window !== "undefined") {
-    DOMPurify = createDOMPurify(window);
+  if (typeof window !== "undefined" && !DOMPurifyInstance) {
+    DOMPurifyInstance = createDOMPurify(window);
   }
 
-  if (!DOMPurify) return "";
+  if (!DOMPurifyInstance) return "";
 
-  return DOMPurify.sanitize(html, {
+  return DOMPurifyInstance.sanitize(html, {
     ALLOWED_TAGS: ["p", "br", "strong", "em", "ul", "ol", "li", "a", "s"],
     ALLOWED_ATTR: ["href", "target", "rel"],
   });
