@@ -1,4 +1,6 @@
-import DOMPurify from "dompurify";
+import createDOMPurify from "dompurify";
+
+const DOMPurify = createDOMPurify(window);
 
 export function sanitizeHtml(html: string): string {
   return DOMPurify.sanitize(html, {
