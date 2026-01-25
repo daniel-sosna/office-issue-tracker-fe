@@ -4,9 +4,6 @@ import Stack from "@mui/material/Stack";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
-import FormControl from "@mui/material/FormControl";
-import InputLabel from "@mui/material/InputLabel";
-import Select, { type SelectChangeEvent } from "@mui/material/Select";
 import MenuItem from "@mui/material/MenuItem";
 import Divider from "@mui/material/Divider";
 import Button from "@mui/material/Button";
@@ -14,6 +11,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
 import Autocomplete from "@mui/material/Autocomplete";
+import type { SelectChangeEvent } from "@mui/material/Select";
 
 import { useAuth } from "@context/UseAuth";
 import { useProfile } from "@api/queries/useProfile";
@@ -26,6 +24,8 @@ import {
   fetchCitiesByCountryName,
   type CountryOption,
 } from "@pages/profile/profile.locationApi";
+
+import { SelectField } from "@pages/profile/components/SelectField";
 
 const departments = ["Operations", "Engineering", "HR", "Finance", "Sales"];
 
@@ -62,6 +62,7 @@ export const Profile = () => {
   const [touched, setTouched] = useState<
     Partial<Record<keyof ProfileFormValues, boolean>>
   >({});
+
   const [snack, setSnack] = useState<{
     type: "success" | "error";
     msg: string;
@@ -91,10 +92,12 @@ export const Profile = () => {
   }, [data, authPicture, hydrated]);
 
   const errors = useMemo(() => validate(form), [form]);
+
   const selectedCountryName = useMemo(() => {
     const found = countryOptions.find((c) => c.code === form.country);
     return found?.name ?? "";
   }, [countryOptions, form.country]);
+
   useEffect(() => {
     if (!selectedCountryName) {
       setCitiesOptions([]);
@@ -113,11 +116,10 @@ export const Profile = () => {
 
     return () => controller.abort();
   }, [selectedCountryName]);
-
   useEffect(() => {
     if (!countryChangedByUser) return;
     setForm((p) => ({ ...p, city: "" }));
-  }, [form.country, countryChangedByUser]);
+  }, [countryChangedByUser, form.country]);
 
   const isDirty = useMemo(
     () => (initial ? JSON.stringify(initial) !== JSON.stringify(form) : false),
@@ -129,6 +131,7 @@ export const Profile = () => {
 
   const markTouched = (k: keyof ProfileFormValues) =>
     setTouched((t) => ({ ...t, [k]: true }));
+
   const fieldError = (k: keyof ProfileFormValues) =>
     touched[k] ? errors[k] : undefined;
 
@@ -163,7 +166,6 @@ export const Profile = () => {
       await update.mutateAsync(toRequestBody(form));
       setInitial(form);
       setCountryChangedByUser(false);
-
       setSnack({ type: "success", msg: "Profile updated successfully" });
     } catch (err: unknown) {
       const msg =
@@ -209,6 +211,7 @@ export const Profile = () => {
           >
             My profile
           </Typography>
+
           <Typography sx={{ mt: 1, color: "#64748b" }}>
             Edit your personal information, position and working address
           </Typography>
@@ -273,31 +276,24 @@ export const Profile = () => {
             </Stack>
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <FormControl fullWidth error={!!fieldError("department")}>
-                <InputLabel shrink>Department</InputLabel>
-                <Select
-                  label="Department"
-                  value={form.department}
-                  onChange={(e: SelectChangeEvent) =>
-                    setForm((p) => ({
-                      ...p,
-                      department: String(e.target.value),
-                    }))
-                  }
-                  onBlur={() => markTouched("department")}
-                >
-                  {departments.map((d) => (
-                    <MenuItem key={d} value={d}>
-                      {d}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {!!fieldError("department") && (
-                  <Typography sx={{ mt: 0.75, fontSize: 12, color: "#d32f2f" }}>
-                    {fieldError("department")}
-                  </Typography>
-                )}
-              </FormControl>
+              <SelectField
+                label="Department"
+                value={form.department}
+                onChange={(e: SelectChangeEvent) =>
+                  setForm((p) => ({
+                    ...p,
+                    department: String(e.target.value),
+                  }))
+                }
+                onBlur={() => markTouched("department")}
+                errorText={fieldError("department")}
+              >
+                {departments.map((d) => (
+                  <MenuItem key={d} value={d}>
+                    {d}
+                  </MenuItem>
+                ))}
+              </SelectField>
 
               <TextField
                 label="Role"
@@ -397,31 +393,23 @@ export const Profile = () => {
                 fullWidth
               />
 
-              <FormControl fullWidth error={!!fieldError("country")}>
-                <InputLabel shrink>Country</InputLabel>
-                <Select
-                  label="Country"
-                  value={countryOptions.length ? form.country : ""}
-                  disabled={!countryOptions.length}
-                  onChange={(e: SelectChangeEvent) => {
-                    setCountryChangedByUser(true);
-                    setForm((p) => ({ ...p, country: String(e.target.value) })); // ✅ CODE
-                  }}
-                  onBlur={() => markTouched("country")}
-                >
-                  {countryOptions.map((c) => (
-                    <MenuItem key={c.code} value={c.code}>
-                      {c.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-
-                {!!fieldError("country") && (
-                  <Typography sx={{ mt: 0.75, fontSize: 12, color: "#d32f2f" }}>
-                    {fieldError("country")}
-                  </Typography>
-                )}
-              </FormControl>
+              <SelectField
+                label="Country"
+                value={countryOptions.length ? form.country : ""}
+                disabled={!countryOptions.length}
+                onChange={(e: SelectChangeEvent) => {
+                  setCountryChangedByUser(true);
+                  setForm((p) => ({ ...p, country: String(e.target.value) }));
+                }}
+                onBlur={() => markTouched("country")}
+                errorText={fieldError("country")}
+              >
+                {countryOptions.map((c) => (
+                  <MenuItem key={c.code} value={c.code}>
+                    {c.name}
+                  </MenuItem>
+                ))}
+              </SelectField>
             </Stack>
 
             <Stack
