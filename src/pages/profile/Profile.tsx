@@ -13,6 +13,7 @@ import Button from "@mui/material/Button";
 import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import CircularProgress from "@mui/material/CircularProgress";
+import Autocomplete from "@mui/material/Autocomplete";
 
 import { useAuth } from "@context/UseAuth";
 import { useProfile } from "@api/queries/useProfile";
@@ -20,10 +21,13 @@ import { useUpdateProfile } from "@api/queries/useUpdateProfile";
 import { toFormValues, toRequestBody } from "@pages/profile/profile.mappers";
 import type { ProfileFormValues } from "@data/profile.types";
 import { validate } from "@pages/profile/profile.validation";
+import {
+  fetchCountries,
+  fetchCitiesByCountryName,
+  type CountryOption,
+} from "@pages/profile/profile.locationApi";
 
 const departments = ["Operations", "Engineering", "HR", "Finance", "Sales"];
-const cities = ["Vilnius", "Kaunas", "Klaipėda"];
-const countries = ["LITHUANIA", "LATVIA", "ESTONIA", "POLAND"];
 
 interface AuthUserWithPicture {
   picture?: string;
@@ -51,6 +55,12 @@ export const Profile = () => {
     country: "",
   });
 
+  const [countryOptions, setCountryOptions] = useState<CountryOption[]>([]);
+  const [citiesOptions, setCitiesOptions] = useState<string[]>([]);
+  const [countryChangedByUser, setCountryChangedByUser] = useState(false);
+
+  const [hydrated, setHydrated] = useState(false);
+
   const [touched, setTouched] = useState<
     Partial<Record<keyof ProfileFormValues, boolean>>
   >({});
@@ -61,6 +71,7 @@ export const Profile = () => {
 
   useEffect(() => {
     if (!data) return;
+    if (hydrated) return;
 
     const fv = toFormValues(data);
 
@@ -71,9 +82,46 @@ export const Profile = () => {
     setInitial(fv);
     setForm(fv);
     setTouched({});
-  }, [data, authPicture]);
+    setCountryChangedByUser(false);
+    setHydrated(true);
+  }, [data, authPicture, hydrated]);
 
   const errors = useMemo(() => validate(form), [form]);
+
+  useEffect(() => {
+    let alive = true;
+
+    const list = fetchCountries();
+    if (alive) setCountryOptions(list);
+
+    return () => {
+      alive = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!form.country) {
+      setCitiesOptions([]);
+      return;
+    }
+
+    const controller = new AbortController();
+
+    void (async () => {
+      const cities = await fetchCitiesByCountryName(
+        form.country,
+        controller.signal
+      );
+      setCitiesOptions(cities);
+    })().catch(() => setCitiesOptions([]));
+
+    return () => controller.abort();
+  }, [form.country]);
+
+  useEffect(() => {
+    if (!countryChangedByUser) return;
+    setForm((p) => ({ ...p, city: "" }));
+  }, [form.country, countryChangedByUser]);
 
   const isDirty = useMemo(
     () => (initial ? JSON.stringify(initial) !== JSON.stringify(form) : false),
@@ -93,6 +141,7 @@ export const Profile = () => {
     setForm(initial);
     setTouched({});
     setSnack(null);
+    setCountryChangedByUser(false);
   };
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -116,6 +165,9 @@ export const Profile = () => {
 
     try {
       await update.mutateAsync(toRequestBody(form));
+      setInitial(form);
+      setCountryChangedByUser(false);
+
       setSnack({ type: "success", msg: "Profile updated successfully" });
     } catch (err: unknown) {
       const msg =
@@ -213,6 +265,7 @@ export const Profile = () => {
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
               <TextField
                 label="Full name"
+                slotProps={{ inputLabel: { shrink: true } }}
                 value={form.name}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, name: e.target.value }))
@@ -222,20 +275,11 @@ export const Profile = () => {
                 helperText={fieldError("name")}
                 fullWidth
               />
-              <TextField
-                label="Email"
-                value={form.email}
-                InputProps={{ readOnly: true }}
-                onBlur={() => markTouched("email")}
-                error={!!fieldError("email")}
-                helperText={fieldError("email") ?? "Email is read-only"}
-                fullWidth
-              />
             </Stack>
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
               <FormControl fullWidth error={!!fieldError("department")}>
-                <InputLabel>Department</InputLabel>
+                <InputLabel shrink>Department</InputLabel>
                 <Select
                   label="Department"
                   value={form.department}
@@ -262,6 +306,7 @@ export const Profile = () => {
 
               <TextField
                 label="Role"
+                slotProps={{ inputLabel: { shrink: true } }}
                 value={form.role}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, role: e.target.value }))
@@ -281,6 +326,7 @@ export const Profile = () => {
 
             <TextField
               label="Street address"
+              slotProps={{ inputLabel: { shrink: true } }}
               value={form.streetAddress}
               onChange={(e) =>
                 setForm((p) => ({ ...p, streetAddress: e.target.value }))
@@ -292,45 +338,63 @@ export const Profile = () => {
             />
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <FormControl fullWidth error={!!fieldError("city")}>
-                <InputLabel>City</InputLabel>
-                <Select
-                  label="City"
-                  value={form.city}
-                  onChange={(e: SelectChangeEvent) =>
-                    setForm((p) => ({ ...p, city: String(e.target.value) }))
+              <Box sx={{ flex: 1, minWidth: 260 }}>
+                <Autocomplete
+                  freeSolo
+                  clearOnBlur={false}
+                  fullWidth
+                  options={citiesOptions}
+                  value={form.city || null}
+                  inputValue={form.city}
+                  isOptionEqualToValue={(option, value) => option === value}
+                  filterOptions={(opts, state) =>
+                    opts.filter((o) =>
+                      o.toLowerCase().includes(state.inputValue.toLowerCase())
+                    )
                   }
-                  onBlur={() => markTouched("city")}
-                >
-                  {cities.map((c) => (
-                    <MenuItem key={c} value={c}>
-                      {c}
-                    </MenuItem>
-                  ))}
-                </Select>
-                {!!fieldError("city") && (
-                  <Typography sx={{ mt: 0.75, fontSize: 12, color: "#d32f2f" }}>
-                    {fieldError("city")}
-                  </Typography>
-                )}
-              </FormControl>
+                  onChange={(_, newValue) => {
+                    setForm((p) => ({
+                      ...p,
+                      city: String(newValue ?? ""),
+                    }));
+                  }}
+                  onInputChange={(_, newInputValue) => {
+                    setForm((p) => ({ ...p, city: newInputValue }));
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label="City"
+                      slotProps={{ inputLabel: { shrink: true } }}
+                      onBlur={() => markTouched("city")}
+                      error={!!fieldError("city")}
+                      helperText={fieldError("city")}
+                      fullWidth
+                    />
+                  )}
+                />
+              </Box>
 
-              <TextField
-                label="State / Province"
-                value={form.stateProvince}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, stateProvince: e.target.value }))
-                }
-                onBlur={() => markTouched("stateProvince")}
-                error={!!fieldError("stateProvince")}
-                helperText={fieldError("stateProvince") ?? "Optional"}
-                fullWidth
-              />
+              <Box sx={{ flex: 1, minWidth: 260 }}>
+                <TextField
+                  label="State / Province"
+                  slotProps={{ inputLabel: { shrink: true } }}
+                  value={form.stateProvince}
+                  onChange={(e) =>
+                    setForm((p) => ({ ...p, stateProvince: e.target.value }))
+                  }
+                  onBlur={() => markTouched("stateProvince")}
+                  error={!!fieldError("stateProvince")}
+                  helperText={fieldError("stateProvince") ?? ""}
+                  fullWidth
+                />
+              </Box>
             </Stack>
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
               <TextField
                 label="Postcode"
+                slotProps={{ inputLabel: { shrink: true } }}
                 value={form.postcode}
                 onChange={(e) =>
                   setForm((p) => ({ ...p, postcode: e.target.value }))
@@ -342,21 +406,25 @@ export const Profile = () => {
               />
 
               <FormControl fullWidth error={!!fieldError("country")}>
-                <InputLabel>Country</InputLabel>
+                <InputLabel shrink>Country</InputLabel>
+
                 <Select
                   label="Country"
-                  value={form.country}
-                  onChange={(e: SelectChangeEvent) =>
-                    setForm((p) => ({ ...p, country: String(e.target.value) }))
-                  }
+                  value={countryOptions.length ? form.country : ""}
+                  disabled={!countryOptions.length}
+                  onChange={(e: SelectChangeEvent) => {
+                    setCountryChangedByUser(true);
+                    setForm((p) => ({ ...p, country: String(e.target.value) }));
+                  }}
                   onBlur={() => markTouched("country")}
                 >
-                  {countries.map((c) => (
-                    <MenuItem key={c} value={c}>
-                      {c}
+                  {countryOptions.map((c) => (
+                    <MenuItem key={c.code} value={c.code}>
+                      {c.name}
                     </MenuItem>
                   ))}
                 </Select>
+
                 {!!fieldError("country") && (
                   <Typography sx={{ mt: 0.75, fontSize: 12, color: "#d32f2f" }}>
                     {fieldError("country")}
@@ -374,7 +442,9 @@ export const Profile = () => {
               <Button
                 type="button"
                 variant="outlined"
-                onClick={onCancel}
+                onClick={() => {
+                  onCancel();
+                }}
                 disabled={update.isPending}
                 sx={{ borderRadius: 999 }}
               >
