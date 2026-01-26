@@ -210,6 +210,7 @@ export const Profile = () => {
               fontWeight: 700,
               letterSpacing: "-0.02em",
             }}
+            tabIndex={0}
           >
             My profile
           </Typography>
@@ -246,7 +247,7 @@ export const Profile = () => {
                 <Box
                   component="img"
                   src={form.imageUrl}
-                  alt="Profile"
+                  alt="User profile photo"
                   sx={{ width: "100%", height: "100%", objectFit: "cover" }}
                 />
               ) : (
