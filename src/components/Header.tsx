@@ -59,7 +59,7 @@ const Header: React.FC = () => {
         >
           <Avatar
             alt="User"
-            src={user?.picture ?? "/src/assets/profile_placeholder.jpeg"}
+            src={user?.picture}
             sx={{ width: 36, height: 36 }}
           />
         </IconButton>
