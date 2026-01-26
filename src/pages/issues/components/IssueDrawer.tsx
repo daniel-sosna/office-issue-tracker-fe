@@ -11,6 +11,9 @@ import {
   TextField,
   Button,
 } from "@mui/material";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import EditorToolbar from "@components/EditorToolbar";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useQueryClient } from "@tanstack/react-query";
 import {
@@ -35,6 +38,7 @@ import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
 import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import { sanitizeHtml } from "@utils/sanitizeHtml";
 import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
 import { useAttachments } from "@api/queries/useAttachments.ts";
 import ConfirmDialog from "@pages/issues/components/ConfirmDialog.tsx";
@@ -81,6 +85,11 @@ export default function IssueDrawer({
 
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
+
+  const descriptionEditor = useEditor({
+    extensions: [StarterKit],
+    content: "",
+  });
 
   const [errors, setErrors] = useState<{
     summary?: string;
@@ -171,12 +180,35 @@ export default function IssueDrawer({
       setEditingField(null);
       setForm({
         summary: issue.summary,
-        description: stripHtmlDescription(issue.description),
+        description: issue.description,
         status: issue.status || "Open",
         officeId: issue.officeId,
       });
     }
   }, [issue, issueStats]);
+
+  useEffect(() => {
+    if (editingField === "description" && descriptionEditor) {
+      descriptionEditor.commands.setContent(form.description || "");
+    }
+  }, [editingField, descriptionEditor]);
+
+  useEffect(() => {
+    if (!descriptionEditor) return;
+
+    const updateHandler = () => {
+      setForm((prev) => ({
+        ...prev,
+        description: descriptionEditor.getHTML(),
+      }));
+    };
+
+    descriptionEditor.on("update", updateHandler);
+
+    return () => {
+      descriptionEditor.off("update", updateHandler);
+    };
+  }, [descriptionEditor]);
 
   function validateForm() {
     const newErrors: typeof errors = {};
@@ -186,9 +218,10 @@ export default function IssueDrawer({
     else if (form.summary.length > 200)
       newErrors.summary = "Summary must be less than 200 characters";
 
-    if (!form.description?.trim())
-      newErrors.description = "Description is required";
-    else if (form.description.length > 2000)
+    const plainText = stripHtmlDescription(descriptionEditor?.getText() ?? "");
+
+    if (!plainText.trim()) newErrors.description = "Description is required";
+    else if (plainText.length > 2000)
       newErrors.description = "Description must be less than 2000 characters";
 
     setErrors(newErrors);
@@ -214,7 +247,7 @@ export default function IssueDrawer({
           issue.id,
           {
             summary: form.summary,
-            description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
+            description: descriptionEditor?.getHTML() ?? "",
             officeId: form.officeId || issue.officeId,
           },
           selectedFiles
@@ -503,33 +536,76 @@ export default function IssueDrawer({
                 }}
               >
                 <Typography
+                  component="div"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(form.description),
+                  }}
                   sx={{
-                    fontSize: "16px",
-                    lineHeight: "1.5",
+                    "& p:empty": {
+                      minHeight: "1em",
+                    },
+                    "& p, & div, & ul, & ol": { margin: 0 },
+                    "& ul, & ol": { paddingLeft: "1.25rem" },
+                    "& li": { margin: 0 },
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
-                    flexGrow: 1,
+                    color: "text.primary",
                   }}
-                >
-                  {form.description}
-                </Typography>
+                />
                 {issueOwner && (
                   <EditButton onClick={() => setEditingField("description")} />
                 )}
               </Box>
             )}
             {editingField === "description" && issueOwner && (
-              <TextField
-                multiline
-                fullWidth
-                minRows={4}
-                value={form.description}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, description: e.target.value }));
-                }}
-                error={!!errors.description}
-                helperText={errors.description}
-              />
+              <Box>
+                <Box
+                  sx={{
+                    height: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                  }}
+                  onClick={() => descriptionEditor?.chain().focus().run()}
+                >
+                  <EditorToolbar editor={descriptionEditor} />
+
+                  <Box
+                    sx={{
+                      flex: 1,
+                      p: 1,
+                      overflowY: "auto",
+                      cursor: "text",
+                      display: "flex",
+                      flexDirection: "column",
+                      "& .ProseMirror p": { margin: 0 },
+                      "& .ProseMirror ul, & .ProseMirror ol": {
+                        margin: 0,
+                        paddingLeft: "1.25rem",
+                      },
+                      "& .ProseMirror li": { margin: 0 },
+                      "& .ProseMirror": { lineHeight: 1.5 },
+                      "& .ProseMirror:focus": { outline: "none" },
+                    }}
+                  >
+                    {descriptionEditor && (
+                      <EditorContent
+                        editor={descriptionEditor}
+                        style={{ flex: 1, width: "100%" }}
+                      />
+                    )}
+                  </Box>
+                </Box>
+
+                {errors.description && (
+                  <Typography color="error" fontSize={12} mt={0.5}>
+                    {errors.description}
+                  </Typography>
+                )}
+              </Box>
             )}
 
             {attachments.length > 0 && issueOwner && (
