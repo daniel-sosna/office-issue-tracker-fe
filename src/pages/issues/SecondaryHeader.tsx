@@ -14,6 +14,8 @@ const SecondaryHeader: React.FC = () => {
 
   return (
     <Box
+      component="header"
+      aria-label="Secondary dashboard actions"
       p={1}
       mb={2}
       display="flex"
@@ -58,6 +60,7 @@ const SecondaryHeader: React.FC = () => {
               },
             }}
             onClick={() => setOfficeModalOpen(true)}
+            aria-label="Manage Offices"
           >
             Manage Offices
           </Button>
@@ -69,6 +72,7 @@ const SecondaryHeader: React.FC = () => {
           startIcon={<AddIcon />}
           sx={{ borderRadius: "50px", whiteSpace: "nowrap" }}
           onClick={() => setModalOpen(true)}
+          aria-label="Report Issue"
         >
           Report Issue
         </Button>
