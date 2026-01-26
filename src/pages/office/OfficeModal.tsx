@@ -276,7 +276,6 @@ export default function ManageOfficesModal({
                     variant="outlined"
                     size="small"
                     value={office.title}
-                    aria-label="Office title"
                     sx={{ backgroundColor: "#fff" }}
                     onChange={(event) => {
                       const newTitle = event.target.value;
@@ -325,7 +324,6 @@ export default function ManageOfficesModal({
                           {...params}
                           size="small"
                           placeholder="Select"
-                          aria-label="Office country"
                           sx={{
                             backgroundColor: "#fff",
                             "& input": {
@@ -350,7 +348,8 @@ export default function ManageOfficesModal({
             ))}
           </Box>
 
-          <Typography
+          <Button
+            variant="text"
             sx={{
               mt: 2,
               mb: 7,
@@ -358,9 +357,10 @@ export default function ManageOfficesModal({
               textDecoration: "underline",
               cursor: "pointer",
               fontSize: "14px",
+              justifyContent: "flex-start",
+              padding: 0,
+              minWidth: "auto",
             }}
-            role="button"
-            tabIndex={0}
             onClick={() =>
               setLocalOffices((prev) => [
                 ...prev,
@@ -369,7 +369,7 @@ export default function ManageOfficesModal({
             }
           >
             Add Office
-          </Typography>
+          </Button>
         </DialogContent>
 
         <Box sx={{ borderTop: "1px solid #d3d3d3", marginTop: 2 }} />

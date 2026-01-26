@@ -221,7 +221,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               autoFocus
               error={hasSubmitted && !!errors.summary}
               helperText={hasSubmitted && errors.summary ? errors.summary : " "}
-              label="Short summary"
             />
           </Box>
 
@@ -230,9 +229,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               Description <span style={{ color: "red" }}>*</span>
             </Box>
             <Box
-              role="textbox"
-              aria-label="Description"
-              tabIndex={0}
               sx={{
                 height: 250,
                 display: "flex",
@@ -266,6 +262,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 {editor && (
                   <EditorContent
                     editor={editor}
+                    aria-label="Description"
                     className="custom-editor"
                     style={{ flex: 1, width: "100%" }}
                   />
@@ -293,7 +290,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               variant="outlined"
               size="small"
               sx={{ width: "45%" }}
-              label="Office"
             >
               {offices.map((o) => (
                 <MenuItem key={o.id} value={o.id}>
@@ -344,7 +340,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
           variant="contained"
           onClick={() => void handleSubmit()}
           disabled={!isFormComplete || isPending}
-          aria-label="Submit issue"
           sx={{
             borderRadius: "999px",
             paddingX: 3,
