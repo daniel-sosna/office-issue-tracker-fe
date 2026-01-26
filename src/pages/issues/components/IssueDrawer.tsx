@@ -37,7 +37,11 @@ import {
 import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
-import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import {
+  stripHtmlDescription,
+  formatDate,
+  formatOffice,
+} from "@utils/formatters";
 import { sanitizeHtml } from "@utils/sanitizeHtml";
 import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
 import { useAttachments } from "@api/queries/useAttachments.ts";
@@ -114,6 +118,8 @@ export default function IssueDrawer({
 
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
+
+  const selectedOffice = offices.find((o) => o.id === form.officeId);
 
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
@@ -466,14 +472,7 @@ export default function IssueDrawer({
             {editingField !== "office" && (
               <Box display="flex" alignItems="center" gap={1}>
                 <Typography>
-                  {(() => {
-                    const selectedOffice = offices.find(
-                      (o) => o.id === form.officeId
-                    );
-                    return selectedOffice
-                      ? `${selectedOffice.title}, ${selectedOffice.country}`
-                      : issue.office;
-                  })()}
+                  {selectedOffice ? formatOffice(selectedOffice) : issue.office}
                 </Typography>
                 {(issueOwner || admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
@@ -491,7 +490,7 @@ export default function IssueDrawer({
               >
                 {offices.map((o) => (
                   <MenuItem key={o.id} value={o.id}>
-                    {o.title}, {o.country}
+                    {formatOffice(o)}
                   </MenuItem>
                 ))}
               </Select>
