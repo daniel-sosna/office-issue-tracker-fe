@@ -218,22 +218,18 @@ export default function IssueDrawer({
 
   function validateForm() {
     const newErrors: typeof errors = {};
-
-    if (!form.summary?.trim()) {
-      newErrors.summary = "Summary is required";
-    } else if (form.summary.trim().length < 3) {
+    if (!form.summary?.trim()) newErrors.summary = "Summary is required";
+    else if (form.summary.trim().length < 3)
       newErrors.summary = "Summary must be at least 3 characters";
-    } else if (form.summary.length > 200) {
+    else if (form.summary.length > 200)
       newErrors.summary = "Summary must be less than 200 characters";
-    }
 
-    const plainText = stripHtmlDescription(form.description ?? "");
+    const plainText = stripHtmlDescription(descriptionEditor?.getText() ?? "");
 
-    if (!plainText.trim()) {
-      newErrors.description = "Description is required";
-    } else if (plainText.length > 2000) {
+    if (!plainText.trim()) newErrors.description = "Description is required";
+    else if (plainText.length > 2000)
       newErrors.description = "Description must be less than 2000 characters";
-    }
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
@@ -253,20 +249,15 @@ export default function IssueDrawer({
       setSaving(true);
 
       if (issueOwner) {
-        const payload: {
-          summary?: string;
-          description?: string;
-          officeId?: string;
-        } = {
-          summary: form.summary,
-          officeId: form.officeId || issue.officeId,
-        };
-
-        if (editingField === "description") {
-          payload.description = descriptionEditor?.getHTML() ?? "";
-        }
-
-        await updateIssue(issue.id, payload, selectedFiles);
+        await updateIssue(
+          issue.id,
+          {
+            summary: form.summary,
+            description: descriptionEditor?.getHTML() ?? "",
+            officeId: form.officeId || issue.officeId,
+          },
+          selectedFiles
+        );
       }
 
       if (admin) {
