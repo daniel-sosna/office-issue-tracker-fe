@@ -1,8 +1,14 @@
 import DOMPurify from "dompurify";
 
-export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS: ["p", "br", "strong", "em", "ul", "ol", "li", "a", "s"],
-    ALLOWED_ATTR: ["href", "target", "rel"],
-  });
+export function sanitizeHtml(dirty: string): string {
+  if (typeof dirty !== "string") {
+    return "";
+  }
+
+  const sanitizer = DOMPurify as unknown as { sanitize?: unknown };
+  if (!sanitizer || typeof sanitizer.sanitize !== "function") {
+    return "";
+  }
+
+  return (sanitizer.sanitize as (input: string) => string)(dirty);
 }
