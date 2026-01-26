@@ -674,12 +674,6 @@ export default function IssueDrawer({
             <IssueActivityLogTab issueId={issueId ?? ""} />
           </Box>
         )}
-
-        {selectedTab === TabIndex.ActivityLog && (
-          <Box>
-            <IssueActivityLogTab issueId={issueId ?? ""} />
-          </Box>
-        )}
       </Box>
 
       {/* Actions */}
