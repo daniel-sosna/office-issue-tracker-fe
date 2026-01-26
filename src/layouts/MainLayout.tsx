@@ -37,7 +37,9 @@ const BaseLayout: React.FC = () => {
     >
       <Sidebar isAuthenticated={isAuthenticated} />
 
-      <Box sx={{ flex: 1, display: "flex", flexDirection: "column" }}>
+      <Box
+        sx={{ flex: 1, minWidth: 0, display: "flex", flexDirection: "column" }}
+      >
         {isAuthenticated && <PrimaryHeader />}
         {isAuthenticated && (
           <Box
