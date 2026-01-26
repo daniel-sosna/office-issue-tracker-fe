@@ -173,8 +173,10 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       fullWidth
       maxWidth="sm"
       disableRestoreFocus
+      aria-labelledby="report-issue-title"
     >
       <DialogTitle
+        id="report-issue-title"
         sx={{
           display: "flex",
           alignItems: "center",
@@ -189,6 +191,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       <IconButton
         onClick={handleClose}
         size="small"
+        aria-label="Close issue modal"
         sx={{
           position: "absolute",
           top: 4,
@@ -222,6 +225,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               autoFocus
               error={hasSubmitted && !!errors.summary}
               helperText={hasSubmitted && errors.summary ? errors.summary : " "}
+              label="Short summary"
             />
           </Box>
 
@@ -230,6 +234,9 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               Description <span style={{ color: "red" }}>*</span>
             </Box>
             <Box
+              role="textbox"
+              aria-label="Description"
+              tabIndex={0}
               sx={{
                 height: 250,
                 display: "flex",
@@ -291,6 +298,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
               variant="outlined"
               size="small"
               sx={{ width: "45%" }}
+              label="Office"
             >
               {offices.map((o) => (
                 <MenuItem key={o.id} value={o.title}>
@@ -328,6 +336,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         <Button
           variant="outlined"
           onClick={handleClose}
+          aria-label="Cancel reporting issue"
           sx={{
             borderRadius: "999px",
             paddingX: 3,
@@ -340,6 +349,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
           variant="contained"
           onClick={() => void handleSubmit()}
           disabled={!isFormComplete || isPending}
+          aria-label="Submit issue"
           sx={{
             borderRadius: "999px",
             paddingX: 3,

@@ -61,6 +61,7 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
     >
       {showDelete && (
         <IconButton
+          aria-label={`Delete attachment ${name}`}
           size="small"
           onClick={(e) => {
             e.stopPropagation();
