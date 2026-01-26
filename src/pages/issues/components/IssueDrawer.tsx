@@ -536,8 +536,20 @@ export default function IssueDrawer({
                 }}
               >
                 <Typography
+                  component="div"
                   dangerouslySetInnerHTML={{
                     __html: sanitizeHtml(form.description),
+                  }}
+                  sx={{
+                    "& p:empty": {
+                      minHeight: "1em",
+                    },
+                    "& p, & div, & ul, & ol": { margin: 0 },
+                    "& ul, & ol": { paddingLeft: "1.25rem" },
+                    "& li": { margin: 0 },
+                    whiteSpace: "pre-wrap",
+                    wordBreak: "break-word",
+                    color: "text.primary",
                   }}
                 />
                 {issueOwner && (
@@ -569,6 +581,13 @@ export default function IssueDrawer({
                       cursor: "text",
                       display: "flex",
                       flexDirection: "column",
+                      "& .ProseMirror p": { margin: 0 },
+                      "& .ProseMirror ul, & .ProseMirror ol": {
+                        margin: 0,
+                        paddingLeft: "1.25rem",
+                      },
+                      "& .ProseMirror li": { margin: 0 },
+                      "& .ProseMirror": { lineHeight: 1.5 },
                       "& .ProseMirror:focus": { outline: "none" },
                     }}
                   >
