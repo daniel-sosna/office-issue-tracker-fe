@@ -31,6 +31,13 @@ export function formatDate(dateString: string): string {
   return `${day} ${month} ${year}, ${hours}:${minutes}`;
 }
 
+export function formatOffice(office: {
+  title: string;
+  country: string;
+}): string {
+  return `${office.title}, ${office.country}`;
+}
+
 export function formatRelativeTime(dateString: string): string {
   const now = new Date();
   const then = new Date(dateString);

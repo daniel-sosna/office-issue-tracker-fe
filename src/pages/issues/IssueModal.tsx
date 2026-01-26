@@ -10,11 +10,13 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { fetchOffices } from "@api/services/offices";
+import { fetchOffices, type Office } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
 import AttachmentSection from "./components/AttachmentSection";
 import EditorToolbar from "@components/EditorToolbar";
 import { useAttachments } from "@api/queries/useAttachments.ts";
+import { formatOffice } from "@utils/formatters";
+import { Select } from "@mui/material";
 
 interface IssueFormData {
   summary: string;
@@ -33,15 +35,9 @@ interface IssueModalProps {
   onSubmit: (data: IssueFormData) => void;
 }
 
-interface Office {
-  id: string;
-  title: string;
-  country: string;
-}
-
 export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [summary, setSummary] = useState("");
-  const [office, setOffice] = useState("");
+  const [officeId, setOfficeId] = useState("");
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
@@ -83,7 +79,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   const handleClose = () => {
     editor.commands.setContent("");
     setSummary("");
-    setOffice("");
+    setOfficeId("");
     setDescription("");
     setErrorMessage("");
     setHasSubmitted(false);
@@ -92,7 +88,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   };
 
   const isFormComplete =
-    summary.trim() !== "" && description.trim() !== "" && office !== "";
+    summary.trim() !== "" && description.trim() !== "" && officeId !== "";
 
   useEffect(() => {
     if (!editor) return;
@@ -129,7 +125,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       return;
     }
 
-    const selectedOffice = offices.find((o) => o.title === office);
+    const selectedOffice = offices.find((o) => o.id === officeId);
     if (!selectedOffice) {
       setErrorMessage("Please select a valid office");
       return;
@@ -291,21 +287,20 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Office <span style={{ color: "red" }}>*</span>
             </Box>
-            <TextField
-              select
-              value={office}
-              onChange={(e) => setOffice(e.target.value)}
+            <Select
+              value={officeId}
+              onChange={(e) => setOfficeId(e.target.value)}
               variant="outlined"
               size="small"
               sx={{ width: "45%" }}
               label="Office"
             >
               {offices.map((o) => (
-                <MenuItem key={o.id} value={o.title}>
-                  {o.title}
+                <MenuItem key={o.id} value={o.id}>
+                  {formatOffice(o)}
                 </MenuItem>
               ))}
-            </TextField>
+            </Select>
           </Box>
 
           <AttachmentSection
