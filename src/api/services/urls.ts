@@ -9,4 +9,5 @@ export const ENDPOINTS = {
   ISSUE_COMMENTS_CREATE: "/issues/:issueId/comments/create",
   USERS: "/api/users",
   ATTACHMENTS: "/attachments",
+  PROFILE_ME: "/api/profile/me",
 } as const;
