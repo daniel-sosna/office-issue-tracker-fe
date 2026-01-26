@@ -166,7 +166,12 @@ export default function ManageOfficesModal({
         </Alert>
       </Snackbar>
 
-      <Dialog open={!!officeToConfirmDelete} onClose={cancelDelete}>
+      <Dialog
+        open={!!officeToConfirmDelete}
+        onClose={cancelDelete}
+        aria-labelledby="delete-office-title"
+        aria-describedby="delete-office-description"
+      >
         <DialogTitle>Delete office</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
@@ -196,8 +201,10 @@ export default function ManageOfficesModal({
         maxWidth="md"
         slots={{ paper: Paper }}
         slotProps={{ paper: { sx: { width: 700 } } }}
+        aria-labelledby="manage-offices-title"
       >
         <DialogTitle
+          id="manage-offices-title"
           sx={{
             display: "flex",
             alignItems: "center",
@@ -213,6 +220,7 @@ export default function ManageOfficesModal({
         <IconButton
           onClick={onClose}
           size="small"
+          aria-label="Close manage offices dialog"
           sx={{
             position: "absolute",
             top: 4,
@@ -243,6 +251,7 @@ export default function ManageOfficesModal({
                 <IconButton
                   onClick={() => requestDeleteConfirmation(office)}
                   size="small"
+                  aria-label={`Delete office ${office.title}`}
                   sx={{
                     color: "text.secondary",
                     "&:hover": { color: "error.main" },
@@ -267,6 +276,7 @@ export default function ManageOfficesModal({
                     variant="outlined"
                     size="small"
                     value={office.title}
+                    aria-label="Office title"
                     sx={{ backgroundColor: "#fff" }}
                     onChange={(event) => {
                       const newTitle = event.target.value;
@@ -315,6 +325,7 @@ export default function ManageOfficesModal({
                           {...params}
                           size="small"
                           placeholder="Select"
+                          aria-label="Office country"
                           sx={{
                             backgroundColor: "#fff",
                             "& input": {
@@ -348,6 +359,8 @@ export default function ManageOfficesModal({
               cursor: "pointer",
               fontSize: "14px",
             }}
+            role="button"
+            tabIndex={0}
             onClick={() =>
               setLocalOffices((prev) => [
                 ...prev,
