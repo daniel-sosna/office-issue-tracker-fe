@@ -46,7 +46,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
       }}
     >
       <Avatar
-        src="/src/assets/Cognizant_Logo.jpeg"
+        src="/src/assets/Cognizant_Logo.png"
         alt="Logo"
         sx={{
           width: 50,
