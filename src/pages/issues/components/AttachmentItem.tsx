@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Box, Typography, Link, Avatar, IconButton } from "@mui/material";
+import { Box, Typography, Link, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface AttachmentItemProps {
@@ -77,38 +77,61 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
         </IconButton>
       )}
 
-      <Avatar
+      <Box
         component="button"
-        variant="rounded"
         onClick={handleClick}
         sx={{
-          all: "unset",
+          border: "none",
+          background: "transparent",
+          padding: 0,
           cursor: "pointer",
           width: 48,
           height: 48,
           marginRight: "10px",
           borderRadius: 0.3,
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
         }}
-        src={thumbnailUrl}
-      />
+      >
+        <Box
+          component="img"
+          src={thumbnailUrl}
+          alt={name}
+          sx={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </Box>
       <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <Typography
-          variant="body1"
+        <Box
           component="button"
           onClick={handleClick}
           sx={{
-            all: "unset",
-            fontWeight: "bold",
-            maxWidth: "140px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            border: "none",
+            background: "transparent",
+            padding: 0,
+            textAlign: "left",
             cursor: "pointer",
+            maxWidth: "140px",
           }}
-          color="text.primary"
         >
-          {name}
-        </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            color="text.primary"
+          >
+            {name}
+          </Typography>
+        </Box>
         <Typography
           variant="caption"
           sx={{ color: "text.secondary", letterSpacing: "0.2px" }}
