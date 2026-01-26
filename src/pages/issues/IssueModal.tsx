@@ -10,7 +10,7 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { fetchOffices } from "@api/services/offices";
+import { fetchOffices, type Office } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
 import AttachmentSection from "./components/AttachmentSection";
 import EditorToolbar from "@components/EditorToolbar";
@@ -31,12 +31,6 @@ interface IssueModalProps {
   open: boolean;
   onClose: () => void;
   onSubmit: (data: IssueFormData) => void;
-}
-
-interface Office {
-  id: string;
-  title: string;
-  country: string;
 }
 
 export default function IssueModal({ open, onClose }: IssueModalProps) {
