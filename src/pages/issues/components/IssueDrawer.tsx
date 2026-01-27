@@ -101,7 +101,8 @@ export default function IssueDrawer({
   }>({});
 
   const { data: issue, isError: issueDetailsError } = useIssueDetails(
-    issueId ?? ""
+    issueId ?? "",
+    issueStats
   );
 
   const [form, setForm] = useState<{
@@ -123,8 +124,7 @@ export default function IssueDrawer({
 
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
-  const issueOwner =
-    issueStats?.isOwner ?? issue?.reportedByEmail === user?.email;
+  const issueOwner = issueStats?.isOwner ?? false;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
   const allowedToEdit =
     (issueOwner || admin) && selectedTab === TabIndex.Details;

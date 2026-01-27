@@ -130,7 +130,7 @@ export default function IssueCard({
 
           <IssueActionButton
             {...issue}
-            isOwner={issue.isOwner ?? false}
+            isOwner={issue.isOwner}
             onVote={onClickVote}
           />
         </CardContent>

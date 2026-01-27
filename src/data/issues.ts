@@ -50,7 +50,7 @@ export function mapFrontendStatus(
 }
 
 export interface IssueStats {
-  isOwner?: boolean;
+  isOwner: boolean;
   hasVoted: boolean;
   votes: number;
   comments: number;

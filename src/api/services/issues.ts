@@ -12,8 +12,6 @@ import {
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-/** --- Types --- **/
-
 interface IssueBaseResponse {
   id: string;
   summary: string;
@@ -26,7 +24,7 @@ interface IssueResponse extends IssueBaseResponse {
   isOwner: boolean;
   hasVoted: boolean;
   voteCount: number;
-  commentCount?: number;
+  commentCount: number;
 }
 
 interface IssuePageResponse {
