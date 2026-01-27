@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import {
   Box,
   List,
@@ -9,6 +9,7 @@ import {
 } from "@mui/material";
 import HomeIcon from "@mui/icons-material/Home";
 import PersonIcon from "@mui/icons-material/Person";
+import companyLogo from "@assets/Cognizant_Logo.png";
 
 interface SidebarProps {
   isAuthenticated: boolean;
@@ -47,15 +48,17 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
         zIndex: 1,
       }}
     >
-      <Avatar
-        src="/src/assets/Cognizant_Logo.png"
-        alt="Company logo"
-        sx={{
-          width: 50,
-          height: 50,
-          mb: 5,
-        }}
-      />
+      <Link to="/" aria-label="Go to home page">
+        <Avatar
+          src={companyLogo}
+          alt="Company logo"
+          sx={{
+            width: 50,
+            height: 50,
+            mb: 5,
+          }}
+        />
+      </Link>
 
       {isAuthenticated && (
         <List
