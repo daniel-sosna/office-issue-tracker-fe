@@ -26,6 +26,7 @@ import {
 } from "@pages/profile/profile.locationApi";
 
 import { SelectField } from "@pages/profile/components/SelectField";
+import { TextFieldX } from "@pages/profile/components/TextFieldX";
 
 const departments = ["Operations", "Engineering", "HR", "Finance", "Sales"];
 
@@ -263,51 +264,46 @@ export const Profile = () => {
             noValidate
           >
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <TextField
+              <TextFieldX
                 label="Full name"
-                slotProps={{ inputLabel: { shrink: true } }}
                 value={form.name}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, name: e.target.value }))
-                }
+                onChange={(v) => setForm((p) => ({ ...p, name: v }))}
                 onBlur={() => markTouched("name")}
-                error={!!fieldError("name")}
-                helperText={fieldError("name")}
-                fullWidth
+                errorText={fieldError("name")}
               />
             </Stack>
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <SelectField
-                label="Department"
-                value={form.department}
-                onChange={(e: SelectChangeEvent) =>
-                  setForm((p) => ({
-                    ...p,
-                    department: String(e.target.value),
-                  }))
-                }
-                onBlur={() => markTouched("department")}
-                errorText={fieldError("department")}
-              >
-                {departments.map((d) => (
-                  <MenuItem key={d} value={d}>
-                    {d}
-                  </MenuItem>
-                ))}
-              </SelectField>
+              <Stack gap={0.75} sx={{ width: "100%" }}>
+                <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+                  Department
+                </Typography>
 
-              <TextField
+                <SelectField
+                  value={form.department}
+                  onChange={(e: SelectChangeEvent) =>
+                    setForm((p) => ({
+                      ...p,
+                      department: String(e.target.value),
+                    }))
+                  }
+                  onBlur={() => markTouched("department")}
+                  errorText={fieldError("department")}
+                >
+                  {departments.map((d) => (
+                    <MenuItem key={d} value={d}>
+                      {d}
+                    </MenuItem>
+                  ))}
+                </SelectField>
+              </Stack>
+
+              <TextFieldX
                 label="Role"
-                slotProps={{ inputLabel: { shrink: true } }}
                 value={form.role}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, role: e.target.value }))
-                }
+                onChange={(v) => setForm((p) => ({ ...p, role: v }))}
                 onBlur={() => markTouched("role")}
-                error={!!fieldError("role")}
-                helperText={fieldError("role")}
-                fullWidth
+                errorText={fieldError("role")}
               />
             </Stack>
 
@@ -317,21 +313,20 @@ export const Profile = () => {
               Address
             </Typography>
 
-            <TextField
+            <TextFieldX
               label="Street address"
-              slotProps={{ inputLabel: { shrink: true } }}
               value={form.streetAddress}
-              onChange={(e) =>
-                setForm((p) => ({ ...p, streetAddress: e.target.value }))
-              }
+              onChange={(v) => setForm((p) => ({ ...p, streetAddress: v }))}
               onBlur={() => markTouched("streetAddress")}
-              error={!!fieldError("streetAddress")}
-              helperText={fieldError("streetAddress")}
-              fullWidth
+              errorText={fieldError("streetAddress")}
             />
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <Box sx={{ flex: 1, minWidth: 260 }}>
+              <Stack gap={0.75} sx={{ width: "100%" }}>
+                <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+                  City
+                </Typography>
+
                 <Autocomplete
                   freeSolo
                   clearOnBlur={false}
@@ -354,8 +349,6 @@ export const Profile = () => {
                   renderInput={(params) => (
                     <TextField
                       {...params}
-                      label="City"
-                      slotProps={{ inputLabel: { shrink: true } }}
                       onBlur={() => markTouched("city")}
                       error={!!fieldError("city")}
                       helperText={fieldError("city")}
@@ -363,55 +356,48 @@ export const Profile = () => {
                     />
                   )}
                 />
-              </Box>
+              </Stack>
 
-              <Box sx={{ flex: 1, minWidth: 260 }}>
-                <TextField
-                  label="State / Province"
-                  slotProps={{ inputLabel: { shrink: true } }}
-                  value={form.stateProvince}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, stateProvince: e.target.value }))
-                  }
-                  onBlur={() => markTouched("stateProvince")}
-                  error={!!fieldError("stateProvince")}
-                  helperText={fieldError("stateProvince") ?? ""}
-                  fullWidth
-                />
-              </Box>
+              <TextFieldX
+                label="State / Province"
+                value={form.stateProvince}
+                onChange={(v) => setForm((p) => ({ ...p, stateProvince: v }))}
+                onBlur={() => markTouched("stateProvince")}
+                errorText={fieldError("stateProvince")}
+              />
             </Stack>
 
             <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <TextField
+              <TextFieldX
                 label="Postcode"
-                slotProps={{ inputLabel: { shrink: true } }}
                 value={form.postcode}
-                onChange={(e) =>
-                  setForm((p) => ({ ...p, postcode: e.target.value }))
-                }
+                onChange={(v) => setForm((p) => ({ ...p, postcode: v }))}
                 onBlur={() => markTouched("postcode")}
-                error={!!fieldError("postcode")}
-                helperText={fieldError("postcode")}
-                fullWidth
+                errorText={fieldError("postcode")}
               />
 
-              <SelectField
-                label="Country"
-                value={countryOptions.length ? form.country : ""}
-                disabled={!countryOptions.length}
-                onChange={(e: SelectChangeEvent) => {
-                  setCountryChangedByUser(true);
-                  setForm((p) => ({ ...p, country: String(e.target.value) }));
-                }}
-                onBlur={() => markTouched("country")}
-                errorText={fieldError("country")}
-              >
-                {countryOptions.map((c) => (
-                  <MenuItem key={c.code} value={c.code}>
-                    {c.name}
-                  </MenuItem>
-                ))}
-              </SelectField>
+              <Stack gap={0.75} sx={{ width: "100%" }}>
+                <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+                  Country
+                </Typography>
+
+                <SelectField
+                  value={countryOptions.length ? form.country : ""}
+                  disabled={!countryOptions.length}
+                  onChange={(e: SelectChangeEvent) => {
+                    setCountryChangedByUser(true);
+                    setForm((p) => ({ ...p, country: String(e.target.value) }));
+                  }}
+                  onBlur={() => markTouched("country")}
+                  errorText={fieldError("country")}
+                >
+                  {countryOptions.map((c) => (
+                    <MenuItem key={c.code} value={c.code}>
+                      {c.name}
+                    </MenuItem>
+                  ))}
+                </SelectField>
+              </Stack>
             </Stack>
 
             <Stack

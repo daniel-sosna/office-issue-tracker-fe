@@ -2,10 +2,10 @@ import FormControl from "@mui/material/FormControl";
 import InputLabel from "@mui/material/InputLabel";
 import Select, { type SelectChangeEvent } from "@mui/material/Select";
 
-import { FormFieldError } from "./FormFieldError";
+import { FormFieldError } from "@pages/profile/components/FormFieldError";
 
 interface Props {
-  label: string;
+  label?: string;
   value: string;
   onChange: (e: SelectChangeEvent) => void;
   onBlur?: () => void;
