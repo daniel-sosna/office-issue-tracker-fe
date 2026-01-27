@@ -1,5 +1,5 @@
 import React, { useMemo } from "react";
-import { Box, Typography, Link, Avatar, IconButton } from "@mui/material";
+import { Box, Typography, Link, IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface AttachmentItemProps {
@@ -43,6 +43,10 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
 
   const isLocal = url.startsWith("blob:");
 
+  function handleClick() {
+    window.open(url);
+  }
+
   return (
     <Box
       sx={{
@@ -79,42 +83,65 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
         </IconButton>
       )}
 
-      <Avatar
-        src={thumbnailUrl}
-        variant="rounded"
-        sx={{ width: 48, height: 48, marginRight: "10px", borderRadius: 0.3 }}
-      />
-      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
-        <Typography
-          variant="body1"
+      <Box
+        component="button"
+        onClick={handleClick}
+        sx={{
+          border: "none",
+          background: "transparent",
+          padding: 0,
+          cursor: "pointer",
+          width: 48,
+          height: 48,
+          marginRight: "10px",
+          borderRadius: 0.3,
+          overflow: "hidden",
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+        }}
+      >
+        <Box
+          component="img"
+          src={thumbnailUrl}
+          alt={name}
           sx={{
-            fontWeight: "bold",
-            maxWidth: "140px",
-            overflow: "hidden",
-            textOverflow: "ellipsis",
-            whiteSpace: "nowrap",
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
           }}
-          color="text.primary"
+        />
+      </Box>
+      <Box sx={{ display: "flex", flexDirection: "column", minWidth: 0 }}>
+        <Box
+          component="button"
+          onClick={handleClick}
+          sx={{
+            border: "none",
+            background: "transparent",
+            padding: 0,
+            textAlign: "left",
+            cursor: "pointer",
+            maxWidth: "140px",
+          }}
         >
-          {name}
-        </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              fontWeight: "bold",
+              overflow: "hidden",
+              textOverflow: "ellipsis",
+              whiteSpace: "nowrap",
+            }}
+            color="text.primary"
+          >
+            {name}
+          </Typography>
+        </Box>
         <Typography
           variant="caption"
           sx={{ color: "text.secondary", letterSpacing: "0.2px" }}
         >
-          <Link
-            href={url}
-            target="_blank"
-            rel="noopener noreferrer"
-            underline="none"
-            sx={{
-              color: "text.secondary",
-              "&:hover": { color: "text.primary" },
-            }}
-          >
-            Media
-          </Link>
-
           {!isLocal && (
             <>
               {" "}
