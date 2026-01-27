@@ -169,8 +169,10 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       fullWidth
       maxWidth="sm"
       disableRestoreFocus
+      aria-labelledby="report-issue-title"
     >
       <DialogTitle
+        id="report-issue-title"
         sx={{
           display: "flex",
           alignItems: "center",
@@ -185,6 +187,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       <IconButton
         onClick={handleClose}
         size="small"
+        aria-label="Close issue modal"
         sx={{
           position: "absolute",
           top: 4,
@@ -259,6 +262,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
                 {editor && (
                   <EditorContent
                     editor={editor}
+                    aria-label="Description"
                     className="custom-editor"
                     style={{ flex: 1, width: "100%" }}
                   />
@@ -322,6 +326,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         <Button
           variant="outlined"
           onClick={handleClose}
+          aria-label="Cancel reporting issue"
           sx={{
             borderRadius: "999px",
             paddingX: 3,

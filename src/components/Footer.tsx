@@ -9,6 +9,7 @@ const Footer: React.FC<FooterProps> = ({ isAuthenticated }) => {
   return (
     <Box
       component="footer"
+      aria-label="Page footer"
       sx={{
         display: "flex",
         justifyContent: isAuthenticated ? "space-between" : "center",

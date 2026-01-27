@@ -120,8 +120,6 @@ export default function IssueDrawer({
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
 
-  const selectedOffice = offices.find((o) => o.id === form.officeId);
-
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
   const issueOwner = issueStats?.isOwner ?? false;
@@ -218,17 +216,20 @@ export default function IssueDrawer({
 
   function validateForm() {
     const newErrors: typeof errors = {};
-    if (!form.summary?.trim()) newErrors.summary = "Summary is required";
-    else if (form.summary.trim().length < 3)
-      newErrors.summary = "Summary must be at least 3 characters";
-    else if (form.summary.length > 200)
-      newErrors.summary = "Summary must be less than 200 characters";
 
-    const plainText = stripHtmlDescription(descriptionEditor?.getText() ?? "");
+    if (issueOwner) {
+      if (!form.summary?.trim()) newErrors.summary = "Summary is required";
+      else if (form.summary.trim().length < 3)
+        newErrors.summary = "Summary must be at least 3 characters";
+      else if (form.summary.length > 200)
+        newErrors.summary = "Summary must be less than 200 characters";
 
-    if (!plainText.trim()) newErrors.description = "Description is required";
-    else if (plainText.length > 2000)
-      newErrors.description = "Description must be less than 2000 characters";
+      const plainText = stripHtmlDescription(form.description ?? "");
+
+      if (!plainText.trim()) newErrors.description = "Description is required";
+      else if (plainText.length > 2000)
+        newErrors.description = "Description must be less than 2000 characters";
+    }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -244,7 +245,6 @@ export default function IssueDrawer({
 
   async function handleSave() {
     if (!issue || !validateForm()) return;
-
     try {
       setSaving(true);
 
@@ -253,7 +253,10 @@ export default function IssueDrawer({
           issue.id,
           {
             summary: form.summary,
-            description: descriptionEditor?.getHTML() ?? "",
+            description:
+              editingField === "description" && descriptionEditor
+                ? descriptionEditor.getHTML()
+                : form.description,
             officeId: form.officeId || issue.officeId,
           },
           selectedFiles
@@ -264,8 +267,9 @@ export default function IssueDrawer({
         if (form.status !== issue.status) {
           await updateIssueStatus(issue.id, form.status);
         }
-        if (!issueOwner && form.officeId !== issue.officeId)
+        if (!issueOwner && form.officeId !== issue.officeId) {
           await updateIssue(issue.id, { officeId: form.officeId });
+        }
       }
 
       await queryClient.invalidateQueries({ queryKey: queryKeys.issues() });
@@ -472,7 +476,14 @@ export default function IssueDrawer({
             {editingField !== "office" && (
               <Box display="flex" alignItems="center" gap={1}>
                 <Typography>
-                  {selectedOffice ? formatOffice(selectedOffice) : issue.office}
+                  {(() => {
+                    const selectedOffice = offices.find(
+                      (o) => o.id === form.officeId
+                    );
+                    return selectedOffice
+                      ? formatOffice(selectedOffice)
+                      : issue.office;
+                  })()}
                 </Typography>
                 {(issueOwner || admin) && (
                   <EditButton onClick={() => setEditingField("office")} />

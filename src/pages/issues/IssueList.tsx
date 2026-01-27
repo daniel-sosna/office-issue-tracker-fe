@@ -157,6 +157,7 @@ const IssuesList: React.FC = () => {
           allowScrollButtonsMobile
           textColor="secondary"
           indicatorColor="secondary"
+          aria-label="Issue status tabs"
           sx={{
             cursor: "pointer",
             "& .MuiTabs-indicator": {
@@ -172,6 +173,8 @@ const IssuesList: React.FC = () => {
             <Tab
               key={label}
               label={label}
+              id={`issue-tab-${index}`}
+              aria-controls={`issue-tabpanel-${index}`}
               sx={{
                 textTransform: "none",
                 fontWeight: 500,
@@ -201,6 +204,9 @@ const IssuesList: React.FC = () => {
                 const val = e.target.value;
                 setSelectedOffice(val === "all" ? undefined : String(val));
                 setPage(1);
+              }}
+              inputProps={{
+                "aria-label": "Select office",
               }}
             >
               <MenuItem value="all">All offices</MenuItem>
@@ -241,6 +247,9 @@ const IssuesList: React.FC = () => {
               onChange={(e) => {
                 setSelectedSort(e.target.value as FrontendSortKey);
                 setPage(1);
+              }}
+              inputProps={{
+                "aria-label": "Sort issues",
               }}
             >
               <MenuItem value="latest">Latest</MenuItem>
@@ -304,6 +313,7 @@ const IssuesList: React.FC = () => {
               color: "primary.text",
             },
           }}
+          aria-label="Issue list pagination"
         />
       </Box>
 

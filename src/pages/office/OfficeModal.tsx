@@ -166,7 +166,12 @@ export default function ManageOfficesModal({
         </Alert>
       </Snackbar>
 
-      <Dialog open={!!officeToConfirmDelete} onClose={cancelDelete}>
+      <Dialog
+        open={!!officeToConfirmDelete}
+        onClose={cancelDelete}
+        aria-labelledby="delete-office-title"
+        aria-describedby="delete-office-description"
+      >
         <DialogTitle>Delete office</DialogTitle>
         <DialogContent>
           <Typography sx={{ mb: 2 }}>
@@ -196,8 +201,10 @@ export default function ManageOfficesModal({
         maxWidth="md"
         slots={{ paper: Paper }}
         slotProps={{ paper: { sx: { width: 700 } } }}
+        aria-labelledby="manage-offices-title"
       >
         <DialogTitle
+          id="manage-offices-title"
           sx={{
             display: "flex",
             alignItems: "center",
@@ -213,6 +220,7 @@ export default function ManageOfficesModal({
         <IconButton
           onClick={onClose}
           size="small"
+          aria-label="Close manage offices dialog"
           sx={{
             position: "absolute",
             top: 4,
@@ -243,6 +251,7 @@ export default function ManageOfficesModal({
                 <IconButton
                   onClick={() => requestDeleteConfirmation(office)}
                   size="small"
+                  aria-label={`Delete office ${office.title}`}
                   sx={{
                     color: "text.secondary",
                     "&:hover": { color: "error.main" },
@@ -339,7 +348,8 @@ export default function ManageOfficesModal({
             ))}
           </Box>
 
-          <Typography
+          <Button
+            variant="text"
             sx={{
               mt: 2,
               mb: 7,
@@ -347,6 +357,9 @@ export default function ManageOfficesModal({
               textDecoration: "underline",
               cursor: "pointer",
               fontSize: "14px",
+              justifyContent: "flex-start",
+              padding: 0,
+              minWidth: "auto",
             }}
             onClick={() =>
               setLocalOffices((prev) => [
@@ -356,7 +369,7 @@ export default function ManageOfficesModal({
             }
           >
             Add Office
-          </Typography>
+          </Button>
         </DialogContent>
 
         <Box sx={{ borderTop: "1px solid #d3d3d3", marginTop: 2 }} />
