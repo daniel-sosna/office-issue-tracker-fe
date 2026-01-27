@@ -17,7 +17,7 @@ export default function RightDrawer({ open, onClose, children }: Props) {
       slotProps={{
         paper: {
           sx: {
-            width: { xs: "100%", sm: 650 },
+            width: { xs: "100%", sm: 550, md: 650 },
             p: 1,
           },
         },
@@ -34,7 +34,13 @@ export default function RightDrawer({ open, onClose, children }: Props) {
         </IconButton>
       </Box>
 
-      <Box p={3} display="flex" flexDirection="column" height="100%">
+      <Box
+        display="flex"
+        flexDirection="column"
+        height="100%"
+        px={{ xs: 2, md: 3 }}
+        py={2}
+      >
         {children}
       </Box>
     </Drawer>

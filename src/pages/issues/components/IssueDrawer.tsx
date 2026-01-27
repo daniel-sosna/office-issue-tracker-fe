@@ -333,7 +333,7 @@ export default function IssueDrawer({
 
   return (
     <RightDrawer open={!!issueId} onClose={handleClose}>
-      <Box sx={{ p: 2, flex: 1 }}>
+      <Box flex={1}>
         <Box
           ref={summaryRef}
           display="flex"
@@ -666,17 +666,9 @@ export default function IssueDrawer({
       </Box>
 
       {/* Actions */}
-      <Box
-        sx={{
-          bottom: 0,
-          background: "white",
-          zIndex: 10,
-          position: "sticky",
-          borderTop: allowedToEdit ? "1px solid #ddd" : "none",
-          padding: allowedToEdit ? "12px" : "none",
-        }}
-      >
-        {allowedToEdit && (
+      {allowedToEdit && (
+        <>
+          <Divider sx={{ mb: 2 }} />
           <Box
             display="flex"
             justifyContent="space-between"
@@ -714,8 +706,8 @@ export default function IssueDrawer({
               </Button>
             </Box>
           </Box>
-        )}
-      </Box>
+        </>
+      )}
 
       {/* Delete Dialog */}
       <ConfirmDialog
