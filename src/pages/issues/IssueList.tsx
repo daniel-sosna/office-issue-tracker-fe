@@ -187,15 +187,16 @@ const IssuesList: React.FC = () => {
       <Box
         display="flex"
         flexWrap="wrap"
-        justifyContent="space-between"
+        justifyContent="center"
         gap={2}
         mb={4}
       >
-        <Box display="flex" gap={2}>
+        <Box display="flex" flexWrap="wrap" justifyContent="center" gap={2}>
           <FormControl size="small" disabled={isOfficesLoading}>
             <Select
               value={selectedOffice ?? "all"}
               sx={{ ...pillSelectStyle }}
+              MenuProps={{ disableScrollLock: true }}
               onChange={(e) => {
                 const val = e.target.value;
                 setSelectedOffice(val === "all" ? undefined : String(val));
@@ -222,7 +223,13 @@ const IssuesList: React.FC = () => {
           />
         </Box>
 
-        <Box display="flex" alignItems="center" gap={1}>
+        <Box
+          flex="1"
+          display="flex"
+          justifyContent="end"
+          alignItems="center"
+          gap={1}
+        >
           <InputLabel sx={{ fontSize: 14, color: "text.secondary" }}>
             Sort by:
           </InputLabel>
@@ -230,6 +237,7 @@ const IssuesList: React.FC = () => {
             <Select
               value={selectedSort}
               sx={{ ...pillSelectStyle }}
+              MenuProps={{ disableScrollLock: true }}
               onChange={(e) => {
                 setSelectedSort(e.target.value as FrontendSortKey);
                 setPage(1);
