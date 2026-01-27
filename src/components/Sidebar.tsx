@@ -30,6 +30,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
 
   return (
     <Box
+      component="nav"
+      aria-label="Main navigation"
       sx={{
         minWidth: "80px",
         width: "90px",
@@ -47,7 +49,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
     >
       <Avatar
         src="/src/assets/Cognizant_Logo.png"
-        alt="Logo"
+        alt="Company logo"
         sx={{
           width: 50,
           height: 50,
@@ -83,6 +85,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isAuthenticated }) => {
                   onClick={() => {
                     void navigate(item.link);
                   }}
+                  aria-label={item.label}
+                  aria-current={activeForItem ? "page" : undefined}
                   sx={{
                     background: activeForItem
                       ? "linear-gradient(135deg, #318CE7, #BAF8F8)"

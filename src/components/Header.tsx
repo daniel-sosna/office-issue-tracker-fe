@@ -36,6 +36,7 @@ const Header: React.FC = () => {
 
   return (
     <AppBar
+      component="nav"
       position="sticky"
       elevation={0}
       sx={{
@@ -45,20 +46,21 @@ const Header: React.FC = () => {
       }}
     >
       <Toolbar sx={{ justifyContent: "flex-end" }}>
-        <IconButton color="inherit">
+        <IconButton color="inherit" aria-label="Notifications">
           <NotificationsIcon />
         </IconButton>
 
         <IconButton
           onClick={handleAvatarClick}
           size="small"
+          aria-label="User menu"
           aria-controls={open ? "user-menu" : undefined}
-          aria-haspopup="true"
+          aria-haspopup="menu"
           aria-expanded={open ? "true" : undefined}
           sx={{ ml: 1 }}
         >
           <Avatar
-            alt="User"
+            alt={user?.name ? `${user.name} profile` : "User profile"}
             src={user?.picture}
             sx={{ width: 36, height: 36 }}
           />
