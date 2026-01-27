@@ -391,12 +391,12 @@ export default function IssueDrawer({
                       : issue.office;
                   })()}
                 </Typography>
-                {(issueOwner ?? admin) && (
+                {(issueOwner || admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
                 )}
               </Box>
             )}
-            {editingField === "office" && (issueOwner ?? admin) && (
+            {editingField === "office" && (issueOwner || admin) && (
               <Select
                 size="small"
                 value={form.officeId || issue.officeId}
@@ -518,7 +518,7 @@ export default function IssueDrawer({
           padding: "12px",
         }}
       >
-        {(issueOwner ?? admin) && (
+        {(issueOwner || admin) && (
           <Box
             display="flex"
             justifyContent="space-between"
