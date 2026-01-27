@@ -34,7 +34,9 @@ import {
   type IssueStats,
   type IssueStatusType,
 } from "@data/issues";
-import AttachmentList from "@pages/issues/components/AttachmentList";
+import AttachmentList, {
+  type Attachment,
+} from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
 import {
@@ -124,7 +126,19 @@ export default function IssueDrawer({
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
   const issueOwner = issueStats?.isOwner ?? false;
-  const attachments: IssueAttachment[] = issue?.attachments ?? [];
+  const existingAttachments: IssueAttachment[] = issue?.attachments ?? [];
+  const allAttachments: Attachment[] = [
+    ...existingAttachments.map((a) => ({
+      id: a.id,
+      name: a.originalFilename,
+      url: a.url,
+    })),
+    ...selectedFiles.map((f) => ({
+      id: f.name + f.size,
+      name: f.name,
+      url: URL.createObjectURL(f),
+    })),
+  ];
 
   useEffect(() => {
     setSelectedTab(TabIndex.Details);
@@ -304,7 +318,7 @@ export default function IssueDrawer({
     }
   };
 
-  const handleAttachmentDelete = async () => {
+  const handleExistingAttachmentDelete = async () => {
     if (!attachmentToDelete || !issue) return;
     try {
       setDeleting(true);
@@ -315,13 +329,22 @@ export default function IssueDrawer({
         queryKey: queryKeys.issueDetails(issue.id),
       });
 
-      setDeleteAttachmentDialogOpen(false);
       setAttachmentToDelete(null);
       onSaved();
     } catch {
       onError("Failed to delete the attachment.");
     } finally {
+      setDeleteAttachmentDialogOpen(false);
       setDeleting(false);
+    }
+  };
+
+  const handleAttachmentDelete = (attachmentId: string) => {
+    if (existingAttachments.map((a) => a.id).includes(attachmentId)) {
+      setAttachmentToDelete(attachmentId);
+      setDeleteAttachmentDialogOpen(true);
+    } else {
+      handleDeleteFile(attachmentId);
     }
   };
 
@@ -611,30 +634,20 @@ export default function IssueDrawer({
               </Box>
             )}
 
-            {!issueOwner && attachments.length > 0 && (
+            {!issueOwner && allAttachments.length > 0 && (
               <Box my={2}>
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   Attachments
                 </Typography>
-                <AttachmentList
-                  attachments={attachments.map((a) => ({
-                    id: a.id,
-                    name: a.originalFilename,
-                    url: a.url,
-                  }))}
-                />
+                <AttachmentList attachments={allAttachments} />
               </Box>
             )}
             {issueOwner && (
               <Box my={2}>
                 <AttachmentSection
-                  attachments={selectedFiles.map((f) => ({
-                    id: f.name + f.size,
-                    name: f.name,
-                    url: URL.createObjectURL(f),
-                  }))}
+                  attachments={allAttachments}
                   onAddFiles={handleAddFiles}
-                  onDelete={handleDeleteFile}
+                  onDelete={handleAttachmentDelete}
                   error={attachmentError}
                 />
               </Box>
@@ -715,7 +728,7 @@ export default function IssueDrawer({
         }
         loading={deleting}
         onClose={() => setDeleteAttachmentDialogOpen(false)}
-        onConfirm={() => void handleAttachmentDelete()}
+        onConfirm={() => void handleExistingAttachmentDelete()}
       ></ConfirmDialog>
     </RightDrawer>
   );

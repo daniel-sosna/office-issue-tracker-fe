@@ -143,22 +143,18 @@ const AttachmentItem: React.FC<AttachmentItemProps> = ({
           sx={{ color: "text.secondary", letterSpacing: "0.2px" }}
         >
           {!isLocal && (
-            <>
-              {" "}
-              •{" "}
-              <Link
-                href={downloadUrl}
-                underline="none"
-                sx={{
-                  color: "text.secondary",
-                  fontSize: "0.75rem",
-                  lineHeight: 1.2,
-                  "&:hover": { color: "text.primary" },
-                }}
-              >
-                Download
-              </Link>
-            </>
+            <Link
+              href={downloadUrl}
+              underline="none"
+              sx={{
+                color: "text.secondary",
+                fontSize: "0.75rem",
+                lineHeight: 1.2,
+                "&:hover": { color: "text.primary" },
+              }}
+            >
+              Download
+            </Link>
           )}
         </Typography>
       </Box>

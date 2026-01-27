@@ -2,7 +2,7 @@ import React from "react";
 import { Box } from "@mui/material";
 import AttachmentItem from "./AttachmentItem";
 
-interface Attachment {
+export interface Attachment {
   id: string;
   name: string;
   url: string;

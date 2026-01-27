@@ -4,13 +4,7 @@ import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
 import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import AttachmentList from "./AttachmentList";
-
-interface Attachment {
-  id: string;
-  name: string;
-  url: string;
-}
+import AttachmentList, { type Attachment } from "./AttachmentList";
 
 interface AttachmentSectionProps {
   attachments: Attachment[];
