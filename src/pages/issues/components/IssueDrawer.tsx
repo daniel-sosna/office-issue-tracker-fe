@@ -101,7 +101,7 @@ export default function IssueDrawer({
   }>({});
 
   const { data: issue, isError: issueDetailsError } = useIssueDetails(
-    issueId ?? "",
+    issueId,
     issueStats
   );
 
@@ -119,13 +119,12 @@ export default function IssueDrawer({
 
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
+  const selectedOffice = offices.find((o) => o.id === form.officeId);
 
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
   const issueOwner = issueStats?.isOwner ?? false;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
-  const allowedToEdit =
-    (issueOwner || admin) && selectedTab === TabIndex.Details;
 
   useEffect(() => {
     setSelectedTab(TabIndex.Details);
@@ -185,11 +184,11 @@ export default function IssueDrawer({
       setForm({
         summary: issue.summary,
         description: issue.description,
-        status: issue.status || "Open",
+        status: issue.status,
         officeId: issue.officeId,
       });
     }
-  }, [issue, issueStats]);
+  }, [issue]);
 
   useEffect(() => {
     if (editingField === "description" && descriptionEditor) {
@@ -257,7 +256,7 @@ export default function IssueDrawer({
               editingField === "description" && descriptionEditor
                 ? descriptionEditor.getHTML()
                 : form.description,
-            officeId: form.officeId || issue.officeId,
+            officeId: form.officeId,
           },
           selectedFiles
         );
@@ -304,6 +303,7 @@ export default function IssueDrawer({
       setDeleting(false);
     }
   };
+
   const handleAttachmentDelete = async () => {
     if (!attachmentToDelete || !issue) return;
     try {
@@ -476,14 +476,7 @@ export default function IssueDrawer({
             {editingField !== "office" && (
               <Box display="flex" alignItems="center" gap={1}>
                 <Typography>
-                  {(() => {
-                    const selectedOffice = offices.find(
-                      (o) => o.id === form.officeId
-                    );
-                    return selectedOffice
-                      ? formatOffice(selectedOffice)
-                      : issue.office;
-                  })()}
+                  {selectedOffice ? formatOffice(selectedOffice) : issue.office}
                 </Typography>
                 {(issueOwner || admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
@@ -657,7 +650,7 @@ export default function IssueDrawer({
       </Box>
 
       {/* Actions */}
-      {allowedToEdit && (
+      {selectedTab === TabIndex.Details && (issueOwner || admin) && (
         <>
           <Divider sx={{ mb: 2 }} />
           <Box
