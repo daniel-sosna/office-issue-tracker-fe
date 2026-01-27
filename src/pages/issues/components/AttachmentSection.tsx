@@ -4,20 +4,13 @@ import Box from "@mui/material/Box";
 import Tooltip from "@mui/material/Tooltip";
 import CloudUploadIcon from "@mui/icons-material/CloudUploadOutlined";
 import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import AttachmentList from "./AttachmentList";
-
-interface Attachment {
-  id: string;
-  name: string;
-  url: string;
-}
+import AttachmentList, { type Attachment } from "./AttachmentList";
 
 interface AttachmentSectionProps {
   attachments: Attachment[];
   onAddFiles: (files: FileList) => void;
   onDelete: (id: string) => void;
   error?: string;
-  drawerEditor: boolean;
 }
 
 export default function AttachmentSection({
@@ -25,7 +18,6 @@ export default function AttachmentSection({
   onAddFiles,
   onDelete,
   error,
-  drawerEditor,
 }: AttachmentSectionProps) {
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -77,9 +69,7 @@ export default function AttachmentSection({
         }}
       >
         <Box display="flex" alignItems="center" gap={0.8}>
-          {!drawerEditor && (
-            <Box sx={{ color: "text.secondary" }}>Attachments</Box>
-          )}
+          <Box sx={{ color: "text.secondary" }}>Attachments</Box>
 
           <Tooltip
             arrow
@@ -116,21 +106,20 @@ export default function AttachmentSection({
           )}
         </Box>
 
-        {attachments.length > 0 ||
-          (drawerEditor && (
-            <Box
-              sx={{
-                fontSize: "13px",
-                color: "primary.main",
-                textDecoration: "underline",
-                cursor: "pointer",
-                fontWeight: "600",
-              }}
-              onClick={triggerFileInput}
-            >
-              Upload File
-            </Box>
-          ))}
+        {attachments.length > 0 && (
+          <Box
+            sx={{
+              fontSize: "13px",
+              color: "primary.main",
+              textDecoration: "underline",
+              cursor: "pointer",
+              fontWeight: "600",
+            }}
+            onClick={triggerFileInput}
+          >
+            Upload File
+          </Box>
+        )}
       </Box>
 
       <input
@@ -141,7 +130,7 @@ export default function AttachmentSection({
         onChange={handleFileInputChange}
       />
 
-      {attachments.length === 0 && !drawerEditor && (
+      {attachments.length === 0 && (
         <Box
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}

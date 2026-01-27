@@ -14,7 +14,11 @@ export function useIssueDetails(issueId?: string, stats?: IssueStats) {
     queryKey: issueId
       ? queryKeys.issueDetails(issueId)
       : ["issueDetails", "none"],
-    queryFn: () => fetchIssueDetails(issueId ?? "", stats),
+    queryFn: () =>
+      fetchIssueDetails(
+        issueId ?? "",
+        stats ?? { isOwner: false, hasVoted: false, votes: 0, comments: 0 }
+      ),
     placeholderData: () => {
       if (!issueId) return undefined;
 

@@ -7,6 +7,5 @@ export const queryKeys = {
   offices: () => ["offices"],
   users: ["users"] as const,
   issueDetails: (issueId: string) => ["issueDetails", issueId] as const,
-  attachments: () => ["attachments"] as const,
   profileMe: () => ["profile", "me"] as const,
 };

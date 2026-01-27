@@ -70,6 +70,7 @@ const Header: React.FC = () => {
           anchorEl={anchorEl}
           id="user-menu"
           open={open}
+          disableScrollLock
           onClose={handleClose}
           onClick={handleClose}
           transformOrigin={{ horizontal: "right", vertical: "top" }}

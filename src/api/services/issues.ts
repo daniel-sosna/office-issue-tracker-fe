@@ -12,8 +12,6 @@ import {
 import { api } from "@api/services/httpClient";
 import { ENDPOINTS } from "@api/services/urls";
 
-/** --- Types --- **/
-
 interface IssueBaseResponse {
   id: string;
   summary: string;
@@ -26,7 +24,7 @@ interface IssueResponse extends IssueBaseResponse {
   isOwner: boolean;
   hasVoted: boolean;
   voteCount: number;
-  commentCount?: number;
+  commentCount: number;
 }
 
 interface IssuePageResponse {
@@ -80,15 +78,10 @@ const sortMap: Record<FrontendSortKey, FetchIssuesParams["sort"]> = {
 
 function normalizeIssue(issue: IssueResponse): Issue {
   return {
-    id: issue.id,
-    summary: issue.summary,
-    description: issue.description,
+    ...issue,
     status: mapBackendStatus(issue.status),
-    hasVoted: issue.hasVoted,
     votes: issue.voteCount,
-    comments: issue.commentCount ?? 0,
-    dateCreated: issue.dateCreated,
-    isOwner: issue.isOwner,
+    comments: issue.commentCount,
   };
 }
 
@@ -116,25 +109,22 @@ export async function fetchIssues(
 
 export async function fetchIssueDetails(
   issueId: string,
-  stats?: IssueStats
+  stats: IssueStats
 ): Promise<IssueDetails> {
   const { data } = await api.get<IssueDetailsResponse>(
     ENDPOINTS.ISSUE_DETAILS.replace(":issueId", issueId)
   );
 
   return {
+    ...data,
     ...normalizeIssue({
       ...data.issue,
-      ...stats,
-      voteCount: stats?.votes ?? data.issue.voteCount,
-      commentCount: stats?.comments ?? data.issue.commentCount,
+      isOwner: stats.isOwner,
+      hasVoted: stats.hasVoted,
+      voteCount: stats.votes,
+      commentCount: stats.comments,
     }),
-    officeId: data.officeId,
-    office: data.officeName ?? "",
-    reportedBy: data.reportedBy,
-    reportedByAvatar: data.reportedByAvatar ?? "",
-    reportedByEmail: data.reportedByEmail ?? "",
-    attachments: data.attachments ?? [],
+    office: data.officeName,
   };
 }
 
