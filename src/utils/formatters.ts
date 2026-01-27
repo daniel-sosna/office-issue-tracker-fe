@@ -4,7 +4,19 @@ export function stripHtml(html: string): string {
   return div.textContent || div.innerText || "";
 }
 export function stripHtmlDescription(html: string): string {
-  return html.replace(/<[^>]+>/g, "");
+  if (!html) return "";
+
+  let text = html.replace(/<(br|p|div|li)[^>]*>/gi, " ");
+
+  text = text.replace(/<[^>]+>/g, "");
+
+  text = text.replace(/&nbsp;/gi, " ").replace(/\u00a0/g, " ");
+
+  text = text.replace(/[\r\n]+/g, " ");
+
+  text = text.replace(/\s+/g, " ").trim();
+
+  return text;
 }
 
 export function formatDate(dateString: string): string {
@@ -15,6 +27,45 @@ export function formatDate(dateString: string): string {
   const year = date.getFullYear();
   const hours = date.getHours().toString().padStart(2, "0");
   const minutes = date.getMinutes().toString().padStart(2, "0");
+
+  return `${day} ${month} ${year}, ${hours}:${minutes}`;
+}
+
+export function formatOffice(office: {
+  title: string;
+  country: string;
+}): string {
+  return `${office.title}, ${office.country}`;
+}
+
+export function formatRelativeTime(dateString: string): string {
+  const now = new Date();
+  const then = new Date(dateString);
+
+  const diffMs = now.getTime() - then.getTime();
+  const diffSeconds = Math.floor(diffMs / 1000);
+
+  if (diffSeconds < 60) {
+    return "just now";
+  }
+
+  const diffMinutes = Math.floor(diffSeconds / 60);
+
+  if (diffMinutes < 60) {
+    return `${diffMinutes} minute${diffMinutes !== 1 ? "s" : ""} ago`;
+  }
+
+  const diffHours = Math.floor(diffMinutes / 60);
+
+  if (diffHours < 24) {
+    return `${diffHours} hour${diffHours !== 1 ? "s" : ""} ago`;
+  }
+
+  const hours = then.getHours().toString().padStart(2, "0");
+  const minutes = then.getMinutes().toString().padStart(2, "0");
+  const day = then.getDate().toString().padStart(2, "0");
+  const month = then.toLocaleString("en-GB", { month: "long" });
+  const year = then.getFullYear();
 
   return `${day} ${month} ${year}, ${hours}:${minutes}`;
 }

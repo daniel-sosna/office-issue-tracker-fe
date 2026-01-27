@@ -10,11 +10,13 @@ import IconButton from "@mui/material/IconButton";
 import CloseIcon from "@mui/icons-material/Close";
 import { useEditor, EditorContent } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { fetchOffices } from "@api/services/offices";
+import { fetchOffices, type Office } from "@api/services/offices";
 import { useCreateIssue } from "@api/queries/useCreateIssue";
 import AttachmentSection from "./components/AttachmentSection";
 import EditorToolbar from "@components/EditorToolbar";
-import { validateFiles } from "@utils/attachments.validation";
+import { useAttachments } from "@api/queries/useAttachments.ts";
+import { formatOffice } from "@utils/formatters";
+import { Select } from "@mui/material";
 
 interface IssueFormData {
   summary: string;
@@ -33,22 +35,21 @@ interface IssueModalProps {
   onSubmit: (data: IssueFormData) => void;
 }
 
-interface Office {
-  id: string;
-  title: string;
-  country: string;
-}
-
 export default function IssueModal({ open, onClose }: IssueModalProps) {
   const [summary, setSummary] = useState("");
-  const [office, setOffice] = useState("");
+  const [officeId, setOfficeId] = useState("");
   const [description, setDescription] = useState("");
   const [offices, setOffices] = useState<Office[]>([]);
   const [errorMessage, setErrorMessage] = useState("");
-  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [hasSubmitted, setHasSubmitted] = useState(false);
-  const [attachmentError, setAttachmentError] = useState("");
   const { mutateAsync: createIssueMutation, isPending } = useCreateIssue();
+  const {
+    selectedFiles,
+    attachmentError,
+    handleAddFiles,
+    handleDeleteFile,
+    resetAttachments,
+  } = useAttachments();
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -75,22 +76,19 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     void loadOffices();
   }, [open]);
 
-  useEffect(() => {
-    if (open && editor) {
-      editor.commands.setContent("");
-      setSummary("");
-      setOffice("");
-      setDescription("");
-      setErrorMessage("");
-      setAttachmentError("");
-      setHasSubmitted(false);
-      selectedFiles.forEach((file) => URL.revokeObjectURL(file.name));
-      setSelectedFiles([]);
-    }
-  }, [open, editor, selectedFiles]);
+  const handleClose = () => {
+    editor.commands.setContent("");
+    setSummary("");
+    setOfficeId("");
+    setDescription("");
+    setErrorMessage("");
+    setHasSubmitted(false);
+    resetAttachments();
+    onClose();
+  };
 
   const isFormComplete =
-    summary.trim() !== "" && description.trim() !== "" && office !== "";
+    summary.trim() !== "" && description.trim() !== "" && officeId !== "";
 
   useEffect(() => {
     if (!editor) return;
@@ -120,29 +118,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
     return undefined;
   }
 
-  const handleAddFiles = (files: FileList) => {
-    const { validFiles, errorMessage } = validateFiles(files, selectedFiles);
-
-    if (errorMessage) {
-      setAttachmentError(errorMessage);
-    } else {
-      setAttachmentError("");
-    }
-
-    setSelectedFiles((prev) => [...prev, ...validFiles]);
-  };
-
-  const handleDeleteFile = (id: string) => {
-    setSelectedFiles((prev) =>
-      prev.filter((f) => {
-        if (f.name + f.size === id) {
-          URL.revokeObjectURL(f.name);
-        }
-        return f.name + f.size !== id;
-      })
-    );
-  };
-
   const handleSubmit = async (): Promise<void> => {
     setHasSubmitted(true);
 
@@ -150,7 +125,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       return;
     }
 
-    const selectedOffice = offices.find((o) => o.title === office);
+    const selectedOffice = offices.find((o) => o.id === officeId);
     if (!selectedOffice) {
       setErrorMessage("Please select a valid office");
       return;
@@ -168,7 +143,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         files: selectedFiles,
       });
 
-      onClose();
+      handleClose();
     } catch (error: unknown) {
       let backendMessage = "An error occurred while submitting the issue";
 
@@ -190,7 +165,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
   return (
     <Dialog
       open={open}
-      onClose={onClose}
+      onClose={handleClose}
       fullWidth
       maxWidth="sm"
       disableRestoreFocus
@@ -208,7 +183,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
         Report Issue
       </DialogTitle>
       <IconButton
-        onClick={onClose}
+        onClick={handleClose}
         size="small"
         sx={{
           position: "absolute",
@@ -305,20 +280,19 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             <Box mb={0.5} sx={{ color: "text.secondary", fontSize: "14px" }}>
               Office <span style={{ color: "red" }}>*</span>
             </Box>
-            <TextField
-              select
-              value={office}
-              onChange={(e) => setOffice(e.target.value)}
+            <Select
+              value={officeId}
+              onChange={(e) => setOfficeId(e.target.value)}
               variant="outlined"
               size="small"
               sx={{ width: "45%" }}
             >
               {offices.map((o) => (
-                <MenuItem key={o.id} value={o.title}>
-                  {o.title}
+                <MenuItem key={o.id} value={o.id}>
+                  {formatOffice(o)}
                 </MenuItem>
               ))}
-            </TextField>
+            </Select>
           </Box>
 
           <AttachmentSection
@@ -330,6 +304,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             onAddFiles={handleAddFiles}
             onDelete={handleDeleteFile}
             error={attachmentError}
+            drawerEditor={false}
           />
         </Box>
       </DialogContent>
@@ -347,7 +322,7 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
       >
         <Button
           variant="outlined"
-          onClick={onClose}
+          onClick={handleClose}
           sx={{
             borderRadius: "999px",
             paddingX: 3,

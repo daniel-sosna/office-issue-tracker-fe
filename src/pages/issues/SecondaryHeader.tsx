@@ -1,10 +1,16 @@
-import { useState } from "react";
+import { useState, useContext } from "react";
 import { Box, Typography, Button } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import IssueModal from "@pages/issues/IssueModal";
+import OfficeModal from "@pages/office/OfficeModal";
+import { AuthContext } from "@context/AuthContext";
 
 const SecondaryHeader: React.FC = () => {
   const [modalOpen, setModalOpen] = useState(false);
+  const [officeModalOpen, setOfficeModalOpen] = useState(false);
+
+  const { user } = useContext(AuthContext);
+  const isAdmin = user?.role === "ADMIN";
 
   return (
     <Box
@@ -36,20 +42,49 @@ const SecondaryHeader: React.FC = () => {
         </Typography>
       </Box>
 
-      <Button
-        variant="contained"
-        color="secondary"
-        startIcon={<AddIcon />}
-        sx={{ borderRadius: "50px", whiteSpace: "nowrap" }}
-        onClick={() => setModalOpen(true)}
-      >
-        Report Issue
-      </Button>
+      <Box display="flex" gap={1}>
+        {isAdmin && (
+          <Button
+            variant="outlined"
+            sx={{
+              borderRadius: "50px",
+              borderColor: "text.secondary",
+              color: "secondary",
+              backgroundColor: "#fff",
+              fontWeight: "bold",
+              "&:hover": {
+                backgroundColor: "#d8d8d8ff",
+                borderColor: "#0000001f",
+              },
+            }}
+            onClick={() => setOfficeModalOpen(true)}
+          >
+            Manage Offices
+          </Button>
+        )}
+
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<AddIcon />}
+          sx={{ borderRadius: "50px", whiteSpace: "nowrap" }}
+          onClick={() => setModalOpen(true)}
+        >
+          Report Issue
+        </Button>
+      </Box>
 
       <IssueModal
         open={modalOpen}
         onClose={() => setModalOpen(false)}
         onSubmit={() => setModalOpen(false)}
+      />
+
+      <OfficeModal
+        open={officeModalOpen}
+        onClose={() => setOfficeModalOpen(false)}
+        offices={[]}
+        onSave={() => setOfficeModalOpen(false)}
       />
     </Box>
   );

@@ -21,6 +21,7 @@ import { useOffices } from "@api/queries/useOffices";
 import { useVoteOnIssue } from "@api/queries/useVoteOnIssue";
 import Loader from "@components/Loader";
 import { type FrontendSortKey } from "@api/services/issues";
+import { formatOffice } from "@utils/formatters";
 
 const tabLabels = [
   "All issues",
@@ -194,7 +195,7 @@ const IssuesList: React.FC = () => {
               <MenuItem value="all">All offices</MenuItem>
               {offices.map((office) => (
                 <MenuItem key={office.id} value={office.id}>
-                  {office.title}
+                  {formatOffice(office)}
                 </MenuItem>
               ))}
             </Select>
@@ -252,6 +253,11 @@ const IssuesList: React.FC = () => {
         issueId={selectedIssueId}
         issueStats={selectedIssueStats}
         onClose={() => setSelectedIssueId(undefined)}
+        onCommentCreated={() =>
+          setSelectedIssueStats((prev) =>
+            prev ? { ...prev, comments: prev.comments + 1 } : prev
+          )
+        }
         onSaved={() =>
           setSnackbar({
             open: true,

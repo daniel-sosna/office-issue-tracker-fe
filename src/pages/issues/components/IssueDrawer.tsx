@@ -10,14 +10,14 @@ import {
   Select,
   TextField,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
 } from "@mui/material";
+import { useEditor, EditorContent } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
+import EditorToolbar from "@components/EditorToolbar";
 import ArrowUpwardIcon from "@mui/icons-material/ArrowUpward";
 import { useQueryClient } from "@tanstack/react-query";
 import {
+  deleteAttachment,
   softDeleteIssue,
   updateIssue,
   updateIssueStatus,
@@ -26,6 +26,7 @@ import { queryKeys } from "@api/queries/queryKeys";
 import { useIssueDetails } from "@api/queries/useIssueDetails";
 import { useOffices } from "@api/queries/useOffices";
 import RightDrawer from "@components/RightDrawer";
+import CommentsSection from "@pages/comments/components/CommentsSection";
 import { useAuth } from "@context/UseAuth";
 import {
   IssueStatus,
@@ -36,12 +37,21 @@ import {
 import AttachmentList from "@pages/issues/components/AttachmentList";
 import { StatusChip } from "@pages/issues/components/IssueStatusChip";
 import { EditButton } from "./EditButton";
-import { stripHtmlDescription, formatDate } from "@utils/formatters";
+import {
+  stripHtmlDescription,
+  formatDate,
+  formatOffice,
+} from "@utils/formatters";
+import { sanitizeHtml } from "@utils/sanitizeHtml";
+import AttachmentSection from "@pages/issues/components/AttachmentSection.tsx";
+import { useAttachments } from "@api/queries/useAttachments.ts";
+import ConfirmDialog from "@pages/issues/components/ConfirmDialog.tsx";
 
 interface Props {
   issueId?: string;
   issueStats?: IssueStats;
   onClose: () => void;
+  onCommentCreated: () => void;
   onSaved: () => void;
   onError: (message: string) => void;
 }
@@ -50,6 +60,7 @@ export default function IssueDrawer({
   issueId,
   issueStats = { isOwner: false, hasVoted: false, votes: 0, comments: 0 },
   onClose,
+  onCommentCreated,
   onSaved,
   onError,
 }: Props) {
@@ -63,9 +74,26 @@ export default function IssueDrawer({
   const [saving, setSaving] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteAttachmentDialogOpen, setDeleteAttachmentDialogOpen] =
+    useState(false);
+  const [attachmentToDelete, setAttachmentToDelete] = useState<string | null>(
+    null
+  );
+  const {
+    selectedFiles,
+    attachmentError,
+    handleAddFiles,
+    handleDeleteFile,
+    resetAttachments,
+  } = useAttachments();
 
   type EditingField = "summary" | "description" | "office" | "status";
   const [editingField, setEditingField] = useState<EditingField | null>(null);
+
+  const descriptionEditor = useEditor({
+    extensions: [StarterKit],
+    content: "",
+  });
 
   const [errors, setErrors] = useState<{
     summary?: string;
@@ -87,14 +115,23 @@ export default function IssueDrawer({
     status: issue?.status ?? "Open",
     officeId: "",
   });
+
   const { data: offices = [], isError: officesError } = useOffices();
   const queryClient = useQueryClient();
+
+  const selectedOffice = offices.find((o) => o.id === form.officeId);
 
   const { user } = useAuth();
   const admin = user?.role === "ADMIN";
   const issueOwner =
     issueStats?.isOwner ?? issue?.reportedByEmail === user?.email;
   const attachments: IssueAttachment[] = issue?.attachments ?? [];
+  const allowedToEdit =
+    (issueOwner || admin) && selectedTab === TabIndex.Details;
+
+  useEffect(() => {
+    setSelectedTab(TabIndex.Details);
+  }, [TabIndex.Details, issueId]);
 
   const summaryRef = useRef<HTMLDivElement>(null);
   const descriptionRef = useRef<HTMLDivElement>(null);
@@ -149,12 +186,35 @@ export default function IssueDrawer({
       setEditingField(null);
       setForm({
         summary: issue.summary,
-        description: stripHtmlDescription(issue.description),
-        status: issue.status || "OPEN",
+        description: issue.description,
+        status: issue.status || "Open",
         officeId: issue.officeId,
       });
     }
   }, [issue, issueStats]);
+
+  useEffect(() => {
+    if (editingField === "description" && descriptionEditor) {
+      descriptionEditor.commands.setContent(form.description || "");
+    }
+  }, [editingField, descriptionEditor]);
+
+  useEffect(() => {
+    if (!descriptionEditor) return;
+
+    const updateHandler = () => {
+      setForm((prev) => ({
+        ...prev,
+        description: descriptionEditor.getHTML(),
+      }));
+    };
+
+    descriptionEditor.on("update", updateHandler);
+
+    return () => {
+      descriptionEditor.off("update", updateHandler);
+    };
+  }, [descriptionEditor]);
 
   function validateForm() {
     const newErrors: typeof errors = {};
@@ -164,14 +224,23 @@ export default function IssueDrawer({
     else if (form.summary.length > 200)
       newErrors.summary = "Summary must be less than 200 characters";
 
-    if (!form.description?.trim())
-      newErrors.description = "Description is required";
-    else if (form.description.length > 2000)
+    const plainText = stripHtmlDescription(descriptionEditor?.getText() ?? "");
+
+    if (!plainText.trim()) newErrors.description = "Description is required";
+    else if (plainText.length > 2000)
       newErrors.description = "Description must be less than 2000 characters";
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }
+
+  const handleClose = () => {
+    resetAttachments();
+    setEditingField(null);
+    setErrors({});
+    selectedFiles.forEach((f) => URL.revokeObjectURL(f.name));
+    onClose();
+  };
 
   async function handleSave() {
     if (!issue || !validateForm()) return;
@@ -180,11 +249,15 @@ export default function IssueDrawer({
       setSaving(true);
 
       if (issueOwner) {
-        await updateIssue(issue.id, {
-          summary: form.summary,
-          description: `<p>${form.description.replace(/\n/g, "</p><p>")}</p>`,
-          officeId: form.officeId || issue.officeId,
-        });
+        await updateIssue(
+          issue.id,
+          {
+            summary: form.summary,
+            description: descriptionEditor?.getHTML() ?? "",
+            officeId: form.officeId || issue.officeId,
+          },
+          selectedFiles
+        );
       }
 
       if (admin) {
@@ -201,7 +274,7 @@ export default function IssueDrawer({
       });
 
       onSaved();
-      onClose();
+      handleClose();
     } catch {
       onError("Failed to save the Issue.");
     } finally {
@@ -227,10 +300,30 @@ export default function IssueDrawer({
       setDeleting(false);
     }
   };
+  const handleAttachmentDelete = async () => {
+    if (!attachmentToDelete || !issue) return;
+    try {
+      setDeleting(true);
+
+      await deleteAttachment(attachmentToDelete);
+
+      await queryClient.invalidateQueries({
+        queryKey: queryKeys.issueDetails(issue.id),
+      });
+
+      setDeleteAttachmentDialogOpen(false);
+      setAttachmentToDelete(null);
+      onSaved();
+    } catch {
+      onError("Failed to delete the attachment.");
+    } finally {
+      setDeleting(false);
+    }
+  };
 
   if (!issue) {
     return (
-      <RightDrawer open={false} onClose={onClose}>
+      <RightDrawer open={false} onClose={handleClose}>
         <Typography variant="h4" sx={{ fontWeight: 400 }}>
           Select an issue to see details.
         </Typography>
@@ -239,8 +332,8 @@ export default function IssueDrawer({
   }
 
   return (
-    <RightDrawer open={!!issueId} onClose={onClose}>
-      <Box sx={{ padding: "12px", flex: 1 }}>
+    <RightDrawer open={!!issueId} onClose={handleClose}>
+      <Box sx={{ p: 2, flex: 1 }}>
         <Box
           ref={summaryRef}
           display="flex"
@@ -278,13 +371,15 @@ export default function IssueDrawer({
               }}
               error={!!errors.summary}
               helperText={errors.summary}
+              slotProps={{
+                input: { sx: { fontSize: "22px", fontWeight: 400 } },
+              }}
             />
           )}
         </Box>
 
         <Divider sx={{ my: 2 }} />
 
-        {/* Metadata */}
         <Box
           display="grid"
           gridTemplateColumns={{ xs: "1fr", sm: "140px 1fr" }}
@@ -292,7 +387,6 @@ export default function IssueDrawer({
           alignItems="center"
           mb={2}
         >
-          {/* Reported By */}
           <Typography variant="body2">Reported by</Typography>
           <Box>
             <Box
@@ -315,7 +409,6 @@ export default function IssueDrawer({
             </Box>
           </Box>
 
-          {/* Reported Date */}
           <Typography variant="body2">Reported at</Typography>
           <Box>
             <Typography variant="body2" color="text.primary">
@@ -323,7 +416,6 @@ export default function IssueDrawer({
             </Typography>
           </Box>
 
-          {/* Status */}
           <Typography variant="body2">Status</Typography>
           <Box ref={statusRef}>
             {editingField !== "status" && (
@@ -356,7 +448,6 @@ export default function IssueDrawer({
             )}
           </Box>
 
-          {/* Upvotes */}
           <Typography variant="body2">Upvotes</Typography>
           <Box>
             <Box
@@ -376,20 +467,12 @@ export default function IssueDrawer({
             </Box>
           </Box>
 
-          {/* Office */}
           <Typography variant="body2">Office</Typography>
           <Box ref={officeRef}>
             {editingField !== "office" && (
               <Box display="flex" alignItems="center" gap={1}>
                 <Typography>
-                  {(() => {
-                    const selectedOffice = offices.find(
-                      (o) => o.id === form.officeId
-                    );
-                    return selectedOffice
-                      ? `${selectedOffice.title}, ${selectedOffice.country}`
-                      : issue.office;
-                  })()}
+                  {selectedOffice ? formatOffice(selectedOffice) : issue.office}
                 </Typography>
                 {(issueOwner || admin) && (
                   <EditButton onClick={() => setEditingField("office")} />
@@ -407,7 +490,7 @@ export default function IssueDrawer({
               >
                 {offices.map((o) => (
                   <MenuItem key={o.id} value={o.id}>
-                    {o.title}, {o.country}
+                    {formatOffice(o)}
                   </MenuItem>
                 ))}
               </Select>
@@ -415,7 +498,6 @@ export default function IssueDrawer({
           </Box>
         </Box>
 
-        {/* Tabs */}
         <Tabs
           value={selectedTab}
           onChange={(_, value: TabIndex) => setSelectedTab(value)}
@@ -432,13 +514,11 @@ export default function IssueDrawer({
         >
           <Tab label="Details" sx={{ textTransform: "none" }} />
           <Tab
-            disabled
-            label={`Comments (${issue.comments})`}
+            label={`Comments (${issueStats.comments})`}
             sx={{ textTransform: "none" }}
           />
         </Tabs>
 
-        {/* Tab Panels */}
         {selectedTab === TabIndex.Details && (
           <Box ref={descriptionRef}>
             <Typography variant="body2" color="text.secondary">
@@ -455,36 +535,100 @@ export default function IssueDrawer({
                 }}
               >
                 <Typography
+                  component="div"
+                  dangerouslySetInnerHTML={{
+                    __html: sanitizeHtml(form.description),
+                  }}
                   sx={{
-                    fontSize: "16px",
-                    lineHeight: "1.5",
+                    "& p:empty": {
+                      minHeight: "1em",
+                    },
+                    "& p, & div, & ul, & ol": { margin: 0 },
+                    "& ul, & ol": { paddingLeft: "1.25rem" },
+                    "& li": { margin: 0 },
                     whiteSpace: "pre-wrap",
                     wordBreak: "break-word",
-                    flexGrow: 1,
+                    color: "text.primary",
                   }}
-                >
-                  {form.description}
-                </Typography>
+                />
                 {issueOwner && (
                   <EditButton onClick={() => setEditingField("description")} />
                 )}
               </Box>
             )}
             {editingField === "description" && issueOwner && (
-              <TextField
-                multiline
-                fullWidth
-                minRows={4}
-                value={form.description}
-                onChange={(e) => {
-                  setForm((prev) => ({ ...prev, description: e.target.value }));
-                }}
-                error={!!errors.description}
-                helperText={errors.description}
-              />
+              <Box>
+                <Box
+                  sx={{
+                    height: 250,
+                    display: "flex",
+                    flexDirection: "column",
+                    border: 1,
+                    borderColor: "divider",
+                    borderRadius: 1,
+                    overflow: "hidden",
+                  }}
+                  onClick={() => descriptionEditor?.chain().focus().run()}
+                >
+                  <EditorToolbar editor={descriptionEditor} />
+
+                  <Box
+                    sx={{
+                      flex: 1,
+                      p: 1,
+                      overflowY: "auto",
+                      cursor: "text",
+                      display: "flex",
+                      flexDirection: "column",
+                      "& .ProseMirror p": { margin: 0 },
+                      "& .ProseMirror ul, & .ProseMirror ol": {
+                        margin: 0,
+                        paddingLeft: "1.25rem",
+                      },
+                      "& .ProseMirror li": { margin: 0 },
+                      "& .ProseMirror": { lineHeight: 1.5 },
+                      "& .ProseMirror:focus": { outline: "none" },
+                    }}
+                  >
+                    {descriptionEditor && (
+                      <EditorContent
+                        editor={descriptionEditor}
+                        style={{ flex: 1, width: "100%" }}
+                      />
+                    )}
+                  </Box>
+                </Box>
+
+                {errors.description && (
+                  <Typography color="error" fontSize={12} mt={0.5}>
+                    {errors.description}
+                  </Typography>
+                )}
+              </Box>
             )}
 
-            {attachments.length > 0 && (
+            {attachments.length > 0 && issueOwner && (
+              <Box mt={2}>
+                <Typography variant="body2" color="text.secondary" mb={1}>
+                  Attachments
+                </Typography>
+
+                <AttachmentList
+                  attachments={attachments.map((attachment) => ({
+                    id: attachment.id,
+                    name: attachment.originalFilename,
+                    url: attachment.url,
+                  }))}
+                  showDelete={true}
+                  onDelete={(id) => {
+                    setAttachmentToDelete(id);
+                    setDeleteAttachmentDialogOpen(true);
+                  }}
+                />
+              </Box>
+            )}
+
+            {attachments.length > 0 && !issueOwner && (
               <Box mt={2}>
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   Attachments
@@ -498,27 +642,41 @@ export default function IssueDrawer({
                 />
               </Box>
             )}
+            {issueOwner && (
+              <AttachmentSection
+                attachments={selectedFiles.map((f) => ({
+                  id: f.name + f.size,
+                  name: f.name,
+                  url: URL.createObjectURL(f),
+                }))}
+                onAddFiles={handleAddFiles}
+                onDelete={handleDeleteFile}
+                error={attachmentError}
+                drawerEditor={true}
+              />
+            )}
           </Box>
         )}
         {selectedTab === TabIndex.Comments && (
-          <Typography variant="body1" color="text.primary">
-            Comments section is under construction.
-          </Typography>
+          <CommentsSection
+            issueId={issue.id}
+            onCommentCreated={onCommentCreated}
+          />
         )}
       </Box>
 
       {/* Actions */}
       <Box
         sx={{
-          position: "sticky",
           bottom: 0,
           background: "white",
           zIndex: 10,
-          borderTop: "1px solid #ddd",
-          padding: "12px",
+          position: "sticky",
+          borderTop: allowedToEdit ? "1px solid #ddd" : "none",
+          padding: allowedToEdit ? "12px" : "none",
         }}
       >
-        {(issueOwner || admin) && (
+        {allowedToEdit && (
           <Box
             display="flex"
             justifyContent="space-between"
@@ -535,11 +693,11 @@ export default function IssueDrawer({
               {deleting ? "Deleting..." : "Delete"}
             </Button>
 
-            <Box display="flex" gap={2}>
+            <Box ref={actionsRef} display="flex" gap={2}>
               <Button
                 variant="outlined"
                 size="medium"
-                onClick={onClose}
+                onClick={handleClose}
                 sx={{ borderRadius: "999px", paddingX: 3 }}
               >
                 Cancel
@@ -560,35 +718,29 @@ export default function IssueDrawer({
       </Box>
 
       {/* Delete Dialog */}
-      <Dialog
+      <ConfirmDialog
         open={deleteDialogOpen}
+        title={"Delete Issue"}
+        description={
+          "Are you sure you want to delete this issue? This action cannot be\n" +
+          "            undone."
+        }
+        loading={deleting}
         onClose={() => setDeleteDialogOpen(false)}
-        aria-labelledby="delete-dialog-title"
-        aria-describedby="delete-dialog-description"
-      >
-        <DialogTitle id="delete-dialog-title">Delete Issue</DialogTitle>
-        <DialogContent>
-          <Typography id="delete-dialog-description">
-            Are you sure you want to delete this issue? This action cannot be
-            undone.
-          </Typography>
-        </DialogContent>
-        <DialogActions sx={{ gap: 2, pb: 2, pr: 2 }}>
-          <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={() => void handleDelete()}
-            color="error"
-            variant="contained"
-            disabled={deleting}
-            sx={{
-              borderRadius: "999px",
-              paddingX: 3,
-            }}
-          >
-            {deleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        onConfirm={() => void handleDelete()}
+      ></ConfirmDialog>
+
+      <ConfirmDialog
+        open={deleteAttachmentDialogOpen}
+        title={"Delete Attachment"}
+        description={
+          "Are you sure you want to delete this attachment? This action cannot be\n" +
+          "                 undone."
+        }
+        loading={deleting}
+        onClose={() => setDeleteAttachmentDialogOpen(false)}
+        onConfirm={() => void handleAttachmentDelete()}
+      ></ConfirmDialog>
     </RightDrawer>
   );
 }
