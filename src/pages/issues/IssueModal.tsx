@@ -304,7 +304,6 @@ export default function IssueModal({ open, onClose }: IssueModalProps) {
             onAddFiles={handleAddFiles}
             onDelete={handleDeleteFile}
             error={attachmentError}
-            drawerEditor={false}
           />
         </Box>
       </DialogContent>

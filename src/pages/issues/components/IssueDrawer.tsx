@@ -607,29 +607,8 @@ export default function IssueDrawer({
               </Box>
             )}
 
-            {attachments.length > 0 && issueOwner && (
-              <Box mt={2}>
-                <Typography variant="body2" color="text.secondary" mb={1}>
-                  Attachments
-                </Typography>
-
-                <AttachmentList
-                  attachments={attachments.map((attachment) => ({
-                    id: attachment.id,
-                    name: attachment.originalFilename,
-                    url: attachment.url,
-                  }))}
-                  showDelete={true}
-                  onDelete={(id) => {
-                    setAttachmentToDelete(id);
-                    setDeleteAttachmentDialogOpen(true);
-                  }}
-                />
-              </Box>
-            )}
-
-            {attachments.length > 0 && !issueOwner && (
-              <Box mt={2}>
+            {!issueOwner && attachments.length > 0 && (
+              <Box my={2}>
                 <Typography variant="body2" color="text.secondary" mb={1}>
                   Attachments
                 </Typography>
@@ -643,17 +622,18 @@ export default function IssueDrawer({
               </Box>
             )}
             {issueOwner && (
-              <AttachmentSection
-                attachments={selectedFiles.map((f) => ({
-                  id: f.name + f.size,
-                  name: f.name,
-                  url: URL.createObjectURL(f),
-                }))}
-                onAddFiles={handleAddFiles}
-                onDelete={handleDeleteFile}
-                error={attachmentError}
-                drawerEditor={true}
-              />
+              <Box my={2}>
+                <AttachmentSection
+                  attachments={selectedFiles.map((f) => ({
+                    id: f.name + f.size,
+                    name: f.name,
+                    url: URL.createObjectURL(f),
+                  }))}
+                  onAddFiles={handleAddFiles}
+                  onDelete={handleDeleteFile}
+                  error={attachmentError}
+                />
+              </Box>
             )}
           </Box>
         )}
