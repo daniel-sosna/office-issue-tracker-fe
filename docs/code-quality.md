@@ -3,57 +3,49 @@
 This project uses **ESLint**, **Stylelint**, and **Prettier** to enforce consistent code quality and formatting across the entire codebase.
 The tooling is automated through **Husky** and **lint-staged**, ensuring issues are caught before they reach the repository.
 
-This document explains:
-
-1. What each linter does
-1. How to use the linters
-1. How to configure IDE support (VSCode & IntelliJ Ultimate)
-1. How pre-commit hooks work
-1. Recommended development workflow
-
 ## Table of Contents
 
-- [Table of Contents](#markdown-table-of-contents)
-- [Linters Overview](#markdown-linters-overview)
-  - [ESLint](#markdown-**eslint**)
-  - [Stylelint](#markdown-**stylelint**)
-  - [Prettier](#markdown-**prettier**)
-  - [.editorconfig](#markdown-**.editorconfig**)
-- [CLI Commands](#markdown-cli-commands)
-  - [Linting](#markdown-linting)
-  - [Formatting](#markdown-formatting)
-  - [Notes](#markdown-notes)
-- [IDE Integration](#markdown-ide-integration)
-  - [✔ VSCode Setup](#markdown-✔-vscode-setup)
-  - [✔ IntelliJ IDEA Ultimate Setup](#markdown-✔-intellij-idea-ultimate-setup)
-- [Pre-Commit Hook (Husky + lint-staged)](<#markdown-pre-commit-hook-(husky-+-lint-staged)>)
-  - [How it works?](#markdown-how-it-works?)
-  - [Why we use pre-commit hook?](#markdown-why-we-use-pre-commit-hook?)
-- [Recommended Development Workflow](#markdown-recommended-development-workflow)
-  1. [Write code normally](#markdown-**1.-write-code-normally**)
-  1. [You can manually run linting and formatting locally](#markdown-**2.-you-can-manually-run-linting-and-formatting-locally**)
-  1. [Commit](#markdown-**3.-commit**)
-  1. [Push](#markdown-**4.-push**)
+- [Table of Contents](#table-of-contents)
+- [Tools Overview](#tools-overview)
+  - [ESLint](#eslint)
+  - [Stylelint](#stylelint)
+  - [Prettier](#prettier)
+  - [.editorconfig](#editorconfig)
+- [CLI Commands](#cli-commands)
+  - [Linting](#linting)
+  - [Formatting](#formatting)
+  - [Notes](#notes)
+- [IDE Integration](#ide-integration)
+  - [VSCode Setup](#vscode-setup)
+  - [IntelliJ IDEA Ultimate Setup](#intellij-idea-ultimate-setup)
+- [Pre-Commit Hook (Husky + lint-staged)](#pre-commit-hook-husky--lint-staged)
+  - [How it works?](#how-it-works?)
+  - [Why we use pre-commit hook?](#why-we-use-pre-commit-hook?)
+- [Development Workflow](#development-workflow)
+  1. [Write code normally](#1-write-code-normally)
+  1. [You can manually run linting and formatting locally](#2-you-can-manually-run-linting-and-formatting-locally)
+  1. [Commit](#3-commit)
+  1. [Push](#4-push)
 
-## Linters Overview
+## Tools Overview
 
-### **ESLint**
+### ESLint
 
 - Used for: **TypeScript / React (TS/TSX)**
 - Purpose: Detects incorrect code patterns, enforces style rules, catches bugs early (unused vars, unreachable code, missing dependencies, etc.)
 
-### **Stylelint**
+### Stylelint
 
 - Used for: **CSS / SCSS**
 - Purpose: Ensures consistent styling rules, prevents common mistakes in stylesheets (invalid properties, unknown rules, duplicate selectors, etc.)
 
-### **Prettier**
+### Prettier
 
 - Used for: **Code formatting**
 - Purpose: Automatically formats files to a consistent style.
 - _Important: Prettier is **not** a linter; it handles only formatting._
 
-### **.editorconfig**
+### .editorconfig
 
 Defines editor-agnostic rules such as:
 
@@ -94,7 +86,7 @@ All commands operate on the `./src` folder.
 
 ## IDE Integration
 
-### ✔ VSCode Setup
+### VSCode Setup
 
 1. Install recommended extensions:
    - **ESLint** _(dbaeumer.vscode-eslint)_ - to highlight linting issues
@@ -129,7 +121,7 @@ All commands operate on the `./src` folder.
 
 1. VSCode will automatically read project's ESLint, Stylelint, and Prettier configurations.
 
-### ✔ IntelliJ IDEA Ultimate Setup
+### IntelliJ IDEA Ultimate Setup
 
 IntelliJ should support everything natively, but to ensure proper integration, follow these steps:
 
@@ -204,16 +196,13 @@ The project uses Husky to run tasks **before every commit**.
 - Keeps diffs cleaner.
 - Avoids unnecessary formatting noise in PRs.
 
-## Recommended Development Workflow
+## Development Workflow
 
-### **1. Write code normally**
+### 1. Write code normally
 
-Your IDE should already:
+Your IDE should already format code on save
 
-- Format code on save
-- (Optional) Run ESLint/Stylelint automatically
-
-### **2. You can manually run linting and formatting locally**
+### 2. You can manually run linting and formatting locally
 
 - Check for issues:
 
@@ -231,7 +220,7 @@ Your IDE should already:
   npm run format:fix
   ```
 
-### **3. Commit**
+### 3. Commit
 
 Husky will automatically do the following on staged files in `./src`:
 
@@ -241,7 +230,7 @@ Husky will automatically do the following on staged files in `./src`:
 
 If something fails, correct it and commit again.
 
-### **4. Push**
+### 4. Push
 
 Then Bitbucket Pipeline will run:
 
