@@ -1,3 +1,5 @@
+import Stack from "@mui/material/Stack";
+import Typography from "@mui/material/Typography";
 import TextField from "@mui/material/TextField";
 
 interface Props {
@@ -7,7 +9,6 @@ interface Props {
   onBlur?: () => void;
   errorText?: string;
   helperText?: string;
-  fullWidth?: boolean;
   type?: string;
 }
 
@@ -18,20 +19,22 @@ export function TextFieldX({
   onBlur,
   errorText,
   helperText,
-  fullWidth = true,
   type,
 }: Props) {
   return (
-    <TextField
-      label={label}
-      slotProps={{ inputLabel: { shrink: true } }}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-      onBlur={onBlur}
-      error={!!errorText}
-      helperText={errorText ?? helperText}
-      fullWidth={fullWidth}
-      type={type}
-    />
+    <Stack gap={0.75} sx={{ width: "100%" }}>
+      <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
+        {label}
+      </Typography>
+
+      <TextField
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        onBlur={onBlur}
+        error={!!errorText}
+        helperText={errorText ?? helperText}
+        type={type}
+      />
+    </Stack>
   );
 }
