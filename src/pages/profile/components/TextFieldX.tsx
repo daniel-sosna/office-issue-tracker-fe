@@ -9,7 +9,6 @@ interface Props {
   onBlur?: () => void;
   errorText?: string;
   helperText?: string;
-  fullWidth?: boolean;
   type?: string;
 }
 
@@ -20,12 +19,13 @@ export function TextFieldX({
   onBlur,
   errorText,
   helperText,
-  fullWidth = true,
   type,
 }: Props) {
   return (
-    <Stack gap={0.75} sx={{ width: fullWidth ? "100%" : "auto" }}>
-      <Typography sx={{ fontSize: 13, color: "#64748b" }}>{label}</Typography>
+    <Stack gap={0.75} sx={{ width: "100%" }}>
+      <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
+        {label}
+      </Typography>
 
       <TextField
         value={value}
@@ -33,7 +33,6 @@ export function TextFieldX({
         onBlur={onBlur}
         error={!!errorText}
         helperText={errorText ?? helperText}
-        fullWidth={fullWidth}
         type={type}
       />
     </Stack>

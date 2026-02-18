@@ -16,17 +16,17 @@ import type { SelectChangeEvent } from "@mui/material/Select";
 import { useAuth } from "@context/UseAuth";
 import { useProfile } from "@api/queries/useProfile";
 import { useUpdateProfile } from "@api/queries/useUpdateProfile";
-import { toFormValues, toRequestBody } from "@pages/profile/profile.mappers";
+import { toFormValues, toRequestBody } from "./profile.mappers";
 import type { ProfileFormValues } from "@data/profile.types";
-import { validate } from "@pages/profile/profile.validation";
+import { validate } from "./profile.validation";
 import {
   fetchCountries,
   fetchCitiesByCountryName,
   type CountryOption,
-} from "@pages/profile/profile.locationApi";
+} from "./profile.locationApi";
 
-import { SelectField } from "@pages/profile/components/SelectField";
-import { TextFieldX } from "@pages/profile/components/TextFieldX";
+import { SelectField } from "./components/SelectField";
+import { TextFieldX } from "./components/TextFieldX";
 
 const departments = ["Operations", "Engineering", "HR", "Finance", "Sales"];
 
@@ -202,45 +202,36 @@ export const Profile = () => {
   }
 
   return (
-    <Box sx={{ p: { xs: 2, md: 6 }, background: "#fff", minHeight: "100vh" }}>
+    <Box sx={{ p: { xs: 2, md: 6 } }}>
       <Stack sx={{ maxWidth: 1200, mx: "auto" }} gap={3}>
         <Stack>
           <Typography
             sx={{
-              fontSize: { xs: 32, md: 44 },
+              fontSize: { xs: 38, md: 44 },
               fontWeight: 700,
-              letterSpacing: "-0.02em",
             }}
           >
             My profile
           </Typography>
 
-          <Typography sx={{ mt: 1, color: "#64748b" }}>
+          <Typography sx={{ mt: 1, color: "text.secondary" }}>
             Edit your personal information, position and working address
           </Typography>
         </Stack>
 
-        <Stack
-          direction={{ xs: "column", md: "row" }}
-          gap={5}
-          alignItems="flex-start"
-        >
-          <Stack sx={{ width: { xs: "100%", md: 340 } }} gap={1.2}>
-            <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+        <Stack direction={{ xs: "column", lg: "row" }} gap={5}>
+          <Stack gap={1.2} flex="0 1 340px">
+            <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
               Photo
             </Typography>
 
             <Box
               sx={{
-                width: "100%",
                 maxWidth: 320,
-                height: 320,
+                maxHeight: 320,
                 borderRadius: 2,
                 border: "1px solid #e2e8f0",
                 overflow: "hidden",
-                background: "#f8fafc",
-                display: "grid",
-                placeItems: "center",
               }}
             >
               {form.imageUrl ? (
@@ -256,26 +247,18 @@ export const Profile = () => {
             </Box>
           </Stack>
 
-          <Stack
-            component="form"
-            onSubmit={handleSubmit}
-            sx={{ flex: 1, maxWidth: 980 }}
-            gap={2}
-            noValidate
-          >
-            <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <TextFieldX
-                label="Full name"
-                value={form.name}
-                onChange={(v) => setForm((p) => ({ ...p, name: v }))}
-                onBlur={() => markTouched("name")}
-                errorText={fieldError("name")}
-              />
-            </Stack>
+          <Stack component="form" onSubmit={handleSubmit} flex={1} gap={2}>
+            <TextFieldX
+              label="Full name"
+              value={form.name}
+              onChange={(v) => setForm((p) => ({ ...p, name: v }))}
+              onBlur={() => markTouched("name")}
+              errorText={fieldError("name")}
+            />
 
-            <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <Stack gap={0.75} sx={{ width: "100%" }}>
-                <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+            <Stack direction="row" flexWrap="wrap" gap={2.5}>
+              <Stack gap={0.75} flex="1 250px">
+                <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
                   Department
                 </Typography>
 
@@ -298,20 +281,18 @@ export const Profile = () => {
                 </SelectField>
               </Stack>
 
-              <TextFieldX
-                label="Role"
-                value={form.role}
-                onChange={(v) => setForm((p) => ({ ...p, role: v }))}
-                onBlur={() => markTouched("role")}
-                errorText={fieldError("role")}
-              />
+              <Box flex="1 250px">
+                <TextFieldX
+                  label="Role"
+                  value={form.role}
+                  onChange={(v) => setForm((p) => ({ ...p, role: v }))}
+                  onBlur={() => markTouched("role")}
+                  errorText={fieldError("role")}
+                />
+              </Box>
             </Stack>
 
             <Divider sx={{ my: 1.5 }} />
-
-            <Typography sx={{ fontSize: 13, color: "#64748b" }}>
-              Address
-            </Typography>
 
             <TextFieldX
               label="Street address"
@@ -321,9 +302,9 @@ export const Profile = () => {
               errorText={fieldError("streetAddress")}
             />
 
-            <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <Stack gap={0.75} sx={{ width: "100%" }}>
-                <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+            <Stack direction="row" flexWrap="wrap" gap={2.5}>
+              <Stack gap={0.75} flex="1 250px">
+                <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
                   City
                 </Typography>
 
@@ -358,26 +339,30 @@ export const Profile = () => {
                 />
               </Stack>
 
-              <TextFieldX
-                label="State / Province"
-                value={form.stateProvince}
-                onChange={(v) => setForm((p) => ({ ...p, stateProvince: v }))}
-                onBlur={() => markTouched("stateProvince")}
-                errorText={fieldError("stateProvince")}
-              />
+              <Box flex="1 250px">
+                <TextFieldX
+                  label="State / Province"
+                  value={form.stateProvince}
+                  onChange={(v) => setForm((p) => ({ ...p, stateProvince: v }))}
+                  onBlur={() => markTouched("stateProvince")}
+                  errorText={fieldError("stateProvince")}
+                />
+              </Box>
             </Stack>
 
-            <Stack direction={{ xs: "column", md: "row" }} gap={2.5}>
-              <TextFieldX
-                label="Postcode"
-                value={form.postcode}
-                onChange={(v) => setForm((p) => ({ ...p, postcode: v }))}
-                onBlur={() => markTouched("postcode")}
-                errorText={fieldError("postcode")}
-              />
+            <Stack direction="row" flexWrap="wrap" gap={2.5}>
+              <Box flex="1 250px">
+                <TextFieldX
+                  label="Postcode"
+                  value={form.postcode}
+                  onChange={(v) => setForm((p) => ({ ...p, postcode: v }))}
+                  onBlur={() => markTouched("postcode")}
+                  errorText={fieldError("postcode")}
+                />
+              </Box>
 
-              <Stack gap={0.75} sx={{ width: "100%" }}>
-                <Typography sx={{ fontSize: 13, color: "#64748b" }}>
+              <Stack gap={0.75} flex="1 250px">
+                <Typography sx={{ fontSize: 13, color: "text.secondary" }}>
                   Country
                 </Typography>
 
